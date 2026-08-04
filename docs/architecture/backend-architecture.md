@@ -48,7 +48,7 @@ Az `accommodation` és a `tourism` egymástól független üzleti terület. Modu
 
 ## Tranzakciós stratégia
 
-Az üzleti tranzakció határa a service réteghez tartozik. Egy modul a saját perzisztens állapotát a saját DAO-ján keresztül módosítja; controllerben nem lehet tranzakciós üzleti folyamat. Modulközi szerződésként JPA-entitás nem adható át. A foundation nem tartalmaz üzleti tranzakciót vagy üzleti táblát; ezek a szabályok az első érintett feature-rel együtt kapnak végrehajtható tesztet.
+Az üzleti tranzakció határa a service réteghez tartozik. Egy modul a saját perzisztens állapotát a saját DAO-ján keresztül módosítja; controllerben nem lehet tranzakciós üzleti folyamat. Modulközi szerződésként JPA-entitás nem adható át. Az `FR-GH-001` lekérdezései read-only service-tranzakcióban állítják össze a publikus DTO-kat, és csak az aktív panziókat adják vissza.
 
 ## Tesztelési stratégia
 

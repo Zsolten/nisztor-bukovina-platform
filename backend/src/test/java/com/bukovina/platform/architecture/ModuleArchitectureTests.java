@@ -41,6 +41,24 @@ class ModuleArchitectureTests {
           .allowEmptyShould(true);
 
   @ArchTest
+  static final ArchRule CONTROLLERS_MUST_NOT_DEPEND_ON_DAOS =
+      noClasses()
+          .that()
+          .resideInAPackage("..controller..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("..dao..");
+
+  @ArchTest
+  static final ArchRule GUESTHOUSE_DAO_MUST_REMAIN_INSIDE_GUESTHOUSE_MODULE =
+      noClasses()
+          .that()
+          .resideOutsideOfPackage("..accommodation.guesthouse..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("..accommodation.guesthouse.dao..");
+
+  @ArchTest
   static final ArchRule TOP_LEVEL_PACKAGES_MUST_BE_FREE_OF_CYCLES =
       slices().matching("com.bukovina.platform.(*)..").should().beFreeOfCycles();
 }

@@ -32,6 +32,7 @@ Ez a könyvtár a Nisztor-Bukovina Platform normatív termékforrásait és azok
 - [ADR-006: RabbitMQ a P2 értesítésekhez](decisions/ADR-006-rabbitmq-notifications.md)
 - [OpenAPI-szerződés](api/openapi.yaml)
 - [Követelmény-nyomonkövetés](traceability/requirements-traceability.md)
+- [`FR-GH-001` megvalósítás](features/FR-GH-001-public-guesthouses.md)
 
 ## Követelmény-hivatkozás
 

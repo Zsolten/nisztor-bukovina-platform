@@ -11,8 +11,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "node --no-experimental-webstorage ./node_modules/vitest/vitest.mjs run",
+    "test:watch": "node --no-experimental-webstorage ./node_modules/vitest/vitest.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
