@@ -1,9 +1,14 @@
-export const supportedLanguages = ['hu', 'ro', 'en'] as const
+export const SUPPORTED_LANGUAGES = ['hu', 'ro', 'en'] as const
+export type Language = (typeof SUPPORTED_LANGUAGES)[number]
 
-export type SupportedLanguage = (typeof supportedLanguages)[number]
+export const DEFAULT_LANGUAGE: Language = 'hu'
+export const PREFERRED_LANGUAGE_KEY = 'preferredLanguage'
 
-export const defaultLanguage: SupportedLanguage = 'hu'
+export function isSupportedLanguage(value: unknown): value is Language {
+  return typeof value === 'string' && (SUPPORTED_LANGUAGES as readonly string[]).includes(value)
+}
 
-export function isSupportedLanguage(value: string | undefined): value is SupportedLanguage {
-  return supportedLanguages.some((language) => language === value)
+export function readPreferredLanguage(): Language {
+  const storedLanguage = localStorage.getItem(PREFERRED_LANGUAGE_KEY)
+  return isSupportedLanguage(storedLanguage) ? storedLanguage : DEFAULT_LANGUAGE
 }

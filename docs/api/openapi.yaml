@@ -1,0 +1,8 @@
+openapi: 3.1.0
+info:
+  title: Nisztor-Bukovina Platform API
+  version: 0.1.0
+  description: Contract-first REST API for the Nisztor-Bukovina Platform.
+servers:
+  - url: /api
+paths: {}
