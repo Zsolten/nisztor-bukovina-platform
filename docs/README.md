@@ -33,6 +33,7 @@ Ez a könyvtár a Nisztor-Bukovina Platform normatív termékforrásait és azok
 - [OpenAPI-szerződés](api/openapi.yaml)
 - [Követelmény-nyomonkövetés](traceability/requirements-traceability.md)
 - [`FR-GH-001` megvalósítás](features/FR-GH-001-public-guesthouses.md)
+- [`FR-GH-002` publikus részletes tartalom](features/FR-GH-002-public-detail-content.md)
 
 ## Követelmény-hivatkozás
 
