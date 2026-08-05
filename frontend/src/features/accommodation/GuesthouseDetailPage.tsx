@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Link, useOutletContext, useParams } from 'react-router-dom'
 import type { LanguageOutletContext } from '../../app/LanguageLayout'
+import AsyncStatus from '../../shared/components/AsyncStatus'
 import GuesthouseGallery from './GuesthouseGallery'
 import { useGuesthouse } from './useGuesthouseData'
 
@@ -13,7 +14,7 @@ export default function GuesthouseDetailPage() {
   if (loading) {
     return (
       <main id="main-content" className="detail-status">
-        <p className="status-message">{t('guesthouses.loading')}</p>
+        <AsyncStatus variant="loading" message={t('guesthouses.loading')} />
       </main>
     )
   }
@@ -21,7 +22,7 @@ export default function GuesthouseDetailPage() {
   if (error || !data) {
     return (
       <main id="main-content" className="detail-status">
-        <p className="status-message error">{t('guesthouses.detailError')}</p>
+        <AsyncStatus variant="error" message={t('guesthouses.detailError')} />
         <Link className="text-link" to={`/${language}`}>
           ← {t('guesthouses.back')}
         </Link>

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Link, useOutletContext } from 'react-router-dom'
 import type { LanguageOutletContext } from '../../app/LanguageLayout'
+import AsyncStatus from '../../shared/components/AsyncStatus'
 import { useGuesthouses } from './useGuesthouseData'
 
 export default function GuesthouseListPage() {
@@ -37,8 +38,8 @@ export default function GuesthouseListPage() {
           </div>
         </header>
 
-        {loading && <p className="status-message">{t('guesthouses.loading')}</p>}
-        {error && <p className="status-message error">{t('guesthouses.loadError')}</p>}
+        {loading && <AsyncStatus variant="loading" message={t('guesthouses.loading')} />}
+        {error && <AsyncStatus variant="error" message={t('guesthouses.loadError')} />}
 
         {data && (
           <div className="guesthouse-grid">
