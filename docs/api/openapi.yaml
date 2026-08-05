@@ -73,6 +73,130 @@ components:
           type: string
         cover:
           type: boolean
+    GuesthouseHistory:
+      type: object
+      required: [title, text]
+      properties:
+        title:
+          type: string
+        text:
+          type: string
+    GuesthouseContact:
+      type: object
+      required: [type, value, label, preferred]
+      properties:
+        type:
+          type: string
+          enum: [PERSON, PHONE, EMAIL]
+        value:
+          type: string
+        label:
+          type: string
+        preferred:
+          type: boolean
+    GuesthouseAddress:
+      type: object
+      required: [formatted, latitude, longitude]
+      properties:
+        formatted:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+    RoomType:
+      type: object
+      required:
+        - id
+        - name
+        - quantity
+        - standardOccupancy
+        - roomsWithExtraBed
+        - extraBedsPerEligibleRoom
+        - features
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        quantity:
+          type: integer
+          minimum: 0
+        standardOccupancy:
+          type: integer
+          minimum: 1
+        roomsWithExtraBed:
+          type: integer
+          minimum: 0
+        extraBedsPerEligibleRoom:
+          type: integer
+          minimum: 0
+        features:
+          type: array
+          items:
+            type: string
+    Amenity:
+      type: object
+      required: [id, name, category]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum: [ROOM_COMFORT, FOOD_KITCHEN, OUTDOOR_WELLNESS, PROGRAM_GROUP]
+    PriceItem:
+      type: object
+      required: [id, label, amount, unit]
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        amount:
+          type: number
+          minimum: 0
+        unit:
+          type: string
+          enum: [person_night, person, day]
+    PricingAdjustment:
+      type: object
+      required: [id, label, percentage]
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        percentage:
+          type: number
+          minimum: 0
+          maximum: 100
+    GuesthousePricing:
+      type: object
+      required: [currency, items, surcharges, discounts, paymentNote]
+      properties:
+        currency:
+          type: string
+          enum: [RON]
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceItem'
+        surcharges:
+          type: array
+          items:
+            $ref: '#/components/schemas/PricingAdjustment'
+        discounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/PricingAdjustment'
+        paymentNote:
+          type: string
     GuesthouseSummary:
       type: object
       required: [slug, name, shortDescription, roomCount, coverImage]
@@ -92,7 +216,16 @@ components:
       allOf:
         - $ref: '#/components/schemas/GuesthouseSummary'
         - type: object
-          required: [description, roomDescription, images]
+          required:
+            - description
+            - roomDescription
+            - images
+            - history
+            - contacts
+            - address
+            - roomTypes
+            - amenities
+            - pricing
           properties:
             description:
               type: string
@@ -103,3 +236,21 @@ components:
               minItems: 1
               items:
                 $ref: '#/components/schemas/GuesthouseImage'
+            history:
+              $ref: '#/components/schemas/GuesthouseHistory'
+            contacts:
+              type: array
+              items:
+                $ref: '#/components/schemas/GuesthouseContact'
+            address:
+              $ref: '#/components/schemas/GuesthouseAddress'
+            roomTypes:
+              type: array
+              items:
+                $ref: '#/components/schemas/RoomType'
+            amenities:
+              type: array
+              items:
+                $ref: '#/components/schemas/Amenity'
+            pricing:
+              $ref: '#/components/schemas/GuesthousePricing'
