@@ -8,6 +8,8 @@ export const resources = {
           guesthouses: 'Panzióink',
           home: 'Főoldal',
           languages: 'Nyelvválasztás',
+          menu: 'Menü megnyitása',
+          closeMenu: 'Menü bezárása',
         },
         footer: {
           message: 'Családias vendéglátás Csernakeresztúron.',
@@ -47,6 +49,8 @@ export const resources = {
           guesthouses: 'Pensiunile noastre',
           home: 'Acasă',
           languages: 'Selectarea limbii',
+          menu: 'Deschide meniul',
+          closeMenu: 'Închide meniul',
         },
         footer: {
           message: 'Ospitalitate familială în Cristur.',
@@ -85,6 +89,8 @@ export const resources = {
           guesthouses: 'Our guesthouses',
           home: 'Home',
           languages: 'Language selection',
+          menu: 'Open menu',
+          closeMenu: 'Close menu',
         },
         footer: {
           message: 'Family hospitality in Cristur.',

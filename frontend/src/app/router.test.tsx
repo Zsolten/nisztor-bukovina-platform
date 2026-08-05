@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AppProviders } from './providers'
@@ -105,5 +106,19 @@ describe('guesthouse and language routing', () => {
     renderRoute('/en')
 
     await waitFor(() => expect(window.localStorage.getItem('preferredLanguage')).toBe('en'))
+  })
+
+  it('opens and closes the mobile language navigation', async () => {
+    const user = userEvent.setup()
+    renderRoute('/hu')
+
+    const toggle = await screen.findByRole('button', { name: 'Menü megnyitása' })
+    await user.click(toggle)
+
+    expect(screen.getByRole('dialog', { name: 'Nyelvválasztás' })).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Menü bezárása' }))
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'Nyelvválasztás' })).not.toBeInTheDocument(),
+    )
   })
 })
