@@ -126,6 +126,11 @@ describe('guesthouse and language routing', () => {
       'href',
       '/hu/guesthouses/bukovina-panzio',
     )
+    expect(screen.getByRole('heading', { name: 'Közel 30 éve vendégségben' })).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'Javasolt kirándulási irányok' })).toBeVisible()
+    expect(screen.getByText('Déva, Vajdahunyad, Gyulafehérvár')).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'Vendégeink mondták' })).toBeVisible()
+    expect(screen.getByTitle('Csernakeresztúr térképe')).toBeVisible()
   })
 
   it('opens a guesthouse on its own detail route', async () => {
@@ -155,6 +160,30 @@ describe('guesthouse and language routing', () => {
 
     await waitFor(() => expect(window.localStorage.getItem('preferredLanguage')).toBe('en'))
   })
+
+  it.each([
+    [
+      '/ro',
+      'Aproape 30 de ani alături de oaspeți',
+      'Exemplu de recenzie',
+      'Patru membri ai familiei Nisztor în pensiune',
+    ],
+    [
+      '/en',
+      'Nearly 30 years of welcoming guests',
+      'Sample guest review',
+      'Four members of the Nisztor family inside the guesthouse',
+    ],
+  ])(
+    'renders translated editorial content for %s',
+    async (route, legacyTitle, reviewLabel, imageAlt) => {
+      renderRoute(route)
+
+      expect(await screen.findByRole('heading', { name: legacyTitle })).toBeVisible()
+      expect(screen.getByText(reviewLabel)).toBeVisible()
+      expect(screen.getByAltText(imageAlt)).toBeVisible()
+    },
+  )
 
   it('opens and closes the mobile language navigation', async () => {
     const user = userEvent.setup()

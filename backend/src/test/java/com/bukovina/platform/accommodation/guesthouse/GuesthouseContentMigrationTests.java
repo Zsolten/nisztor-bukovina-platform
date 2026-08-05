@@ -18,7 +18,7 @@ class GuesthouseContentMigrationTests {
   @Test
   void seedsNormalizedLocalizedGuesthouseContent() {
     assertEquals(6, count("guesthouse_translation"));
-    assertEquals(180, count("guesthouse_image_translation"));
+    assertEquals(78, count("guesthouse_image_translation"));
     assertEquals(6, count("room_type"));
     assertEquals(23, count("amenity"));
     assertEquals(46, count("guesthouse_amenity"));
@@ -49,6 +49,12 @@ class GuesthouseContentMigrationTests {
   }
 
   @Test
+  void keepsOnlyGalleryImagesThatExistInTheFrontend() {
+    assertEquals(10, galleryImageCount("nisztor-panzio"));
+    assertEquals(16, galleryImageCount("bukovina-panzio"));
+  }
+
+  @Test
   void seedsLocalizedAlternativeTextForEveryGalleryImage() {
     String englishCoverAlt =
         jdbcTemplate.queryForObject(
@@ -63,9 +69,9 @@ class GuesthouseContentMigrationTests {
             """,
             String.class);
 
-    assertEquals(
-        "Group of five people in traditional clothing in front of Nisztor Guesthouse",
-        englishCoverAlt);
+    assertEquals("Street-facing facade of Nisztor Guesthouse", englishCoverAlt);
+    assertEquals(10, distinctLocalizedAltTextCount("nisztor-panzio", "en"));
+    assertEquals(16, distinctLocalizedAltTextCount("bukovina-panzio", "en"));
   }
 
   private int count(String tableName) {
@@ -83,5 +89,31 @@ class GuesthouseContentMigrationTests {
         Integer.class,
         slug,
         code);
+  }
+
+  private int galleryImageCount(String slug) {
+    return jdbcTemplate.queryForObject(
+        """
+        SELECT COUNT(*)
+        FROM guesthouse_image image
+        JOIN guesthouse ON guesthouse.id = image.guesthouse_id
+        WHERE guesthouse.slug = ?
+        """,
+        Integer.class,
+        slug);
+  }
+
+  private int distinctLocalizedAltTextCount(String slug, String languageCode) {
+    return jdbcTemplate.queryForObject(
+        """
+        SELECT COUNT(DISTINCT translation.alt_text)
+        FROM guesthouse_image_translation translation
+        JOIN guesthouse_image image ON image.id = translation.image_id
+        JOIN guesthouse ON guesthouse.id = image.guesthouse_id
+        WHERE guesthouse.slug = ? AND translation.language_code = ?
+        """,
+        Integer.class,
+        slug,
+        languageCode);
   }
 }

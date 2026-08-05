@@ -66,6 +66,59 @@ export const resources = {
         imageCounter: '{{current}} / {{total}}',
         detailError: 'A keresett panzió nem található vagy jelenleg nem érhető el.',
       },
+      homepage: {
+        legacy: {
+          eyebrow: 'Családi vendéglátás',
+          title: 'Közel 30 éve vendégségben',
+          body: 'Családunk immár közel 30 éve foglalkozik faluturizmussal és vendéglátással. Panziónk csendes, családias környezetben kínál szállást és házias, erdélyi magyaros ellátást. Csernakeresztúr bukovinai székely gyökerei, valamint Dél-Erdély történelmi és természeti kincsei jó kiindulópontot adnak minden kalandvágyó személy számára.',
+          imageAlt: 'A Nisztor család négy tagja a panzióban',
+        },
+        surroundings: {
+          eyebrow: 'Fedezze fel Dél-Erdélyt',
+          title: 'Javasolt kirándulási irányok',
+          introduction:
+            'Csernakeresztúrról történelmi városok, ipartörténeti emlékek és hegyvidéki tájak is kényelmesen elérhetők.',
+          items: {
+            heritage: {
+              title: 'Déva, Vajdahunyad, Gyulafehérvár',
+              description: 'Történelmi és magyar vonatkozású emlékhelyek Dél-Erdélyben.',
+              imageAlt: 'Déva vára napfelkeltekor',
+            },
+            saxonLand: {
+              title: 'Nagyszeben és Szászföld',
+              description: 'Erdély soknemzetiségű történelmének látványos helyszínei.',
+              imageAlt: 'Nagyszeben történelmi főtere',
+            },
+            mining: {
+              title: 'Tordai sóbánya, Brád, Verespatak',
+              description:
+                'A bányászat emlékei, amelyek jól kapcsolhatók történelem és földrajz témákhoz.',
+              imageAlt: 'A Tordai sóbánya föld alatti csarnoka',
+            },
+            nature: {
+              title: 'Retyezát, Boli-barlang, Véka-szurdok',
+              description:
+                'A Retyezát felé vezető útvonal látványos természeti állomásai, hosszabb kiránduláshoz és élményalapú honismereti programhoz.',
+              imageAlt: 'Hegyi tó és csúcsok a Retyezátban',
+            },
+          },
+        },
+        review: {
+          eyebrow: 'Minta vendégvélemény',
+          title: 'Vendégeink mondták',
+          quote:
+            'Családias fogadtatás, tiszta szobák és rengeteg hasznos helyi tanács. Innen valóban könnyű felfedezni Dél-Erdélyt.',
+          attribution: 'Ideiglenes minta',
+        },
+        map: {
+          eyebrow: 'Érkezés',
+          title: 'Csernakeresztúr szívében',
+          description:
+            'Déva és Vajdahunyad között, a térség legfontosabb útvonalaihoz közel várjuk vendégeinket.',
+          openMap: 'Megnyitás OpenStreetMapen',
+          frameTitle: 'Csernakeresztúr térképe',
+        },
+      },
     },
   },
   ro: {
@@ -133,6 +186,60 @@ export const resources = {
         nextImage: 'Imaginea următoare',
         imageCounter: '{{current}} / {{total}}',
         detailError: 'Pensiunea nu există sau nu este disponibilă momentan.',
+      },
+      homepage: {
+        legacy: {
+          eyebrow: 'Ospitalitate de familie',
+          title: 'Aproape 30 de ani alături de oaspeți',
+          body: 'Familia noastră se ocupă de aproape 30 de ani de turism rural și ospitalitate. Pensiunile oferă cazare într-un cadru liniștit și familial, alături de mâncăruri ardelenești și ungurești pregătite ca acasă. Rădăcinile secuiești bucovinene ale satului Cristur și comorile istorice și naturale ale Transilvaniei de Sud sunt un bun punct de plecare pentru orice călător dornic de aventură.',
+          imageAlt: 'Patru membri ai familiei Nisztor în pensiune',
+        },
+        surroundings: {
+          eyebrow: 'Descoperiți Transilvania de Sud',
+          title: 'Direcții recomandate pentru excursii',
+          introduction:
+            'Din Cristur se ajunge ușor la orașe istorice, locuri ale patrimoniului industrial și peisaje montane.',
+          items: {
+            heritage: {
+              title: 'Deva, Hunedoara, Alba Iulia',
+              description:
+                'Monumente istorice și locuri legate de patrimoniul maghiar din Transilvania de Sud.',
+              imageAlt: 'Cetatea Deva la răsărit',
+            },
+            saxonLand: {
+              title: 'Sibiu și ținuturile săsești',
+              description: 'Locuri spectaculoase ale istoriei multiculturale a Transilvaniei.',
+              imageAlt: 'Piața istorică din Sibiu',
+            },
+            mining: {
+              title: 'Salina Turda, Brad, Roșia Montană',
+              description:
+                'Moștenirea mineritului, potrivită pentru excursii cu teme de istorie și geografie.',
+              imageAlt: 'Sala subterană a Salinei Turda',
+            },
+            nature: {
+              title: 'Retezat, Peștera Bolii, Cheile Vălișoarei',
+              description:
+                'Opriri naturale spectaculoase spre Retezat, potrivite pentru excursii mai lungi și programe educative.',
+              imageAlt: 'Lac alpin și vârfuri în Retezat',
+            },
+          },
+        },
+        review: {
+          eyebrow: 'Exemplu de recenzie',
+          title: 'Ce spun oaspeții noștri',
+          quote:
+            'Primire familială, camere curate și multe recomandări locale utile. De aici este cu adevărat ușor să descoperi Transilvania de Sud.',
+          attribution: 'Conținut demonstrativ temporar',
+        },
+        map: {
+          eyebrow: 'Sosire',
+          title: 'În inima satului Cristur',
+          description:
+            'Vă așteptăm între Deva și Hunedoara, aproape de cele mai importante trasee ale regiunii.',
+          openMap: 'Deschide în OpenStreetMap',
+          frameTitle: 'Harta satului Cristur',
+        },
       },
     },
   },
@@ -202,6 +309,60 @@ export const resources = {
         nextImage: 'Next image',
         imageCounter: '{{current}} / {{total}}',
         detailError: 'This guesthouse does not exist or is currently unavailable.',
+      },
+      homepage: {
+        legacy: {
+          eyebrow: 'Family hospitality',
+          title: 'Nearly 30 years of welcoming guests',
+          body: 'Our family has worked in rural tourism and hospitality for nearly 30 years. Our guesthouses offer peaceful, family-run accommodation and homemade Transylvanian-Hungarian meals. Cristur’s Bukovina Szekler roots and the historical and natural treasures of Southern Transylvania make this an excellent starting point for every adventurous traveller.',
+          imageAlt: 'Four members of the Nisztor family inside the guesthouse',
+        },
+        surroundings: {
+          eyebrow: 'Explore Southern Transylvania',
+          title: 'Suggested day-trip directions',
+          introduction:
+            'Historic towns, industrial heritage and mountain landscapes are all within easy reach of Cristur.',
+          items: {
+            heritage: {
+              title: 'Deva, Hunedoara, Alba Iulia',
+              description:
+                'Historic landmarks and places connected to Hungarian heritage in Southern Transylvania.',
+              imageAlt: 'Deva Citadel at sunrise',
+            },
+            saxonLand: {
+              title: 'Sibiu and Saxon Transylvania',
+              description: 'Striking places from Transylvania’s multicultural history.',
+              imageAlt: 'Historic main square in Sibiu',
+            },
+            mining: {
+              title: 'Turda Salt Mine, Brad, Roșia Montană',
+              description:
+                'Mining heritage that connects naturally with history- and geography-focused trips.',
+              imageAlt: 'Underground hall of the Turda Salt Mine',
+            },
+            nature: {
+              title: 'Retezat, Bolii Cave, Vălișoara Gorge',
+              description:
+                'Spectacular natural stops on the route towards Retezat, ideal for longer trips and experience-based regional discovery.',
+              imageAlt: 'Alpine lake and peaks in the Retezat Mountains',
+            },
+          },
+        },
+        review: {
+          eyebrow: 'Sample guest review',
+          title: 'What our guests say',
+          quote:
+            'A warm family welcome, spotless rooms and plenty of useful local advice. This really is an easy base for discovering Southern Transylvania.',
+          attribution: 'Temporary sample content',
+        },
+        map: {
+          eyebrow: 'Getting here',
+          title: 'In the heart of Cristur',
+          description:
+            'We welcome guests between Deva and Hunedoara, close to the region’s most important routes.',
+          openMap: 'Open in OpenStreetMap',
+          frameTitle: 'Map of Cristur',
+        },
       },
     },
   },

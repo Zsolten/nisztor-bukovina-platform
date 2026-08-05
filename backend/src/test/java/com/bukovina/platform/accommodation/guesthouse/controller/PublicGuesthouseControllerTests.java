@@ -43,14 +43,14 @@ class PublicGuesthouseControllerTests {
         .perform(get("/api/guesthouses/nisztor-panzio").queryParam("lang", "hu"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.slug").value("nisztor-panzio"))
-        .andExpect(jsonPath("$.images.length()").value(26))
+        .andExpect(jsonPath("$.images.length()").value(10))
         .andExpect(jsonPath("$.coverImage.cover").value(true));
 
     mockMvc
         .perform(get("/api/guesthouses/bukovina-panzio").queryParam("lang", "hu"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.slug").value("bukovina-panzio"))
-        .andExpect(jsonPath("$.images.length()").value(34))
+        .andExpect(jsonPath("$.images.length()").value(16))
         .andExpect(jsonPath("$.coverImage.cover").value(true));
   }
 
@@ -70,9 +70,7 @@ class PublicGuesthouseControllerTests {
             jsonPath("$.address.formatted")
                 .value("17 Bucovina Street, Cristur 330003, Hunedoara County, Romania"))
         .andExpect(
-            jsonPath("$.images[0].altText")
-                .value(
-                    "Group of five people in traditional clothing in front of Nisztor Guesthouse"));
+            jsonPath("$.images[0].altText").value("Street-facing facade of Nisztor Guesthouse"));
   }
 
   @Test
@@ -138,7 +136,8 @@ class PublicGuesthouseControllerTests {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Bukovina Panzió"))
         .andExpect(
-            jsonPath("$.coverImage.altText").value("Csoport a Bukovina Panzió épülete előtt"));
+            jsonPath("$.coverImage.altText")
+                .value("Kétágyas szoba napraforgós festménnyel a Bukovina Panzióban"));
   }
 
   @Test

@@ -3,6 +3,10 @@ import { useTranslation } from 'react-i18next'
 import { Link, useOutletContext } from 'react-router-dom'
 import type { LanguageOutletContext } from '../../app/LanguageLayout'
 import AsyncStatus from '../../shared/components/AsyncStatus'
+import HomepageLegacy from './HomepageLegacy'
+import HomepageMap from './HomepageMap'
+import HomepageReview from './HomepageReview'
+import HomepageSurroundings from './HomepageSurroundings'
 import { useGuesthouses } from './useGuesthouseData'
 
 export default function GuesthouseListPage() {
@@ -88,6 +92,11 @@ export default function GuesthouseListPage() {
           </Row>
         )}
       </Container>
+
+      <HomepageLegacy />
+      <HomepageSurroundings />
+      <HomepageReview />
+      <HomepageMap />
     </main>
   )
 }
