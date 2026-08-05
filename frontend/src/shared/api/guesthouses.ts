@@ -14,10 +14,82 @@ export interface GuesthouseSummary {
   coverImage: GuesthouseImage
 }
 
+export interface GuesthouseHistory {
+  title: string
+  text: string
+}
+
+export type GuesthouseContactType = 'PERSON' | 'PHONE' | 'EMAIL'
+
+export interface GuesthouseContact {
+  type: GuesthouseContactType
+  value: string
+  label: string
+  preferred: boolean
+}
+
+export interface GuesthouseAddress {
+  formatted: string
+  latitude: number
+  longitude: number
+}
+
+export interface GuesthouseRoomType {
+  id: string
+  name: string
+  quantity: number
+  standardOccupancy: number
+  roomsWithExtraBed: number
+  extraBedsPerEligibleRoom: number
+  features: string[]
+}
+
+export type AmenityCategory =
+  | 'ROOM_COMFORT'
+  | 'FOOD_KITCHEN'
+  | 'OUTDOOR_WELLNESS'
+  | 'PROGRAM_GROUP'
+
+export interface GuesthouseAmenity {
+  id: string
+  name: string
+  description?: string
+  category: AmenityCategory
+}
+
+export type PriceUnit = 'person_night' | 'person' | 'day'
+
+export interface GuesthousePriceItem {
+  id: string
+  label: string
+  amount: number
+  unit: PriceUnit
+}
+
+export interface GuesthousePricingAdjustment {
+  id: string
+  label: string
+  percentage: number
+}
+
+export interface GuesthousePricing {
+  currency: 'RON'
+  items: GuesthousePriceItem[]
+  surcharges: GuesthousePricingAdjustment[]
+  discounts: GuesthousePricingAdjustment[]
+  paymentNote: string
+}
+
 export interface GuesthouseDetail extends GuesthouseSummary {
   description: string
   roomDescription: string
   images: GuesthouseImage[]
+  history: GuesthouseHistory
+  contacts: GuesthouseContact[]
+  address: GuesthouseAddress
+  roomTypes: GuesthouseRoomType[]
+  amenities: GuesthouseAmenity[]
+  pricing: GuesthousePricing
 }
 
 async function getJson<T>(path: string, signal?: AbortSignal): Promise<T> {

@@ -35,6 +35,45 @@ const nisztorDetail = {
   description: 'A Nisztor Panzió Csernakeresztúron található.',
   roomDescription: 'A panzió épületében 5 szoba található.',
   images: [guesthouses[0].coverImage],
+  history: {
+    title: 'Bukovinai székely örökség Csernakeresztúron',
+    text: 'A helyi hagyományokat nemzedékről nemzedékre továbbadják.',
+  },
+  contacts: [
+    { type: 'PHONE', value: '+40 743 677 812', label: 'Telefon', preferred: true },
+    { type: 'EMAIL', value: 'nisztorpanzio@gmail.com', label: 'E-mail', preferred: false },
+  ],
+  address: {
+    formatted: 'Str. Bucovina 17., Csernakeresztúr',
+    latitude: 45.846,
+    longitude: 22.897,
+  },
+  roomTypes: [
+    {
+      id: 'double',
+      name: 'Kétágyas szoba',
+      quantity: 3,
+      standardOccupancy: 2,
+      roomsWithExtraBed: 1,
+      extraBedsPerEligibleRoom: 1,
+      features: ['private-bathroom'],
+    },
+  ],
+  amenities: [
+    {
+      id: 'wifi',
+      name: 'Wi-Fi',
+      description: 'Vezeték nélküli internetkapcsolat.',
+      category: 'ROOM_COMFORT',
+    },
+  ],
+  pricing: {
+    currency: 'RON',
+    items: [{ id: 'lodging', label: 'Szállás', amount: 130, unit: 'person_night' }],
+    surcharges: [{ id: 'tourist-tax', label: 'Idegenforgalmi adó', percentage: 1 }],
+    discounts: [{ id: 'children', label: 'Gyermekkedvezmény', percentage: 50 }],
+    paymentNote: 'Fizetés érkezéskor.',
+  },
 }
 
 function okJson(body: unknown): Response {
