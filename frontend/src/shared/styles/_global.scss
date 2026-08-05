@@ -354,12 +354,11 @@ img {
 }
 
 .guesthouse-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(2rem, 5vw, 5rem);
+  --bs-gutter-x: clamp(2rem, 5vw, 5rem);
+  --bs-gutter-y: 2rem;
 }
 
-.guesthouse-card:nth-child(2) {
+.guesthouse-column:nth-child(2) {
   margin-top: 7rem;
 }
 
@@ -754,10 +753,7 @@ img {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-  .guesthouse-grid {
-    gap: 2rem;
-  }
-  .guesthouse-card:nth-child(2) {
+  .guesthouse-column:nth-child(2) {
     margin-top: 3rem;
   }
   .detail-hero {
@@ -844,10 +840,7 @@ img {
     overflow-wrap: anywhere;
     font-size: clamp(2.1rem, 11vw, 3rem);
   }
-  .guesthouse-grid {
-    grid-template-columns: 1fr;
-  }
-  .guesthouse-card:nth-child(2) {
+  .guesthouse-column:nth-child(2) {
     margin-top: 1rem;
   }
   .detail-back-row > span {

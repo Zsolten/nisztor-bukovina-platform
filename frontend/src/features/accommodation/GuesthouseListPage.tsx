@@ -1,3 +1,4 @@
+import { Col, Container, Row } from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Link, useOutletContext } from 'react-router-dom'
 import type { LanguageOutletContext } from '../../app/LanguageLayout'
@@ -11,7 +12,12 @@ export default function GuesthouseListPage() {
 
   return (
     <main id="main-content">
-      <section className="guesthouse-hero" aria-labelledby="guesthouse-heading">
+      <Container
+        as="section"
+        fluid
+        className="guesthouse-hero px-0"
+        aria-labelledby="guesthouse-heading"
+      >
         <div className="hero-ornament" aria-hidden="true">
           <span />
           <span />
@@ -27,9 +33,14 @@ export default function GuesthouseListPage() {
           <span>Csernakeresztúr</span>
           <span>Dél-Erdély</span>
         </div>
-      </section>
+      </Container>
 
-      <section className="guesthouse-section" aria-labelledby="guesthouse-list-heading">
+      <Container
+        as="section"
+        fluid
+        className="guesthouse-section"
+        aria-labelledby="guesthouse-list-heading"
+      >
         <header className="section-heading">
           <p className="section-index">01</p>
           <div>
@@ -42,39 +53,41 @@ export default function GuesthouseListPage() {
         {error && <AsyncStatus variant="error" message={t('guesthouses.loadError')} />}
 
         {data && (
-          <div className="guesthouse-grid">
+          <Row className="guesthouse-grid">
             {data.map((guesthouse, index) => (
-              <article className="guesthouse-card" key={guesthouse.slug}>
-                <Link
-                  className="guesthouse-image-link"
-                  to={`/${language}/guesthouses/${guesthouse.slug}`}
-                  aria-label={`${guesthouse.name} – ${t('guesthouses.openDetails')}`}
-                >
-                  <img
-                    src={guesthouse.coverImage.path}
-                    alt={guesthouse.coverImage.altText}
-                    loading={index === 0 ? 'eager' : 'lazy'}
-                  />
-                  <span className="card-number" aria-hidden="true">
-                    0{index + 1}
-                  </span>
-                </Link>
-                <div className="guesthouse-card-copy">
-                  <p className="room-count">
-                    {t('guesthouses.roomCount', { count: guesthouse.roomCount })}
-                  </p>
-                  <h3>{guesthouse.name}</h3>
-                  <p>{guesthouse.shortDescription}</p>
-                  <Link className="text-link" to={`/${language}/guesthouses/${guesthouse.slug}`}>
-                    {t('guesthouses.openDetails')}
-                    <span aria-hidden="true">↗</span>
+              <Col className="guesthouse-column" xs={12} lg={6} key={guesthouse.slug}>
+                <article className="guesthouse-card">
+                  <Link
+                    className="guesthouse-image-link"
+                    to={`/${language}/guesthouses/${guesthouse.slug}`}
+                    aria-label={`${guesthouse.name} – ${t('guesthouses.openDetails')}`}
+                  >
+                    <img
+                      src={guesthouse.coverImage.path}
+                      alt={guesthouse.coverImage.altText}
+                      loading={index === 0 ? 'eager' : 'lazy'}
+                    />
+                    <span className="card-number" aria-hidden="true">
+                      0{index + 1}
+                    </span>
                   </Link>
-                </div>
-              </article>
+                  <div className="guesthouse-card-copy">
+                    <p className="room-count">
+                      {t('guesthouses.roomCount', { count: guesthouse.roomCount })}
+                    </p>
+                    <h3>{guesthouse.name}</h3>
+                    <p>{guesthouse.shortDescription}</p>
+                    <Link className="text-link" to={`/${language}/guesthouses/${guesthouse.slug}`}>
+                      {t('guesthouses.openDetails')}
+                      <span aria-hidden="true">↗</span>
+                    </Link>
+                  </div>
+                </article>
+              </Col>
             ))}
-          </div>
+          </Row>
         )}
-      </section>
+      </Container>
     </main>
   )
 }

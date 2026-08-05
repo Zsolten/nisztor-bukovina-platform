@@ -1,3 +1,4 @@
+import Container from 'react-bootstrap/Container'
 import { useTranslation } from 'react-i18next'
 import { Link, useOutletContext, useParams } from 'react-router-dom'
 import type { LanguageOutletContext } from '../../app/LanguageLayout'
@@ -13,25 +14,25 @@ export default function GuesthouseDetailPage() {
 
   if (loading) {
     return (
-      <main id="main-content" className="detail-status">
+      <Container as="main" fluid id="main-content" className="detail-status px-0">
         <AsyncStatus variant="loading" message={t('guesthouses.loading')} />
-      </main>
+      </Container>
     )
   }
 
   if (error || !data) {
     return (
-      <main id="main-content" className="detail-status">
+      <Container as="main" fluid id="main-content" className="detail-status px-0">
         <AsyncStatus variant="error" message={t('guesthouses.detailError')} />
         <Link className="text-link" to={`/${language}`}>
           ← {t('guesthouses.back')}
         </Link>
-      </main>
+      </Container>
     )
   }
 
   return (
-    <main id="main-content" className="guesthouse-detail">
+    <Container as="main" fluid id="main-content" className="guesthouse-detail px-0">
       <div className="detail-back-row">
         <Link className="back-link" to={`/${language}`}>
           <span aria-hidden="true">←</span> {t('guesthouses.back')}
@@ -69,6 +70,6 @@ export default function GuesthouseDetailPage() {
         </header>
         <GuesthouseGallery images={data.images} />
       </section>
-    </main>
+    </Container>
   )
 }

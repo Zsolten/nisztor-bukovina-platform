@@ -76,9 +76,17 @@ describe('guesthouse and language routing', () => {
     expect(
       await screen.findByRole('heading', { name: 'Szeretettel köszöntjük honlapunkon!' }),
     ).toBeVisible()
-    expect(screen.getByRole('heading', { name: 'Nisztor Panzió' })).toBeVisible()
+    expect(await screen.findByRole('heading', { name: 'Nisztor Panzió' })).toBeVisible()
     expect(screen.getByRole('heading', { name: 'Bukovina Panzió' })).toBeVisible()
     expect(screen.getAllByRole('link', { name: 'Megnézem a panziót' })).toHaveLength(2)
+    expect(screen.getByRole('link', { name: /Nisztor Panzió/ })).toHaveAttribute(
+      'href',
+      '/hu/guesthouses/nisztor-panzio',
+    )
+    expect(screen.getByRole('link', { name: /Bukovina Panzió/ })).toHaveAttribute(
+      'href',
+      '/hu/guesthouses/bukovina-panzio',
+    )
   })
 
   it('opens a guesthouse on its own detail route', async () => {
@@ -86,6 +94,7 @@ describe('guesthouse and language routing', () => {
 
     expect(await screen.findByRole('heading', { name: 'Nisztor Panzió' })).toBeVisible()
     expect(screen.getByText('A panzió épületében 5 szoba található.')).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Vissza a panziókhoz' })).toHaveAttribute('href', '/hu')
     expect(router.state.location.pathname).toBe('/hu/guesthouses/nisztor-panzio')
   })
 
