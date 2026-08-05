@@ -1,0 +1,15 @@
+@use 'tokens' as *;
+
+$primary: $forest;
+$secondary: $gold;
+$danger: $brick;
+$body-bg: $paper;
+$body-color: $ink;
+$font-family-sans-serif: $sans-serif;
+$border-color: $line;
+$border-radius: 0;
+$border-radius-sm: 0;
+$border-radius-lg: 0;
+$enable-shadows: false;
+
+@import 'bootstrap/scss/bootstrap';
