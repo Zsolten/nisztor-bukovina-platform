@@ -31,24 +31,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: radial-gradient(circle at 10% 5%, rgba($gold, 0.12), transparent 24rem), $paper;
-}
-
-body::before {
-  position: fixed;
-  z-index: 20;
-  inset: 0;
-  pointer-events: none;
-  content: '';
-  opacity: 0.14;
-  background-image: repeating-radial-gradient(
-    circle at 0 0,
-    transparent 0,
-    #4a4034 0.7px,
-    transparent 1px,
-    transparent 4px
-  );
-  mix-blend-mode: multiply;
+  background: var(--paper);
 }
 
 button,
@@ -316,8 +299,7 @@ img {
   background: var(--paper-light);
 }
 
-.section-heading,
-.story-section {
+.section-heading {
   display: grid;
   margin-bottom: 4rem;
   grid-template-columns: minmax(70px, 0.25fr) minmax(0, 1fr);
@@ -519,18 +501,6 @@ img {
   line-height: 1.7;
 }
 
-.story-section {
-  margin: 0;
-  padding: 8rem 0;
-  grid-template-columns: minmax(70px, 0.25fr) minmax(0, 1fr);
-}
-
-.story-section > div {
-  display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
-  gap: clamp(3rem, 8vw, 8rem);
-}
-
 .story-lead {
   margin: 0;
   font-family: var(--serif);
@@ -549,6 +519,307 @@ img {
   margin: 0;
   color: var(--muted);
   line-height: 1.75;
+}
+
+.detail-sheet-stack {
+  display: grid;
+  padding: clamp(4rem, 8vw, 8rem) 0;
+  gap: clamp(2rem, 5vw, 5rem);
+}
+
+.detail-sheet {
+  position: relative;
+  width: calc(100% - clamp(1rem, 5vw, 4.5rem));
+  padding: clamp(2rem, 5vw, 4.5rem);
+  border: 1px solid var(--line);
+  background: var(--paper-light);
+  box-shadow: 0 18px 48px rgba(47, 38, 27, 0.11);
+}
+
+.detail-sheet--left {
+  margin-right: auto;
+  transform: rotate(-0.18deg);
+}
+
+.detail-sheet--right {
+  margin-left: auto;
+  transform: rotate(0.18deg);
+}
+
+.detail-sheet--dark {
+  border-color: rgba(255, 255, 255, 0.13);
+  background: var(--forest-dark);
+  color: var(--paper-light);
+}
+
+.detail-sheet-heading {
+  display: grid;
+  margin-bottom: clamp(2rem, 5vw, 3.5rem);
+  align-items: end;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.detail-sheet h2,
+.detail-sheet-heading h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(2.2rem, 5vw, 4.2rem);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.quick-facts-sheet {
+  z-index: 3;
+  margin-top: -2rem;
+  margin-bottom: clamp(4rem, 8vw, 7rem);
+}
+
+.quick-facts-sheet h2 {
+  margin-bottom: 2rem;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+}
+
+.quick-facts-grid {
+  --bs-gutter-x: 2rem;
+  --bs-gutter-y: 1.5rem;
+}
+
+.quick-facts-grid > div {
+  min-height: 88px;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--gold);
+}
+
+.fact-label {
+  margin: 0.65rem 0 0.5rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.quick-facts-grid strong {
+  font-family: var(--serif);
+  font-size: 1.18rem;
+  font-weight: 500;
+}
+
+.story-sheet {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(240px, 0.55fr);
+  gap: clamp(2rem, 7vw, 7rem);
+}
+
+.story-main h2 {
+  margin-bottom: 2rem;
+}
+
+.story-main > p:last-child {
+  margin: 2rem 0 0;
+  color: var(--muted);
+  line-height: 1.85;
+}
+
+.room-type-grid,
+.amenity-groups,
+.pricing-grid,
+.contact-grid {
+  --bs-gutter-x: clamp(1rem, 3vw, 2rem);
+  --bs-gutter-y: clamp(1rem, 3vw, 2rem);
+}
+
+.room-type-card {
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.room-type-card .card-body {
+  display: flex;
+  padding: 1.75rem;
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+.room-type-card h3 {
+  margin-bottom: 1.5rem;
+  font-family: var(--serif);
+  font-size: 1.65rem;
+  font-weight: 500;
+}
+
+.room-type-facts {
+  display: flex;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.information-tag,
+.amenity-tag {
+  padding: 0.65rem 0.85rem;
+  border: 1px solid rgba($forest, 0.22);
+  border-radius: 999px;
+  background: rgba($forest, 0.07) !important;
+  color: var(--forest) !important;
+  font-weight: 600;
+  white-space: normal;
+}
+
+.amenity-group {
+  height: 100%;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.amenity-group h3 {
+  margin: 0 0 1.25rem;
+  font-family: var(--serif);
+  font-size: 1.45rem;
+  font-weight: 500;
+}
+
+.amenity-tags {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.price-list {
+  border-top: 1px solid var(--line);
+}
+
+.price-row {
+  display: flex;
+  min-height: 88px;
+  padding: 1rem 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.price-row > div {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.price-row span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.price-row p {
+  margin: 0;
+  color: var(--forest);
+  font-family: var(--serif);
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  white-space: nowrap;
+}
+
+.pricing-notes {
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+}
+
+.pricing-notes > div {
+  display: flex;
+  padding: 0.8rem 0;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.pricing-notes h3 {
+  margin: 1.5rem 0 0;
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pricing-notes > p {
+  margin: 1.5rem 0 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.contact-sheet .section-index,
+.contact-sheet .eyebrow {
+  color: var(--gold);
+}
+
+.contact-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.contact-list a,
+.contact-list > div,
+.address-card {
+  display: grid;
+  min-height: 72px;
+  padding: 1rem 0;
+  gap: 0.35rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  text-decoration: none;
+}
+
+.contact-list a {
+  transition: color 180ms ease;
+}
+
+.contact-list a:hover,
+.contact-list a:focus-visible,
+.address-card a:hover,
+.address-card a:focus-visible {
+  color: var(--gold);
+}
+
+.contact-list span,
+.address-card > span {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.contact-list small {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--gold);
+  font-size: 0.62rem;
+}
+
+.contact-list strong,
+.address-card strong {
+  overflow-wrap: anywhere;
+  font-family: var(--serif);
+  font-size: clamp(1.15rem, 2vw, 1.5rem);
+  font-weight: 500;
+}
+
+.address-card {
+  margin: 0;
+  font-style: normal;
+}
+
+.address-card a {
+  display: inline-flex;
+  min-height: 44px;
+  margin-top: 1rem;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
 }
 
 .gallery-section {
@@ -753,8 +1024,7 @@ img {
     right: -15%;
     opacity: 0.55;
   }
-  .section-heading > div,
-  .story-section > div {
+  .section-heading > div {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
@@ -771,6 +1041,9 @@ img {
   .detail-title-card {
     width: calc(100% - 2rem);
     margin: -6rem 0 0 auto;
+  }
+  .story-sheet {
+    grid-template-columns: 1fr;
   }
   .gallery-item {
     grid-column: span 6;
@@ -833,8 +1106,7 @@ img {
   .gallery-section {
     padding: 5rem 1rem;
   }
-  .section-heading,
-  .story-section {
+  .section-heading {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
@@ -860,8 +1132,31 @@ img {
   .detail-title-card h1 {
     font-size: clamp(3.1rem, 17vw, 5rem);
   }
-  .story-section {
-    padding: 5rem 0;
+  .detail-sheet-stack {
+    padding: 4rem 0;
+    gap: 2rem;
+  }
+  .detail-sheet {
+    width: calc(100% - 0.5rem);
+    padding: 2rem 1.25rem;
+    transform: none;
+  }
+  .quick-facts-sheet {
+    margin-top: -1rem;
+    margin-bottom: 4rem;
+  }
+  .detail-sheet-heading {
+    grid-template-columns: 2rem minmax(0, 1fr);
+  }
+  .detail-sheet h2,
+  .detail-sheet-heading h2 {
+    overflow-wrap: anywhere;
+  }
+  .price-row {
+    align-items: flex-start;
+  }
+  .price-row p {
+    font-size: 1.35rem;
   }
   .gallery-section {
     margin-left: -1rem;

@@ -3,7 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { Link, useOutletContext, useParams } from 'react-router-dom'
 import type { LanguageOutletContext } from '../../app/LanguageLayout'
 import AsyncStatus from '../../shared/components/AsyncStatus'
+import GuesthouseAmenities from './GuesthouseAmenities'
+import GuesthouseContact from './GuesthouseContact'
 import GuesthouseGallery from './GuesthouseGallery'
+import GuesthousePricing from './GuesthousePricing'
+import GuesthouseQuickFacts from './GuesthouseQuickFacts'
+import GuesthouseRoomTypes from './GuesthouseRoomTypes'
+import GuesthouseStory from './GuesthouseStory'
 import { useGuesthouse } from './useGuesthouseData'
 
 export default function GuesthouseDetailPage() {
@@ -49,16 +55,7 @@ export default function GuesthouseDetailPage() {
         </div>
       </section>
 
-      <section className="story-section">
-        <p className="section-index">02</p>
-        <div>
-          <p className="story-lead">{data.description}</p>
-          <div className="room-note">
-            <p className="eyebrow">{t('guesthouses.rooms')}</p>
-            <p>{data.roomDescription}</p>
-          </div>
-        </div>
-      </section>
+      <GuesthouseQuickFacts guesthouse={data} />
 
       <section className="gallery-section" aria-labelledby="gallery-heading">
         <header className="section-heading compact">
@@ -70,6 +67,18 @@ export default function GuesthouseDetailPage() {
         </header>
         <GuesthouseGallery images={data.images} />
       </section>
+
+      <div className="detail-sheet-stack">
+        <GuesthouseStory
+          description={data.description}
+          roomDescription={data.roomDescription}
+          history={data.history}
+        />
+        <GuesthouseRoomTypes roomTypes={data.roomTypes} />
+        <GuesthouseAmenities amenities={data.amenities} />
+        <GuesthousePricing pricing={data.pricing} />
+        <GuesthouseContact contacts={data.contacts} address={data.address} />
+      </div>
     </Container>
   )
 }
