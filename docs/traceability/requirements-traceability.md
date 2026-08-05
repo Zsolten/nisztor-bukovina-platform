@@ -26,6 +26,14 @@ Ez a mátrix a normatív `Requirements.pdf` követelménycsoportjait a megvalós
 
 Az owner megjelölés elsődleges felelősséget jelent, nem jogosítja fel a modult más modul belső DAO-jának vagy JPA-entitásának közvetlen használatára. Az átfogó felelősség nem írja felül a normatív követelményt, és nem módosítja a meghatározott modulhatárokat.
 
+## Megvalósítási állapot
+
+| Követelmény | Állapot | Bizonyíték |
+| --- | --- | --- |
+| `FR-GH-001` | Megvalósítva | publikus lista és két külön részletútvonal; külön `guesthouse`, fordítás- és képmetadatok; `active` alapú elrejtés; backend integration és frontend route tesztek |
+
+A részletes elfogadási leképezést az [`FR-GH-001` feature-dokumentum](../features/FR-GH-001-public-guesthouses.md) tartalmazza. A `FR-GH-002` és a további panzió-, szoba-, szolgáltatás-, ár-, kapcsolattartási, foglalási és adminisztrációs követelmények ettől továbbra is külön hatókörök.
+
 ## Változtatási szabály
 
 Minden feature ticket és pull request legalább egy `FR-*` vagy `NFR-*` azonosítóra hivatkozik. A változtatás leírása összeköti az implementációt a normatív elfogadási feltételekkel, felsorolja a tesztbizonyítékot, és jelzi az adatbázis-, biztonsági és adatvédelmi hatást.

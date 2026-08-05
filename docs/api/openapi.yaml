@@ -5,4 +5,101 @@ info:
   description: Contract-first REST API for the Nisztor-Bukovina Platform.
 servers:
   - url: /api
-paths: {}
+paths:
+  /guesthouses:
+    get:
+      operationId: listGuesthouses
+      summary: List active guesthouses
+      description: Returns the two independently managed active guesthouses for FR-GH-001.
+      tags: [Guesthouses]
+      parameters:
+        - $ref: '#/components/parameters/Language'
+      responses:
+        '200':
+          description: Active guesthouses in display order.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GuesthouseSummary'
+        '400':
+          description: The requested language is not supported.
+  /guesthouses/{slug}:
+    get:
+      operationId: getGuesthouse
+      summary: Get an active guesthouse by slug
+      description: Returns one active guesthouse and its gallery for FR-GH-001.
+      tags: [Guesthouses]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+        - $ref: '#/components/parameters/Language'
+      responses:
+        '200':
+          description: Guesthouse details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GuesthouseDetail'
+        '404':
+          description: The guesthouse does not exist or is inactive.
+        '400':
+          description: The slug or requested language is invalid.
+components:
+  parameters:
+    Language:
+      name: lang
+      in: query
+      required: false
+      description: Requested content language. Missing translations fall back to Hungarian.
+      schema:
+        type: string
+        enum: [hu, ro, en]
+        default: hu
+  schemas:
+    GuesthouseImage:
+      type: object
+      required: [path, altText, cover]
+      properties:
+        path:
+          type: string
+          example: /images/guesthouses/nisztor/gallery-01.jpg
+        altText:
+          type: string
+        cover:
+          type: boolean
+    GuesthouseSummary:
+      type: object
+      required: [slug, name, shortDescription, roomCount, coverImage]
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        shortDescription:
+          type: string
+        roomCount:
+          type: integer
+          minimum: 1
+        coverImage:
+          $ref: '#/components/schemas/GuesthouseImage'
+    GuesthouseDetail:
+      allOf:
+        - $ref: '#/components/schemas/GuesthouseSummary'
+        - type: object
+          required: [description, roomDescription, images]
+          properties:
+            description:
+              type: string
+            roomDescription:
+              type: string
+            images:
+              type: array
+              minItems: 1
+              items:
+                $ref: '#/components/schemas/GuesthouseImage'

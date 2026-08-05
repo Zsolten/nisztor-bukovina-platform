@@ -1,10 +1,10 @@
 # Nisztor-Bukovina Platform
 
-Ez a repository a Nisztor-Bukovina Platform technikai foundationje. A foundation a fejlesztési, minőségi és üzemeltetési alapokat tartalmazza, üzleti funkciót nem: nincs üzleti végpont, üzleti adatbázistábla, seed adat vagy felhasználói folyamat.
+Ez a repository a Nisztor-Bukovina Platform alkalmazását tartalmazza. A technikai foundation mellett elkészült az első üzleti szelet, az `FR-GH-001`: a publikus oldalon külön listázható és megnyitható a Nisztor Panzió és a Bukovina Panzió. A két panzió tartalma, képei és aktív állapota külön adatként kezelhető.
 
 ## Üzleti területek
 
-- **Szálláshely (`accommodation`)**: a két bukovinai panzió bemutatása, szobatípusok, árképzés, szolgáltatások és foglalási kérelmek későbbi üzleti területe.
+- **Szálláshely (`accommodation`)**: a két bukovinai panzió publikus bemutatása már elérhető; a szobatípusok, árképzés, szolgáltatások és foglalási kérelmek későbbi üzleti szeletek.
 - **Turizmus (`tourism`)**: a panzióktól független csillagtúrák, programpontok és tevékenységek későbbi üzleti területe.
 
 ## Előfeltételek
@@ -57,7 +57,12 @@ npm.cmd run build
 
 - frontend: http://localhost:5173
 - backend health: http://localhost:8080/actuator/health
+- panzió API: http://localhost:8080/api/guesthouses?lang=hu
+
+## Megvalósított követelmény
+
+- [`FR-GH-001` - Két panzió megjelenítése](docs/features/FR-GH-001-public-guesthouses.md)
 
 ## Követelményekhez kötött munka
 
-Ez a foundation PR a `N/A - technical foundation` követelményértéket használja. Minden későbbi feature branchnek és pull requestnek legalább egy valós `FR-*` vagy `NFR-*` azonosítóra kell hivatkoznia. A branch és a PR címe is tartalmazza az azonosítót, például `feature/fr-gh-001-guesthouse-list` és `[FR-GH-001] Add public guesthouse listing`; a PR-ban a hatókört, elfogadási feltételeket, tesztbizonyítékot, valamint az adatbázis-, biztonsági és adatvédelmi hatást is rögzíteni kell.
+Minden további feature branchnek és pull requestnek legalább egy valós `FR-*` vagy `NFR-*` azonosítóra kell hivatkoznia. A branch és a PR címe is tartalmazza az azonosítót, például `feature/fr-gh-002-guesthouse-details` és `[FR-GH-002] Complete guesthouse details`; a PR-ban a hatókört, elfogadási feltételeket, tesztbizonyítékot, valamint az adatbázis-, biztonsági és adatvédelmi hatást is rögzíteni kell.

@@ -1,57 +1,109 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AppProviders } from './providers'
 import { appRoutes } from './router'
 
-describe('language routing', () => {
+const guesthouses = [
+  {
+    slug: 'nisztor-panzio',
+    name: 'Nisztor Panzió',
+    shortDescription: 'Csendes, nyugodt, családias környezet.',
+    roomCount: 5,
+    coverImage: {
+      path: '/images/guesthouses/nisztor/gallery-01.jpg',
+      altText: 'A Nisztor család a panzió előtt',
+      cover: true,
+    },
+  },
+  {
+    slug: 'bukovina-panzio',
+    name: 'Bukovina Panzió',
+    shortDescription: 'Igényes szálláslehetőség Csernakeresztúron.',
+    roomCount: 12,
+    coverImage: {
+      path: '/images/guesthouses/bukovina/gallery-01.jpg',
+      altText: 'A Bukovina Panzió és a vendéglátó család',
+      cover: true,
+    },
+  },
+]
+
+const nisztorDetail = {
+  ...guesthouses[0],
+  description: 'A Nisztor Panzió Csernakeresztúron található.',
+  roomDescription: 'A panzió épületében 5 szoba található.',
+  images: [guesthouses[0].coverImage],
+}
+
+function okJson(body: unknown): Response {
+  return {
+    ok: true,
+    status: 200,
+    json: async () => body,
+  } as Response
+}
+
+function renderRoute(initialEntry: string) {
+  const router = createMemoryRouter(appRoutes, { initialEntries: [initialEntry] })
+  render(
+    <AppProviders>
+      <RouterProvider router={router} />
+    </AppProviders>,
+  )
+  return router
+}
+
+describe('guesthouse and language routing', () => {
   beforeEach(() => {
-    localStorage.clear()
+    window.localStorage.clear()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+        return Promise.resolve(
+          okJson(url.includes('/nisztor-panzio') ? nisztorDetail : guesthouses),
+        )
+      }),
+    )
   })
 
-  it('redirects the root path to Hungarian by default', async () => {
-    const router = createMemoryRouter(appRoutes, { initialEntries: ['/'] })
-    render(
-      <AppProviders>
-        <RouterProvider router={router} />
-      </AppProviders>,
-    )
+  it('redirects the root path to Hungarian and lists both guesthouses separately', async () => {
+    const router = renderRoute('/')
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/hu'))
-    expect(await screen.findByRole('heading', { name: 'Nisztor-Bukovina Platform' })).toBeVisible()
+    expect(
+      await screen.findByRole('heading', { name: 'Szeretettel köszöntjük honlapunkon!' }),
+    ).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'Nisztor Panzió' })).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'Bukovina Panzió' })).toBeVisible()
+    expect(screen.getAllByRole('link', { name: 'Megnézem a panziót' })).toHaveLength(2)
+  })
+
+  it('opens a guesthouse on its own detail route', async () => {
+    const router = renderRoute('/hu/guesthouses/nisztor-panzio')
+
+    expect(await screen.findByRole('heading', { name: 'Nisztor Panzió' })).toBeVisible()
+    expect(screen.getByText('A panzió épületében 5 szoba található.')).toBeVisible()
+    expect(router.state.location.pathname).toBe('/hu/guesthouses/nisztor-panzio')
   })
 
   it('redirects the root path to the remembered supported language', async () => {
-    localStorage.setItem('preferredLanguage', 'ro')
-    const router = createMemoryRouter(appRoutes, { initialEntries: ['/'] })
-    render(
-      <AppProviders>
-        <RouterProvider router={router} />
-      </AppProviders>,
-    )
+    window.localStorage.setItem('preferredLanguage', 'ro')
+    const router = renderRoute('/')
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/ro'))
   })
 
   it('redirects an unsupported language to Hungarian', async () => {
-    const router = createMemoryRouter(appRoutes, { initialEntries: ['/de'] })
-    render(
-      <AppProviders>
-        <RouterProvider router={router} />
-      </AppProviders>,
-    )
+    const router = renderRoute('/de')
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/hu'))
   })
 
   it('stores a supported language when its route is opened', async () => {
-    const router = createMemoryRouter(appRoutes, { initialEntries: ['/en'] })
-    render(
-      <AppProviders>
-        <RouterProvider router={router} />
-      </AppProviders>,
-    )
+    renderRoute('/en')
 
-    await waitFor(() => expect(localStorage.getItem('preferredLanguage')).toBe('en'))
+    await waitFor(() => expect(window.localStorage.getItem('preferredLanguage')).toBe('en'))
   })
 })

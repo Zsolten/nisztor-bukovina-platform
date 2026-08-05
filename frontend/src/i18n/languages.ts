@@ -9,6 +9,6 @@ export function isSupportedLanguage(value: unknown): value is Language {
 }
 
 export function readPreferredLanguage(): Language {
-  const storedLanguage = localStorage.getItem(PREFERRED_LANGUAGE_KEY)
+  const storedLanguage = window.localStorage.getItem(PREFERRED_LANGUAGE_KEY)
   return isSupportedLanguage(storedLanguage) ? storedLanguage : DEFAULT_LANGUAGE
 }
