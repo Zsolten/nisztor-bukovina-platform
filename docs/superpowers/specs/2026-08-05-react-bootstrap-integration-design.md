@@ -49,6 +49,8 @@ A jelenlegi tokenek leképezése:
 | `paper` | body background |
 | `ink` | body foreground |
 
+A jelenlegi, függőleges csíkozást adó ismétlődő lineáris háttér teljesen megszűnik. A body megtartja a világos, meleg papírszínt és a visszafogott radiális fényhatást, de nem használ ismétlődő rácsot vagy csíkmintát.
+
 ## Komponenshasználat
 
 A meglévő fájlokban a következő elemek migrálhatók:
@@ -94,7 +96,7 @@ A panziókártyák, a hero, a képarányok, a dekoráció és az arculati tipogr
 
 1. A dependencyk és a Sass belépési pont bevezetése.
 2. A meglévő tokenek Bootstrap témába kötése.
-3. A layout és mobil navigáció migrálása.
+3. A csíkos body-háttér eltávolítása, majd a layout és mobil navigáció migrálása.
 4. A loading/error állapotok migrálása.
 5. A lista- és részletoldal gridjének célzott migrálása.
 6. A galéria React-Bootstrap modalra állítása.
