@@ -55,11 +55,90 @@ class PublicGuesthouseControllerTests {
   }
 
   @Test
+  void returnsLocalizedCompleteGuesthouseDetails() throws Exception {
+    mockMvc
+        .perform(get("/api/guesthouses/nisztor-panzio").queryParam("lang", "en"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name").value("Nisztor Guesthouse"))
+        .andExpect(jsonPath("$.history.title").value("Bukovina Szekler heritage in Cristur"))
+        .andExpect(jsonPath("$.roomTypes.length()").value(3))
+        .andExpect(jsonPath("$.roomTypes[0].quantity").value(3))
+        .andExpect(jsonPath("$.amenities.length()").value(23))
+        .andExpect(jsonPath("$.pricing.currency").value("RON"))
+        .andExpect(jsonPath("$.pricing.items[0].amount").value(130))
+        .andExpect(
+            jsonPath("$.address.formatted")
+                .value("17 Bucovina Street, Cristur 330003, Hunedoara County, Romania"))
+        .andExpect(
+            jsonPath("$.images[0].altText")
+                .value(
+                    "Group of five people in traditional clothing in front of Nisztor Guesthouse"));
+  }
+
+  @Test
+  @Transactional
+  void hidesInactiveRoomTypesAmenitiesAndPrices() throws Exception {
+    jdbcTemplate.update(
+        """
+        UPDATE guesthouse_amenity assignment
+        SET active = FALSE
+        FROM guesthouse, amenity
+        WHERE assignment.guesthouse_id = guesthouse.id
+          AND assignment.amenity_id = amenity.id
+          AND guesthouse.slug = 'nisztor-panzio'
+          AND amenity.code = 'wifi'
+        """);
+    jdbcTemplate.update(
+        """
+        UPDATE room_type room_type
+        SET active = FALSE
+        FROM guesthouse
+        WHERE room_type.guesthouse_id = guesthouse.id
+          AND guesthouse.slug = 'nisztor-panzio'
+          AND room_type.code = 'triple'
+        """);
+    jdbcTemplate.update(
+        """
+        UPDATE price_item item
+        SET active = FALSE
+        FROM guesthouse_pricing pricing, guesthouse
+        WHERE item.pricing_id = pricing.id
+          AND pricing.guesthouse_id = guesthouse.id
+          AND guesthouse.slug = 'nisztor-panzio'
+          AND item.code = 'breakfast'
+        """);
+
+    mockMvc
+        .perform(get("/api/guesthouses/nisztor-panzio").queryParam("lang", "hu"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.roomTypes.length()").value(2))
+        .andExpect(jsonPath("$.amenities.length()").value(22))
+        .andExpect(jsonPath("$.pricing.items.length()").value(8));
+  }
+
+  @Test
+  @Transactional
   void fallsBackToHungarianWhenTheRequestedTranslationIsMissing() throws Exception {
+    jdbcTemplate.update(
+        "DELETE FROM guesthouse_translation WHERE guesthouse_id = "
+            + "(SELECT id FROM guesthouse WHERE slug = 'bukovina-panzio') "
+            + "AND language_code = 'en'");
+    jdbcTemplate.update(
+        """
+        DELETE FROM guesthouse_image_translation translation
+        USING guesthouse_image image, guesthouse
+        WHERE translation.image_id = image.id
+          AND image.guesthouse_id = guesthouse.id
+          AND guesthouse.slug = 'bukovina-panzio'
+          AND translation.language_code = 'en'
+        """);
+
     mockMvc
         .perform(get("/api/guesthouses/bukovina-panzio").queryParam("lang", "en"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.name").value("Bukovina Panzió"));
+        .andExpect(jsonPath("$.name").value("Bukovina Panzió"))
+        .andExpect(
+            jsonPath("$.coverImage.altText").value("Csoport a Bukovina Panzió épülete előtt"));
   }
 
   @Test

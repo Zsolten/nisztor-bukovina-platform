@@ -32,6 +32,12 @@ public class GuesthouseTranslation {
   @Column(name = "room_description", nullable = false)
   private String roomDescription;
 
+  @Column(name = "history_title", length = 240)
+  private String historyTitle;
+
+  @Column(name = "history_text")
+  private String historyText;
+
   protected GuesthouseTranslation() {}
 
   public String getLanguageCode() {
@@ -52,5 +58,13 @@ public class GuesthouseTranslation {
 
   public String getRoomDescription() {
     return roomDescription;
+  }
+
+  public String getHistoryTitle() {
+    return historyTitle;
+  }
+
+  public String getHistoryText() {
+    return historyText;
   }
 }
