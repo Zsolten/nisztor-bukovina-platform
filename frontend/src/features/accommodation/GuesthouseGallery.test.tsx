@@ -11,6 +11,12 @@ const images: GuesthouseImage[] = [
   { path: '/second.jpg', altText: 'Második kép', cover: false },
 ]
 
+const patternImages: GuesthouseImage[] = Array.from({ length: 8 }, (_, index) => ({
+  path: `/gallery-${index + 1}.jpg`,
+  altText: `${index + 1}. galériakép`,
+  cover: index === 0,
+}))
+
 function renderWithI18n(component: React.ReactNode) {
   return render(<AppProviders>{component}</AppProviders>)
 }
@@ -52,5 +58,29 @@ describe('GuesthouseGallery', () => {
     await user.click(screen.getByRole('dialog', { name: 'Első kép' }))
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  })
+
+  it('keeps API order while repeating the six-position layout pattern', async () => {
+    const user = userEvent.setup()
+    renderWithI18n(<GuesthouseGallery images={patternImages} />)
+
+    const buttons = screen.getAllByRole('button')
+    expect(buttons.map((button) => button.getAttribute('aria-label'))).toEqual(
+      patternImages.map((image) => image.altText),
+    )
+    buttons.forEach((button, index) => {
+      expect(button).toHaveClass('gallery-item', `gallery-item--pattern-${index % 6}`)
+    })
+
+    await user.click(buttons[6])
+    expect(screen.getByRole('dialog', { name: '7. galériakép' })).toBeVisible()
+    expect(screen.getByText('7 / 8')).toBeVisible()
+
+    await user.click(screen.getByRole('button', { name: 'Következő kép' }))
+    expect(screen.getByText('8 / 8')).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Következő kép' }))
+    expect(screen.getByText('1 / 8')).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Előző kép' }))
+    expect(screen.getByText('8 / 8')).toBeVisible()
   })
 })

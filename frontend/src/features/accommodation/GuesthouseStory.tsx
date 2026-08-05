@@ -15,7 +15,10 @@ export default function GuesthouseStory({
   const { t } = useTranslation()
 
   return (
-    <section className="detail-sheet detail-sheet--left story-sheet" aria-labelledby="story-heading">
+    <section
+      className="detail-sheet detail-sheet--left story-sheet"
+      aria-labelledby="story-heading"
+    >
       <div className="story-main">
         <p className="eyebrow">{t('guesthouses.history')}</p>
         <h2 id="story-heading">{history.title}</h2>

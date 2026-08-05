@@ -44,11 +44,7 @@ export interface GuesthouseRoomType {
   features: string[]
 }
 
-export type AmenityCategory =
-  | 'ROOM_COMFORT'
-  | 'FOOD_KITCHEN'
-  | 'OUTDOOR_WELLNESS'
-  | 'PROGRAM_GROUP'
+export type AmenityCategory = 'ROOM_COMFORT' | 'FOOD_KITCHEN' | 'OUTDOOR_WELLNESS' | 'PROGRAM_GROUP'
 
 export interface GuesthouseAmenity {
   id: string

@@ -36,7 +36,7 @@ export default function GuesthouseGallery({ images }: GuesthouseGalleryProps) {
       <div className="gallery-grid">
         {images.map((image, index) => (
           <button
-            className="gallery-item"
+            className={`gallery-item gallery-item--pattern-${index % 6}`}
             key={image.path}
             type="button"
             onClick={() => setSelectedIndex(index)}
