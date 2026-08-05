@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import Button from 'react-bootstrap/Button'
+import Modal from 'react-bootstrap/Modal'
 import { useTranslation } from 'react-i18next'
 import type { GuesthouseImage } from '../../shared/api/guesthouses'
 
@@ -15,7 +17,6 @@ export default function GuesthouseGallery({ images }: GuesthouseGalleryProps) {
     if (selectedIndex === null) return
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') setSelectedIndex(null)
       if (event.key === 'ArrowLeft') {
         setSelectedIndex((current) =>
           current === null ? null : (current - 1 + images.length) % images.length,
@@ -47,51 +48,51 @@ export default function GuesthouseGallery({ images }: GuesthouseGalleryProps) {
         ))}
       </div>
 
-      {selectedImage && selectedIndex !== null && (
-        <div
-          className="lightbox"
-          role="dialog"
-          aria-modal="true"
-          aria-label={selectedImage.altText}
-        >
-          <button
-            className="lightbox-close"
-            type="button"
-            onClick={() => setSelectedIndex(null)}
-            aria-label={t('guesthouses.closeGallery')}
-          >
-            ×
-          </button>
-          <button
-            className="lightbox-arrow previous"
-            type="button"
-            onClick={() => setSelectedIndex((selectedIndex - 1 + images.length) % images.length)}
-            aria-label={t('guesthouses.previousImage')}
-          >
-            ←
-          </button>
-          <figure>
-            <img src={selectedImage.path} alt={selectedImage.altText} />
-            <figcaption>
-              <span>{selectedImage.altText}</span>
-              <span>
-                {t('guesthouses.imageCounter', {
-                  current: selectedIndex + 1,
-                  total: images.length,
-                })}
-              </span>
-            </figcaption>
-          </figure>
-          <button
-            className="lightbox-arrow next"
-            type="button"
-            onClick={() => setSelectedIndex((selectedIndex + 1) % images.length)}
-            aria-label={t('guesthouses.nextImage')}
-          >
-            →
-          </button>
-        </div>
-      )}
+      <Modal
+        show={selectedIndex !== null}
+        onHide={() => setSelectedIndex(null)}
+        centered
+        size="xl"
+        fullscreen="sm-down"
+        className="gallery-modal"
+        aria-label={selectedImage?.altText}
+      >
+        <Modal.Header closeButton closeLabel={t('guesthouses.closeGallery')} />
+        {selectedImage && selectedIndex !== null && (
+          <Modal.Body>
+            <Button
+              className="gallery-modal-arrow previous"
+              type="button"
+              variant="outline-light"
+              onClick={() => setSelectedIndex((selectedIndex - 1 + images.length) % images.length)}
+              aria-label={t('guesthouses.previousImage')}
+            >
+              ←
+            </Button>
+            <figure>
+              <img src={selectedImage.path} alt={selectedImage.altText} />
+              <figcaption>
+                <span>{selectedImage.altText}</span>
+                <span>
+                  {t('guesthouses.imageCounter', {
+                    current: selectedIndex + 1,
+                    total: images.length,
+                  })}
+                </span>
+              </figcaption>
+            </figure>
+            <Button
+              className="gallery-modal-arrow next"
+              type="button"
+              variant="outline-light"
+              onClick={() => setSelectedIndex((selectedIndex + 1) % images.length)}
+              aria-label={t('guesthouses.nextImage')}
+            >
+              →
+            </Button>
+          </Modal.Body>
+        )}
+      </Modal>
     </>
   )
 }

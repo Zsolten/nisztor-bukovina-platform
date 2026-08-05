@@ -608,30 +608,47 @@ img {
   font-size: 0.65rem;
 }
 
-.lightbox {
-  position: fixed;
-  z-index: 100;
-  inset: 0;
-  display: grid;
-  padding: 2rem clamp(1rem, 5vw, 5rem);
-  place-items: center;
-  background: rgba(18, 25, 21, 0.96);
+.gallery-modal .modal-content {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: var(--forest-dark);
   color: white;
 }
 
-.lightbox figure {
+.gallery-modal .modal-header {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  border: 0;
+}
+
+.gallery-modal .btn-close {
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  filter: invert(1);
+}
+
+.gallery-modal .modal-body {
+  display: grid;
+  min-height: min(82vh, 780px);
+  padding: 2rem clamp(4rem, 7vw, 6rem);
+  place-items: center;
+}
+
+.gallery-modal figure {
   max-width: min(1100px, 82vw);
   max-height: 88vh;
   margin: 0;
 }
 
-.lightbox figure img {
+.gallery-modal figure img {
   max-height: 78vh;
   margin: auto;
   object-fit: contain;
 }
 
-.lightbox figcaption {
+.gallery-modal figcaption {
   display: flex;
   padding-top: 1rem;
   justify-content: space-between;
@@ -640,8 +657,7 @@ img {
   font-size: 0.78rem;
 }
 
-.lightbox-close,
-.lightbox-arrow {
+.gallery-modal-arrow {
   position: absolute;
   display: grid;
   width: 48px;
@@ -649,32 +665,21 @@ img {
   place-items: center;
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 50%;
-  background: transparent;
   color: white;
-  cursor: pointer;
-}
-
-.lightbox-close {
-  top: 1.5rem;
-  right: 1.5rem;
-  font-size: 1.6rem;
-}
-
-.lightbox-arrow {
   top: 50%;
   transform: translateY(-50%);
   font-size: 1.3rem;
 }
 
-.lightbox-arrow.previous {
+.gallery-modal-arrow.previous {
   left: 1.5rem;
 }
-.lightbox-arrow.next {
+.gallery-modal-arrow.next {
   right: 1.5rem;
 }
 
-.lightbox button:hover,
-.lightbox button:focus-visible {
+.gallery-modal-arrow:hover,
+.gallery-modal-arrow:focus-visible {
   background: white;
   color: var(--forest-dark);
 }
@@ -869,20 +874,24 @@ img {
   .gallery-item:nth-child(6) {
     grid-column: span 12;
   }
-  .lightbox-arrow {
+  .gallery-modal-arrow {
     top: auto;
     bottom: 1rem;
   }
-  .lightbox-arrow.previous {
+  .gallery-modal-arrow.previous {
     left: 1rem;
   }
-  .lightbox-arrow.next {
+  .gallery-modal-arrow.next {
     right: 1rem;
   }
-  .lightbox figure {
+  .gallery-modal .modal-body {
+    min-height: 100dvh;
+    padding: 4rem 1rem 5rem;
+  }
+  .gallery-modal figure {
     max-width: 94vw;
   }
-  .lightbox figcaption span:first-child {
+  .gallery-modal figcaption span:first-child {
     display: none;
   }
   .site-footer {
