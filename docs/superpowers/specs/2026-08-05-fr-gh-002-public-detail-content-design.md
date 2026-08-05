@@ -2,7 +2,7 @@
 
 ## Állapot
 
-Felhasználó által jóváhagyott design, implementációs tervre kész.
+Felhasználó által kiválasztott rétegzett lapos vizuális design, írásos review-ra kész.
 
 ## Cél
 
@@ -172,6 +172,8 @@ A `roomTypes`, `amenities`, `contacts` és `pricing.items` üres lista lehet, ha
 
 ## Frontend információs architektúra
 
+A megvalósítás továbbra is React-Bootstrapra és a jelenlegi Sass tokenekre épül. Új UI-komponenskönyvtár vagy új stylingrendszer nem kerül bevezetésre.
+
 A részletoldal sorrendje:
 
 1. fő kép, panziónév és rövid bemutatás;
@@ -183,6 +185,50 @@ A részletoldal sorrendje:
 7. kategorizált szolgáltatások;
 8. nyilvános árlista;
 9. cím és kapcsolattartási blokk.
+
+### Vizuális felület és háttér
+
+A kiválasztott irány a rétegzett szerkesztőségi lapelrendezés. A globális háttér egyszínű `paper` felület. A jelenlegi radiális színátmenet és a `body::before` ismétlődő körkörös csíkmintája teljesen megszűnik. Helyette nem kerül más textúra, mintázat, dekoratív SVG vagy CSS-rajz.
+
+A tartalmi csoportok enyhén eltolt `paper-light` lapokon ülnek. Az eltolás előre meghatározott, szekciónként legfeljebb egy konténergutter szélességű, és sem asztali, sem mobilnézetben nem okozhat átfedő szöveget vagy vízszintes görgetést. A lapok ritmusát:
+
+- aszimmetrikus, de következetes külső margók;
+- vékony `line` és visszafogott `gold` elválasztók;
+- nagy belső térközök;
+- legfeljebb a meglévő `shadow` token intenzitásával megegyező árnyékok;
+- a valós panziófotók adják.
+
+A sötét `forest-dark` felület csak a hero címkártyáján és a kapcsolati lapon jelenik meg. Az árlista és az ármagyarázat világos lapon marad, hogy az összegek gyorsan összehasonlíthatók legyenek. A rétegek nem lehetnek öncélú dekorációk: minden lap egy szemantikailag összetartozó információcsoportot határol.
+
+### Aszimmetrikus képgaléria
+
+A galéria nem egyenletes mátrix. Asztali nézetben determinisztikus, 12 oszlopos CSS Grid készül, amely vizuálisan három eltolt képoszlopot alkot. Az elemek ismétlődő, dokumentált mintával különböző oszlopszélességet, képarányt és függőleges eltolást kapnak. Kiemelt horgonyképek több oszlopot foglalhatnak, de a képek DOM-sorrendje és vizuális olvasási sorrendje megegyezik.
+
+Nem használunk CSS Columns elrendezést és véletlenszerű pozicionálást. Így a billentyűzetes fókuszsorrend, a képszámozás és a képernyőolvasós sorrend változatlanul követhető.
+
+Telefonon kétoszlopos, váltakozó kompozíció jelenik meg:
+
+- a bal és jobb oldali képek felváltva kapnak kis függőleges eltolást;
+- álló és fekvő képarányok ismétlődő mintát alkotnak;
+- meghatározott horgonyképek mindkét oszlopot átfogják;
+- a képek közötti rés legalább 8 CSS pixel;
+- minden kép teljes felülete megmarad gombként, és az akadálymentes Modal nyílik meg róla.
+
+A galéria már 320 pixeles szélességen is két oszlopot tart meg, de a horgonyképek és a szekciócím teljes szélességűek. A nem hero képek lusta betöltése, a billentyűzetes bal/jobb navigáció, a képszámláló, a bezárás és a reduced-motion viselkedés megmarad.
+
+### Frontend komponenshatárok
+
+A kibővített részletoldal nem egyetlen nagy komponensbe kerül. A `GuesthouseDetailPage` az adatbetöltést, a loading/error állapotot és a szekciók sorrendjét koordinálja. A megjelenítés külön, célzott komponensekre bomlik:
+
+- `GuesthouseQuickFacts` – gyors tények és kiemelt tagek;
+- `GuesthouseStory` – részletes bemutatás és közösségi örökség;
+- `GuesthouseRoomTypes` – nem interaktív szobatípus-kártyák;
+- `GuesthouseAmenities` – kategorizált szolgáltatáscsoportok;
+- `GuesthousePricing` – asztali összehasonlító és mobil kártyás árnézet;
+- `GuesthouseContact` – cím, telefon, e-mail és külső térképlink;
+- a meglévő `GuesthouseGallery` – az új aszimmetrikus grid és a változatlan Modal-interakció.
+
+Ezek prezentációs komponensek: kész, lokalizált API-adatot kapnak, nem végeznek saját hálózati lekérést, és nem ismerik a YAML szerkezetét.
 
 ### Gyors tények és tagek
 
@@ -235,6 +281,9 @@ Minden interaktív kapcsolati cél legalább 44×44 CSS pixel érintési terüle
 - A telefonszámok és e-mail-címek látható szövege megegyezik a hivatkozás céljával.
 - A háromnyelvű alternatív képszöveg a választott nyelvet követi.
 - A jelenlegi galéria Modal billentyűzet- és fókuszkezelése megmarad.
+- A globális háttér nem tartalmaz gradientet, ismétlődő mintát vagy pszeudoelemes textúrát.
+- A rétegzett lapok mobilon visszafogottabb eltolással, szükség esetén teljes szélességben jelennek meg.
+- A galéria vizuális sorrendje megegyezik a DOM- és fókuszsorrenddel.
 - A reduced-motion beállítás továbbra is érvényes.
 
 ## Hibakezelés és tartalmi biztonság
@@ -279,11 +328,14 @@ Minden interaktív kapcsolati cél legalább 44×44 CSS pixel érintési terüle
 - az árösszeg, pénznem, egység, adó és kedvezmények olvashatók;
 - a telefon- és e-mail-linkek helyes célra mutatnak;
 - üres opcionális lista esetén a szekció nem jelenik meg;
-- a jelenlegi routing, nyelvváltás és galéria-interakció nem regresszál.
+- a jelenlegi routing, nyelvváltás és galéria-interakció nem regresszál;
+- a galéria minden képe az eredeti tömbsorrendben marad elérhető és megnyitja a megfelelő Modal-képet;
+- a gyors tények, szobák, szolgáltatások, árak és kapcsolat komponensei külön tesztelhetők;
+- a háttér eltávolításához nem kerül új dekoratív pszeudoelem vagy mintázat az oldalra.
 
 ### Vizuális ellenőrzés
 
-A `/hu`, `/ro` és `/en` részletoldalak 320, 768 és 1280 pixeles szélességen ellenőrzendők. Kiemelt ellenőrzési pont a tagtörés, a szobakártyák ritmusa, az árlista mobilos olvashatósága, a hosszú román szövegek és a kapcsolati érintési célok.
+A `/hu`, `/ro` és `/en` részletoldalak 320, 768 és 1280 pixeles szélességen ellenőrzendők. Kiemelt ellenőrzési pont a mintamentes háttér, a rétegzett lapok biztonságos eltolása, a galéria aszimmetrikus ritmusa és fókuszsorrendje, a tagtörés, a szobakártyák ritmusa, az árlista mobilos olvashatósága, a hosszú román szövegek és a kapcsolati érintési célok.
 
 ## Dokumentáció és nyomonkövetés
 
@@ -300,6 +352,8 @@ A szelet akkor kész, ha:
 - az API a három nyelven visszaadja a publikálható részletadatokat;
 - mindkét panzió részletoldalán megjelenik a jóváhagyott információ;
 - a szolgáltatások kategorizált, jól olvasható tagek;
+- a körkörös csíkminta és a radiális háttér eltűnt, helyettük szemantikailag indokolt rétegzett lapok jelennek meg;
+- a galéria asztali nézetben többoszlopos és aszimmetrikus, telefonon kétoszlopos és váltakozó ritmusú;
 - az árlista egységei, adója és kedvezményei egyértelműek;
 - nincs foglalási CTA vagy vendégadat-kezelés;
 - a teljes frontend- és backendtesztcsomag átmegy;
