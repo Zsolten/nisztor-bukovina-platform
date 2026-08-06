@@ -24,7 +24,7 @@ export default function GuesthouseContact({ contacts, address }: GuesthouseConta
       aria-labelledby="contact-heading"
     >
       <header className="detail-sheet-heading">
-        <p className="section-index">07</p>
+        <p className="section-index">06</p>
         <h2 id="contact-heading">{t('guesthouses.contact')}</h2>
       </header>
       <Row className="contact-grid">

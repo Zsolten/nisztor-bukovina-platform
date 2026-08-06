@@ -11,6 +11,7 @@ export default function SiteFooter({ language }: SiteFooterProps) {
 
   return (
     <footer className="site-footer">
+
       <div className="site-footer-main">
         <div className="footer-brand-column">
           <div className="footer-logos">
@@ -18,7 +19,6 @@ export default function SiteFooter({ language }: SiteFooterProps) {
             <span aria-hidden="true" />
             <img src="/images/logo/bukovina-logo.png" alt={t('homepage.hero.bukovinaLogoAlt')} />
           </div>
-          <p>{t('app.footer.brandName')}</p>
         </div>
 
         <section className="footer-contact-column" aria-labelledby="footer-contact-heading">

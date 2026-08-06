@@ -1,34 +1,31 @@
 import { useTranslation } from 'react-i18next'
-import type { GuesthouseHistory } from '../../shared/api/guesthouses'
+import type { GuesthouseImage } from '../../shared/api/guesthouses'
+import BookingPlaceholderButton from './BookingPlaceholderButton'
 
 interface GuesthouseStoryProps {
   description: string
-  roomDescription: string
-  history: GuesthouseHistory
+  images: GuesthouseImage[]
 }
 
-export default function GuesthouseStory({
-  description,
-  roomDescription,
-  history,
-}: GuesthouseStoryProps) {
+export default function GuesthouseStory({ description, images }: GuesthouseStoryProps) {
   const { t } = useTranslation()
 
   return (
-    <section
-      className="detail-sheet detail-sheet--left story-sheet"
-      aria-labelledby="story-heading"
-    >
-      <div className="story-main">
-        <p className="eyebrow">{t('guesthouses.history')}</p>
-        <h2 id="story-heading">{history.title}</h2>
-        <p className="story-lead">{description}</p>
-        <p>{history.text}</p>
+    <section className="detail-sheet editorial-section story-sheet" aria-labelledby="story-heading">
+      <div className="editorial-images" aria-label={t('guesthouses.storyImages')}>
+        {images.map((image) => (
+          <figure key={image.path}>
+            <img src={image.path} alt={image.altText} />
+          </figure>
+        ))}
       </div>
-      <aside className="room-note">
-        <p className="eyebrow">{t('guesthouses.rooms')}</p>
-        <p>{roomDescription}</p>
-      </aside>
+      <div className="editorial-copy">
+        <p className="section-index">01</p>
+        <p className="eyebrow">{t('guesthouses.welcome')}</p>
+        <h2 id="story-heading">{t('guesthouses.villageTitle')}</h2>
+        <p>{description}</p>
+        <BookingPlaceholderButton />
+      </div>
     </section>
   )
 }

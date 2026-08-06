@@ -26,6 +26,11 @@ export default function LanguageLayout() {
   const location = useLocation()
   const { i18n, t } = useTranslation()
   const [navigationOpen, setNavigationOpen] = useState(false)
+  const [headerScrolled, setHeaderScrolled] = useState(() => window.scrollY > 24)
+  const isHomepage =
+    isSupportedLanguage(lang) &&
+    (location.pathname === `/${lang}` || location.pathname === `/${lang}/`)
+  const useLightHeader = !isHomepage || headerScrolled
 
   useEffect(() => {
     if (!isSupportedLanguage(lang)) return
@@ -34,6 +39,15 @@ export default function LanguageLayout() {
     document.documentElement.lang = lang
     void i18n.changeLanguage(lang)
   }, [i18n, lang])
+
+  useEffect(() => {
+    const updateHeaderState = () => setHeaderScrolled(window.scrollY > 24)
+
+    updateHeaderState()
+    window.addEventListener('scroll', updateHeaderState, { passive: true })
+
+    return () => window.removeEventListener('scroll', updateHeaderState)
+  }, [])
 
   if (!isSupportedLanguage(lang)) {
     return <Navigate to={`/${DEFAULT_LANGUAGE}`} replace />
@@ -45,7 +59,7 @@ export default function LanguageLayout() {
         {t('app.navigation.guesthouses')}
       </a>
       <Navbar
-        className="site-header"
+        className={`site-header${useLightHeader ? ' site-header-scrolled' : ''}`}
         expand="md"
         expanded={navigationOpen}
         onToggle={setNavigationOpen}

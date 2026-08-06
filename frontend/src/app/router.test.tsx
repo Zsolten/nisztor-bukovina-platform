@@ -97,6 +97,7 @@ function renderRoute(initialEntry: string) {
 describe('guesthouse and language routing', () => {
   beforeEach(() => {
     window.localStorage.clear()
+    Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 })
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL) => {
@@ -113,7 +114,7 @@ describe('guesthouse and language routing', () => {
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/hu'))
     expect(
-      await screen.findByRole('heading', { name: 'Szeretettel várjuk Csernakeresztúron.' }),
+      await screen.findByRole('region', { name: 'Szeretettel várjuk Csernakeresztúron.' }),
     ).toBeVisible()
     expect(screen.getAllByAltText('Nisztor Panzió logója')).toHaveLength(2)
     expect(screen.getAllByAltText('Nisztor Panzió logója')[0]).toHaveAttribute(
@@ -188,6 +189,27 @@ describe('guesthouse and language routing', () => {
     renderRoute('/en')
 
     await waitFor(() => expect(window.localStorage.getItem('preferredLanguage')).toBe('en'))
+  })
+
+  it('changes the header treatment after scrolling', async () => {
+    renderRoute('/hu')
+
+    const header = document.querySelector('.site-header')
+    expect(header).not.toHaveClass('site-header-scrolled')
+
+    Object.defineProperty(window, 'scrollY', { configurable: true, value: 25 })
+    window.dispatchEvent(new Event('scroll'))
+    await waitFor(() => expect(header).toHaveClass('site-header-scrolled'))
+
+    Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 })
+    window.dispatchEvent(new Event('scroll'))
+    await waitFor(() => expect(header).not.toHaveClass('site-header-scrolled'))
+  })
+
+  it('keeps the light header treatment on inner pages', async () => {
+    renderRoute('/hu/guesthouses/nisztor-panzio')
+
+    expect(document.querySelector('.site-header')).toHaveClass('site-header-scrolled')
   })
 
   it.each([

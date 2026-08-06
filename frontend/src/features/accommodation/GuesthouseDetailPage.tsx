@@ -5,6 +5,7 @@ import type { LanguageOutletContext } from '../../app/LanguageLayout'
 import AsyncStatus from '../../shared/components/AsyncStatus'
 import GuesthouseAmenities from './GuesthouseAmenities'
 import GuesthouseContact from './GuesthouseContact'
+import GuesthouseDining from './GuesthouseDining'
 import GuesthouseGallery from './GuesthouseGallery'
 import GuesthousePricing from './GuesthousePricing'
 import GuesthouseQuickFacts from './GuesthouseQuickFacts'
@@ -37,6 +38,9 @@ export default function GuesthouseDetailPage() {
     )
   }
 
+  const storyImages = data.images.filter((image) => !image.cover).slice(0, 2)
+  while (storyImages.length < 2) storyImages.push(data.coverImage)
+
   return (
     <Container as="main" fluid id="main-content" className="guesthouse-detail px-0">
       <div className="detail-back-row">
@@ -55,11 +59,20 @@ export default function GuesthouseDetailPage() {
         </div>
       </section>
 
-      <GuesthouseQuickFacts guesthouse={data} />
+      {/* <GuesthouseQuickFacts guesthouse={data} /> */}
+
+      <div className="detail-sheet-stack">
+        <GuesthouseStory description={data.description} images={storyImages} />
+        <GuesthouseDining />
+        <GuesthouseAmenities amenities={data.amenities} />
+        <GuesthouseRoomTypes roomTypes={data.roomTypes} description={data.roomDescription} />
+        <GuesthousePricing pricing={data.pricing} />
+        {/* <GuesthouseContact contacts={data.contacts} address={data.address} /> */}
+      </div>
 
       <section className="gallery-section" aria-labelledby="gallery-heading">
         <header className="section-heading compact">
-          <p className="section-index">03</p>
+          <p className="section-index">07</p>
           <div>
             <h2 id="gallery-heading">{t('guesthouses.gallery')}</h2>
             <p>{t('guesthouses.galleryHint')}</p>
@@ -67,18 +80,6 @@ export default function GuesthouseDetailPage() {
         </header>
         <GuesthouseGallery images={data.images} />
       </section>
-
-      <div className="detail-sheet-stack">
-        <GuesthouseStory
-          description={data.description}
-          roomDescription={data.roomDescription}
-          history={data.history}
-        />
-        <GuesthouseRoomTypes roomTypes={data.roomTypes} />
-        <GuesthouseAmenities amenities={data.amenities} />
-        <GuesthousePricing pricing={data.pricing} />
-        <GuesthouseContact contacts={data.contacts} address={data.address} />
-      </div>
     </Container>
   )
 }

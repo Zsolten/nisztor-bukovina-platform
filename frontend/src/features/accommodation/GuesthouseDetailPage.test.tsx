@@ -69,7 +69,7 @@ describe('GuesthouseDetailPage', () => {
     )
   })
 
-  it('presents all public information without an online booking flow', async () => {
+  it('presents the editorial guesthouse information with booking placeholders', async () => {
     const router = createMemoryRouter(appRoutes, {
       initialEntries: ['/hu/guesthouses/nisztor-panzio'],
     })
@@ -81,7 +81,10 @@ describe('GuesthouseDetailPage', () => {
     )
 
     expect(
-      await screen.findByRole('heading', { name: 'Bukovinai székely örökség Csernakeresztúron' }),
+      await screen.findByRole('heading', { name: 'Egy kis falu, ahol megáll az idő' }),
+    ).toBeVisible()
+    expect(
+      screen.getByRole('heading', { name: 'Ételek, amelyek visszahívják vendégeinket' }),
     ).toBeVisible()
     expect(screen.getByRole('heading', { name: 'Szobatípusok' })).toBeVisible()
     expect(screen.getByRole('heading', { name: 'Szobai kényelem' })).toBeVisible()
@@ -89,6 +92,9 @@ describe('GuesthouseDetailPage', () => {
     expect(screen.getByText('130 RON')).toBeVisible()
     expect(screen.getByText('1%')).toBeVisible()
     expect(screen.getAllByText('Bucovina utca 17., Csernakeresztúr')).toHaveLength(2)
+    const storyImages = document.querySelectorAll('.story-sheet .editorial-images img')
+    expect(storyImages).toHaveLength(2)
+    expect(storyImages[0]).toHaveAttribute('src', '/cover.jpg')
     expect(screen.getByRole('link', { name: /Nisztor Attila/ })).toHaveAttribute(
       'href',
       'tel:+40743677812',
@@ -98,6 +104,15 @@ describe('GuesthouseDetailPage', () => {
       'href',
       'mailto:nisztorpanzio@gmail.com',
     )
-    expect(screen.queryByRole('button', { name: /foglal|book|rezerv/i })).not.toBeInTheDocument()
+
+    const contactHeading = document.getElementById('contact-heading')
+    const galleryHeading = document.getElementById('gallery-heading')
+    expect(contactHeading?.compareDocumentPosition(galleryHeading!)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    )
+
+    const bookingButtons = screen.getAllByRole('button', { name: 'Foglalás' })
+    expect(bookingButtons).toHaveLength(2)
+    bookingButtons.forEach((button) => expect(button).toHaveAttribute('aria-disabled', 'true'))
   })
 })

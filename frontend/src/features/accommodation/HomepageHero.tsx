@@ -1,20 +1,42 @@
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 const HERO_IMAGES = [
-  '/images/guesthouses/nisztor/gallery-01.jpg',
   '/images/guesthouses/bukovina/gallery-01.jpg',
-  '/images/homepage/family-hosts.jpg',
-  '/images/destinations/retezat-mountains.jpg',
+  '/images/guesthouses/amenities/amenity-01.jpg',
+  '/images/guesthouses/nisztor/gallery-01.jpg',
+  '/images/destinations/deva-citadel.jpg',
 ]
 
 export default function HomepageHero() {
   const { t } = useTranslation()
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setActiveImageIndex((currentIndex) => (currentIndex + 1) % HERO_IMAGES.length)
+    }, 6_000)
+
+    return () => window.clearInterval(intervalId)
+  }, [])
 
   return (
-    <section className="guesthouse-hero" aria-labelledby="guesthouse-heading">
-      <div className="hero-slides" aria-hidden="true">
-        {HERO_IMAGES.map((image) => (
-          <img className="hero-slide" src={image} alt="" key={image} />
+    <section className="guesthouse-hero" aria-label={t('homepage.hero.title')}>
+      <div
+        className="hero-slides"
+        aria-hidden="true"
+        style={{ backgroundImage: `url("${HERO_IMAGES[0]}")` }}
+      >
+        {HERO_IMAGES.map((image, index) => (
+          <img
+            className={`hero-slide${index === activeImageIndex ? ' hero-slide-active' : ''}`}
+            src={image}
+            alt=""
+            loading="eager"
+            decoding="async"
+            fetchPriority={index === 0 ? 'high' : 'auto'}
+            key={image}
+          />
         ))}
       </div>
       <div className="hero-content">
@@ -23,7 +45,6 @@ export default function HomepageHero() {
           <span className="hero-logo-divider" aria-hidden="true" />
           <img src="/images/logo/bukovina-logo.png" alt={t('homepage.hero.bukovinaLogoAlt')} />
         </div>
-        <h1 id="guesthouse-heading">{t('homepage.hero.title')}</h1>
       </div>
     </section>
   )

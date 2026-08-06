@@ -1,6 +1,3 @@
-import Badge from 'react-bootstrap/Badge'
-import Col from 'react-bootstrap/Col'
-import Row from 'react-bootstrap/Row'
 import { useTranslation } from 'react-i18next'
 import type { AmenityCategory, GuesthouseAmenity } from '../../shared/api/guesthouses'
 
@@ -33,37 +30,29 @@ export default function GuesthouseAmenities({ amenities }: GuesthouseAmenitiesPr
       aria-labelledby="amenities-heading"
     >
       <header className="detail-sheet-heading">
-        <p className="section-index">05</p>
+        <p className="section-index">03</p>
         <h2 id="amenities-heading">{t('guesthouses.amenities')}</h2>
       </header>
-      <Row className="amenity-groups">
+      <div className="amenity-groups">
         {CATEGORY_ORDER.map((category) => {
           const categoryAmenities = amenities.filter((amenity) => amenity.category === category)
           if (categoryAmenities.length === 0) return null
 
           return (
-            <Col xs={12} md={6} key={category}>
-              <section className="amenity-group">
-                <h3>{t(CATEGORY_LABELS[category])}</h3>
-                <div className="amenity-tags">
-                  {categoryAmenities.map((amenity) => (
-                    <Badge
-                      as="span"
-                      className="amenity-tag"
-                      bg="light"
-                      text="dark"
-                      key={amenity.id}
-                      title={amenity.description}
-                    >
-                      {amenity.name}
-                    </Badge>
-                  ))}
-                </div>
-              </section>
-            </Col>
+            <section className="amenity-group" key={category}>
+              <h3>{t(CATEGORY_LABELS[category])}</h3>
+              <ul>
+                {categoryAmenities.map((amenity) => (
+                  <li key={amenity.id}>
+                    <strong>{amenity.name}</strong>
+                    {amenity.description && <span>{amenity.description}</span>}
+                  </li>
+                ))}
+              </ul>
+            </section>
           )
         })}
-      </Row>
+      </div>
     </section>
   )
 }

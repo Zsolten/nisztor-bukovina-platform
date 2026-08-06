@@ -7,9 +7,10 @@ import type { GuesthouseRoomType } from '../../shared/api/guesthouses'
 
 interface GuesthouseRoomTypesProps {
   roomTypes: GuesthouseRoomType[]
+  description: string
 }
 
-export default function GuesthouseRoomTypes({ roomTypes }: GuesthouseRoomTypesProps) {
+export default function GuesthouseRoomTypes({ roomTypes, description }: GuesthouseRoomTypesProps) {
   const { t } = useTranslation()
 
   if (roomTypes.length === 0) return null
@@ -21,7 +22,10 @@ export default function GuesthouseRoomTypes({ roomTypes }: GuesthouseRoomTypesPr
     >
       <header className="detail-sheet-heading">
         <p className="section-index">04</p>
-        <h2 id="room-types-heading">{t('guesthouses.roomTypes')}</h2>
+        <div>
+          <h2 id="room-types-heading">{t('guesthouses.roomTypes')}</h2>
+          <p className="section-introduction">{description}</p>
+        </div>
       </header>
       <Row className="room-type-grid">
         {roomTypes.map((roomType) => (

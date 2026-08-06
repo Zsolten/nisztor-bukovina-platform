@@ -2,6 +2,7 @@ import Col from 'react-bootstrap/Col'
 import Row from 'react-bootstrap/Row'
 import { useTranslation } from 'react-i18next'
 import type { GuesthousePricing as Pricing } from '../../shared/api/guesthouses'
+import BookingPlaceholderButton from './BookingPlaceholderButton'
 
 interface GuesthousePricingProps {
   pricing: Pricing
@@ -23,9 +24,10 @@ export default function GuesthousePricing({ pricing }: GuesthousePricingProps) {
       className="detail-sheet detail-sheet--right pricing-sheet"
       aria-labelledby="pricing-heading"
     >
-      <header className="detail-sheet-heading">
-        <p className="section-index">06</p>
+      <header className="detail-sheet-heading pricing-heading">
+        <p className="section-index">05</p>
         <h2 id="pricing-heading">{t('guesthouses.pricing')}</h2>
+        <BookingPlaceholderButton />
       </header>
       <Row className="pricing-grid">
         <Col xs={12} lg={8}>

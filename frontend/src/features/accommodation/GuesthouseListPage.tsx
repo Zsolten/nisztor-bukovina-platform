@@ -53,7 +53,7 @@ export default function GuesthouseListPage() {
                       {t('guesthouses.roomCount', { count: guesthouse.roomCount })}
                     </p>
                     <h3>{guesthouse.name}</h3>
-                    <p>{guesthouse.shortDescription}</p>
+                    {/* <p>{guesthouse.shortDescription}</p> */}
                     <Link className="text-link" to={`/${language}/guesthouses/${guesthouse.slug}`}>
                       {t('guesthouses.openDetails')}
                       <span aria-hidden="true">↗</span>
