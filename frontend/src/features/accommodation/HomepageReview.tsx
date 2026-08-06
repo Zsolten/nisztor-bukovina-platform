@@ -7,7 +7,6 @@ export default function HomepageReview() {
     <section className="homepage-band review-section" aria-labelledby="review-heading">
       <div className="homepage-inner review-layout">
         <div className="review-heading-wrap">
-          <p className="section-index">04</p>
           <p className="eyebrow">{t('homepage.review.eyebrow')}</p>
           <h2 id="review-heading">{t('homepage.review.title')}</h2>
         </div>

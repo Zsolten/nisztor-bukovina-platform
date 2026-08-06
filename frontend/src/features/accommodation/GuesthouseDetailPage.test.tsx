@@ -69,7 +69,7 @@ describe('GuesthouseDetailPage', () => {
     )
   })
 
-  it('presents all public information without a booking action', async () => {
+  it('presents all public information without an online booking flow', async () => {
     const router = createMemoryRouter(appRoutes, {
       initialEntries: ['/hu/guesthouses/nisztor-panzio'],
     })
@@ -93,11 +93,11 @@ describe('GuesthouseDetailPage', () => {
       'href',
       'tel:+40743677812',
     )
-    expect(screen.getByRole('link', { name: /nisztorpanzio@gmail.com/ })).toHaveAttribute(
+    expect(screen.getAllByRole('link', { name: /nisztorpanzio@gmail.com/ })).toHaveLength(2)
+    expect(screen.getByRole('link', { name: 'Foglalási kérelem' })).toHaveAttribute(
       'href',
       'mailto:nisztorpanzio@gmail.com',
     )
-    expect(screen.queryByRole('link', { name: /foglal|book|rezerv/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /foglal|book|rezerv/i })).not.toBeInTheDocument()
   })
 })

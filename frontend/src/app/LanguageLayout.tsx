@@ -9,6 +9,7 @@ import {
   SUPPORTED_LANGUAGES,
   type Language,
 } from '../i18n/languages'
+import SiteFooter from '../shared/components/SiteFooter'
 
 const LANGUAGE_LABELS: Record<Language, string> = {
   hu: 'HU',
@@ -98,12 +99,7 @@ export default function LanguageLayout() {
 
       <Outlet context={{ language: lang }} />
 
-      <footer className="site-footer">
-        <p>{t('app.footer.message')}</p>
-        <p>
-          © {new Date().getFullYear()} {t('app.footer.copyright')}
-        </p>
-      </footer>
+      <SiteFooter language={lang} />
     </div>
   )
 }

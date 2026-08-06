@@ -38,7 +38,6 @@ export default function HomepageSurroundings() {
     <section className="homepage-band surroundings-section" aria-labelledby="surroundings-heading">
       <div className="homepage-inner">
         <header className="homepage-heading">
-          <p className="section-index">03</p>
           <div>
             <p className="eyebrow">{t('homepage.surroundings.eyebrow')}</p>
             <h2 id="surroundings-heading">{t('homepage.surroundings.title')}</h2>
@@ -47,11 +46,10 @@ export default function HomepageSurroundings() {
         </header>
 
         <div className="surroundings-grid">
-          {DESTINATIONS.map((destination, index) => (
+          {DESTINATIONS.map((destination) => (
             <article className="destination-item" key={destination.id}>
               <div className="destination-image-wrap">
                 <img src={destination.image} alt={t(destination.altKey)} loading="lazy" />
-                <span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
               </div>
               <div className="destination-copy">
                 <h3>{t(destination.titleKey)}</h3>

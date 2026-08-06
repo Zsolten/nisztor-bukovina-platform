@@ -113,24 +113,53 @@ describe('guesthouse and language routing', () => {
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/hu'))
     expect(
-      await screen.findByRole('heading', { name: 'Szeretettel köszöntjük honlapunkon!' }),
+      await screen.findByRole('heading', { name: 'Szeretettel várjuk Csernakeresztúron.' }),
     ).toBeVisible()
+    expect(screen.getAllByAltText('Nisztor Panzió logója')).toHaveLength(2)
+    expect(screen.getAllByAltText('Nisztor Panzió logója')[0]).toHaveAttribute(
+      'src',
+      '/images/logo/nisztor-logo.png',
+    )
+    expect(screen.getAllByAltText('Bukovina Panzió logója')).toHaveLength(2)
+    expect(screen.getAllByAltText('Bukovina Panzió logója')[0]).toHaveAttribute(
+      'src',
+      '/images/logo/bukovina-logo.png',
+    )
+    expect(document.querySelectorAll('.hero-slide')).toHaveLength(4)
+    expect(screen.getByRole('heading', { name: 'Ismerje meg panzióinkat.' })).toBeVisible()
     expect(await screen.findByRole('heading', { name: 'Nisztor Panzió' })).toBeVisible()
     expect(screen.getByRole('heading', { name: 'Bukovina Panzió' })).toBeVisible()
     expect(screen.getAllByRole('link', { name: 'Megnézem a panziót' })).toHaveLength(2)
-    expect(screen.getByRole('link', { name: /Nisztor Panzió/ })).toHaveAttribute(
-      'href',
-      '/hu/guesthouses/nisztor-panzio',
-    )
-    expect(screen.getByRole('link', { name: /Bukovina Panzió/ })).toHaveAttribute(
-      'href',
-      '/hu/guesthouses/bukovina-panzio',
-    )
-    expect(screen.getByRole('heading', { name: 'Közel 30 éve vendégségben' })).toBeVisible()
+    expect(
+      screen
+        .getAllByRole('link', { name: /Nisztor Panzió/ })
+        .some((link) => link.getAttribute('href') === '/hu/guesthouses/nisztor-panzio'),
+    ).toBe(true)
+    expect(
+      screen
+        .getAllByRole('link', { name: /Bukovina Panzió/ })
+        .some((link) => link.getAttribute('href') === '/hu/guesthouses/bukovina-panzio'),
+    ).toBe(true)
+    expect(screen.getByRole('heading', { name: 'Családi vendéglátás közel 30 éve.' })).toBeVisible()
     expect(screen.getByRole('heading', { name: 'Javasolt kirándulási irányok' })).toBeVisible()
     expect(screen.getByText('Déva, Vajdahunyad, Gyulafehérvár')).toBeVisible()
     expect(screen.getByRole('heading', { name: 'Vendégeink mondták' })).toBeVisible()
-    expect(screen.getByTitle('Csernakeresztúr térképe')).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'Így talál meg minket.' })).toBeVisible()
+    expect(screen.getByTitle('A panziók helye a Google Térképen')).toHaveAttribute(
+      'src',
+      'https://www.google.com/maps?q=45.82361,22.93869&z=15&output=embed',
+    )
+    expect(screen.getByRole('link', { name: 'Útvonaltervezés Google Térképen' })).toHaveAttribute(
+      'href',
+      'https://www.google.com/maps/dir/?api=1&destination=45.82361,22.93869',
+    )
+    expect(screen.getByRole('link', { name: 'Foglalási kérelem' })).toHaveAttribute(
+      'href',
+      'mailto:nisztorpanzio@gmail.com',
+    )
+    expect(
+      document.querySelector('.section-index, .card-number, .destination-image-wrap > span'),
+    ).not.toBeInTheDocument()
   })
 
   it('opens a guesthouse on its own detail route', async () => {
@@ -164,13 +193,13 @@ describe('guesthouse and language routing', () => {
   it.each([
     [
       '/ro',
-      'Aproape 30 de ani alături de oaspeți',
+      'Ospitalitate de familie de aproape 30 de ani.',
       'Exemplu de recenzie',
       'Patru membri ai familiei Nisztor în pensiune',
     ],
     [
       '/en',
-      'Nearly 30 years of welcoming guests',
+      'Nearly 30 years of family hospitality.',
       'Sample guest review',
       'Four members of the Nisztor family inside the guesthouse',
     ],

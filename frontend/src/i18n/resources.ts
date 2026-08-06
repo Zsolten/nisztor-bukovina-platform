@@ -14,6 +14,15 @@ export const resources = {
         footer: {
           message: 'Családias vendéglátás Csernakeresztúron.',
           copyright: 'Nisztor–Bukovina Panziók',
+          brandName: 'Nisztor–Bukovina Panziók',
+          contactTitle: 'Kapcsolat és foglalás',
+          navigationTitle: 'Navigáció',
+          bookingRequest: 'Foglalási kérelem',
+          address: 'Bucovina utca 17., Csernakeresztúr 330003, Románia',
+          home: 'Főoldal',
+          nisztorGuesthouse: 'Nisztor Panzió',
+          bukovinaGuesthouse: 'Bukovina Panzió',
+          contact: 'Kapcsolat',
         },
       },
       guesthouses: {
@@ -23,7 +32,7 @@ export const resources = {
           'Csendes, nyugodt, családias környezetben igényes szálláslehetőséget kínálunk minden betérő vendégünknek.',
         roomCount: '{{count}} szoba',
         openDetails: 'Megnézem a panziót',
-        sectionTitle: 'Válassza ki az otthonát Csernakeresztúron',
+        sectionTitle: 'Ismerje meg panzióinkat.',
         sectionIntroduction:
           'Mindkét panzióban tiszta, rendezett szobák és kedves, udvarias kiszolgálás várja vendégeinket.',
         loading: 'A panziók betöltése…',
@@ -67,9 +76,14 @@ export const resources = {
         detailError: 'A keresett panzió nem található vagy jelenleg nem érhető el.',
       },
       homepage: {
+        hero: {
+          title: 'Szeretettel várjuk Csernakeresztúron.',
+          nisztorLogoAlt: 'Nisztor Panzió logója',
+          bukovinaLogoAlt: 'Bukovina Panzió logója',
+        },
         legacy: {
           eyebrow: 'Családi vendéglátás',
-          title: 'Közel 30 éve vendégségben',
+          title: 'Családi vendéglátás közel 30 éve.',
           body: 'Családunk immár közel 30 éve foglalkozik faluturizmussal és vendéglátással. Panziónk csendes, családias környezetben kínál szállást és házias, erdélyi magyaros ellátást. Csernakeresztúr bukovinai székely gyökerei, valamint Dél-Erdély történelmi és természeti kincsei jó kiindulópontot adnak minden kalandvágyó személy számára.',
           imageAlt: 'A Nisztor család négy tagja a panzióban',
         },
@@ -111,12 +125,12 @@ export const resources = {
           attribution: 'Ideiglenes minta',
         },
         map: {
-          eyebrow: 'Érkezés',
-          title: 'Csernakeresztúr szívében',
+          eyebrow: 'Megközelítés',
+          title: 'Így talál meg minket.',
           description:
-            'Déva és Vajdahunyad között, a térség legfontosabb útvonalaihoz közel várjuk vendégeinket.',
-          openMap: 'Megnyitás OpenStreetMapen',
-          frameTitle: 'Csernakeresztúr térképe',
+            'Mindkét panzió a Bucovina utca 17. alatt található, Déva és Vajdahunyad között.',
+          openMap: 'Útvonaltervezés Google Térképen',
+          frameTitle: 'A panziók helye a Google Térképen',
         },
       },
     },
@@ -136,6 +150,15 @@ export const resources = {
         footer: {
           message: 'Ospitalitate familială în Cristur.',
           copyright: 'Pensiunile Nisztor–Bukovina',
+          brandName: 'Pensiunile Nisztor–Bukovina',
+          contactTitle: 'Contact și rezervare',
+          navigationTitle: 'Navigare',
+          bookingRequest: 'Cerere de rezervare',
+          address: 'Strada Bucovina nr. 17, Cristur 330003, România',
+          home: 'Acasă',
+          nisztorGuesthouse: 'Pensiunea Nisztor',
+          bukovinaGuesthouse: 'Pensiunea Bukovina',
+          contact: 'Contact',
         },
       },
       guesthouses: {
@@ -144,7 +167,7 @@ export const resources = {
         introduction: 'Oferim cazare de calitate într-un mediu liniștit, relaxant și familial.',
         roomCount: '{{count}} camere',
         openDetails: 'Descoperă pensiunea',
-        sectionTitle: 'Alegeți-vă casa din Cristur',
+        sectionTitle: 'Descoperiți pensiunile noastre.',
         sectionIntroduction:
           'În ambele pensiuni vă așteaptă camere curate și confortabile, precum și servicii amabile.',
         loading: 'Se încarcă pensiunile…',
@@ -188,9 +211,14 @@ export const resources = {
         detailError: 'Pensiunea nu există sau nu este disponibilă momentan.',
       },
       homepage: {
+        hero: {
+          title: 'Vă așteptăm cu drag la Cristur.',
+          nisztorLogoAlt: 'Sigla Pensiunii Nisztor',
+          bukovinaLogoAlt: 'Sigla Pensiunii Bukovina',
+        },
         legacy: {
           eyebrow: 'Ospitalitate de familie',
-          title: 'Aproape 30 de ani alături de oaspeți',
+          title: 'Ospitalitate de familie de aproape 30 de ani.',
           body: 'Familia noastră se ocupă de aproape 30 de ani de turism rural și ospitalitate. Pensiunile oferă cazare într-un cadru liniștit și familial, alături de mâncăruri ardelenești și ungurești pregătite ca acasă. Rădăcinile secuiești bucovinene ale satului Cristur și comorile istorice și naturale ale Transilvaniei de Sud sunt un bun punct de plecare pentru orice călător dornic de aventură.',
           imageAlt: 'Patru membri ai familiei Nisztor în pensiune',
         },
@@ -234,11 +262,11 @@ export const resources = {
         },
         map: {
           eyebrow: 'Sosire',
-          title: 'În inima satului Cristur',
+          title: 'Cum ajungeți la noi.',
           description:
-            'Vă așteptăm între Deva și Hunedoara, aproape de cele mai importante trasee ale regiunii.',
-          openMap: 'Deschide în OpenStreetMap',
-          frameTitle: 'Harta satului Cristur',
+            'Ambele pensiuni se află pe Strada Bucovina nr. 17, între Deva și Hunedoara.',
+          openMap: 'Planifică traseul în Google Maps',
+          frameTitle: 'Locația pensiunilor în Google Maps',
         },
       },
     },
@@ -258,6 +286,15 @@ export const resources = {
         footer: {
           message: 'Family hospitality in Cristur.',
           copyright: 'Nisztor–Bukovina Guesthouses',
+          brandName: 'Nisztor–Bukovina Guesthouses',
+          contactTitle: 'Contact and booking',
+          navigationTitle: 'Navigation',
+          bookingRequest: 'Booking request',
+          address: '17 Bucovina Street, Cristur 330003, Romania',
+          home: 'Home',
+          nisztorGuesthouse: 'Nisztor Guesthouse',
+          bukovinaGuesthouse: 'Bukovina Guesthouse',
+          contact: 'Contact',
         },
       },
       guesthouses: {
@@ -267,7 +304,7 @@ export const resources = {
           'We offer quality accommodation in a quiet, peaceful and welcoming family environment.',
         roomCount: '{{count}} rooms',
         openDetails: 'Discover the guesthouse',
-        sectionTitle: 'Choose your home in Cristur',
+        sectionTitle: 'Discover our guesthouses.',
         sectionIntroduction:
           'Both guesthouses offer clean, comfortable rooms and warm, attentive hospitality.',
         loading: 'Loading guesthouses…',
@@ -311,9 +348,14 @@ export const resources = {
         detailError: 'This guesthouse does not exist or is currently unavailable.',
       },
       homepage: {
+        hero: {
+          title: 'A warm welcome to Cristur.',
+          nisztorLogoAlt: 'Nisztor Guesthouse logo',
+          bukovinaLogoAlt: 'Bukovina Guesthouse logo',
+        },
         legacy: {
           eyebrow: 'Family hospitality',
-          title: 'Nearly 30 years of welcoming guests',
+          title: 'Nearly 30 years of family hospitality.',
           body: 'Our family has worked in rural tourism and hospitality for nearly 30 years. Our guesthouses offer peaceful, family-run accommodation and homemade Transylvanian-Hungarian meals. Cristur’s Bukovina Szekler roots and the historical and natural treasures of Southern Transylvania make this an excellent starting point for every adventurous traveller.',
           imageAlt: 'Four members of the Nisztor family inside the guesthouse',
         },
@@ -357,11 +399,11 @@ export const resources = {
         },
         map: {
           eyebrow: 'Getting here',
-          title: 'In the heart of Cristur',
+          title: 'How to find us.',
           description:
-            'We welcome guests between Deva and Hunedoara, close to the region’s most important routes.',
-          openMap: 'Open in OpenStreetMap',
-          frameTitle: 'Map of Cristur',
+            'Both guesthouses are located at 17 Bucovina Street, between Deva and Hunedoara.',
+          openMap: 'Plan your route in Google Maps',
+          frameTitle: 'Guesthouse location in Google Maps',
         },
       },
     },
