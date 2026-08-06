@@ -1,0 +1,1265 @@
+schema_version: 1
+
+document:
+  title:
+    hu: "Nisztor és Bukovina Panzió — háromnyelvű tartalomforrás"
+    ro: "Pensiunile Nisztor și Bukovina — sursă de conținut trilingvă"
+    en: "Nisztor and Bukovina Guesthouses — trilingual content source"
+  purpose:
+    hu: "A két panzió publikus részletes oldalának ember és fejlesztő AI számára olvasható tartalmi forrása."
+    ro: "Sursa de conținut, lizibilă pentru oameni și sisteme AI de dezvoltare, pentru paginile publice de prezentare ale celor două pensiuni."
+    en: "The human-readable and developer-AI-readable content source for the public detail pages of both guesthouses."
+  last_researched_at: "2026-08-05"
+  default_language: hu
+  supported_languages: [hu, ro, en]
+  editorial_principles:
+    - "Facts are separated from editorially derived copy."
+    - "Time-sensitive facts are marked for owner confirmation."
+    - "The history of the local Bukovina Szekler community is not presented as a verified family history."
+
+sources:
+  - id: nisztor-home-hu
+    type: website
+    url: "https://www.nisztorpanzio.ro/"
+    accessed_at: "2026-08-05"
+    description:
+      hu: "A Nisztor Panzió magyar nyelvű nyitóoldala."
+      ro: "Pagina principală în limba maghiară a Pensiunii Nisztor."
+      en: "The Hungarian-language home page of Nisztor Guesthouse."
+  - id: nisztor-about-hu
+    type: website
+    url: "https://www.nisztorpanzio.ro/panzionkrol"
+    accessed_at: "2026-08-05"
+    description:
+      hu: "Szobaszámok, felszereltség és szolgáltatások."
+      ro: "Numărul camerelor, dotări și servicii."
+      en: "Room counts, facilities, and services."
+  - id: nisztor-prices-hu
+    type: website
+    url: "https://www.nisztorpanzio.ro/araink"
+    accessed_at: "2026-08-05"
+    description:
+      hu: "Nyilvánosan feltüntetett árak és kedvezmények."
+      ro: "Tarife și reduceri afișate public."
+      en: "Publicly displayed rates and discounts."
+  - id: nisztor-contact-hu
+    type: website
+    url: "https://www.nisztorpanzio.ro/elerhetoseg"
+    accessed_at: "2026-08-05"
+    description:
+      hu: "Kapcsolattartók, telefonszámok, e-mail, cím és GPS-koordináták."
+      ro: "Persoane de contact, numere de telefon, e-mail, adresă și coordonate GPS."
+      en: "Contact persons, phone numbers, email, address, and GPS coordinates."
+  - id: nisztor-home-ro
+    type: website
+    url: "https://www.pensiuneanisztor.ro/"
+    accessed_at: "2026-08-05"
+    description:
+      hu: "A Nisztor Panzió román nyelvű nyitóoldala."
+      ro: "Pagina principală în limba română a Pensiunii Nisztor."
+      en: "The Romanian-language home page of Nisztor Guesthouse."
+  - id: cserna-about-hu
+    type: website
+    url: "https://www.csernakereszturivendeghazak.ro/hu"
+    accessed_at: "2026-08-05"
+    description:
+      hu: "Csernakeresztúr közösségtörténete és a falusi vendéglátás közös szolgáltatásai."
+      ro: "Istoria comunității din Cristur și serviciile comune de turism rural."
+      en: "The community history of Cristur and shared rural-hospitality services."
+  - id: cserna-about-en
+    type: website
+    url: "https://www.csernakereszturivendeghazak.ro/en/about-us"
+    accessed_at: "2026-08-05"
+    description:
+      hu: "A csernakeresztúri bukovinai székely közösség angol nyelvű bemutatása."
+      ro: "Prezentarea în limba engleză a comunității secuilor bucovineni din Cristur."
+      en: "English-language presentation of the Bukovina Szekler community of Cristur."
+  - id: project-seed
+    type: repository_file
+    revision: "6fbb9e6"
+    path: "backend/src/main/resources/db/migration/V1__create_guesthouses.sql"
+    description:
+      hu: "A projekt jóváhagyott magyar kezdőadatai, szobaszámai és képfájlútvonalai."
+      ro: "Datele inițiale în limba maghiară, numărul camerelor și căile imaginilor aprobate în proiect."
+      en: "The project's approved Hungarian seed copy, room counts, and image paths."
+  - id: owner-confirmation
+    type: direct_confirmation
+    confirmed_at: "2026-08-05"
+    description:
+      hu: "Tulajdonosi megerősítés arról, hogy jelenleg a kapcsolati adatok, a cím, a szolgáltatások és az árlista mindkét panzióra azonosak."
+      ro: "Confirmarea proprietarului că, în prezent, datele de contact, adresa, serviciile și lista de prețuri sunt comune ambelor pensiuni."
+      en: "Owner confirmation that the contact details, address, services, and price list currently apply to both guesthouses."
+  - id: owner-service-update
+    type: direct_confirmation
+    confirmed_at: "2026-08-05"
+    description:
+      hu: "Tulajdonosi pontosítás az emeletenkénti konyhákról, a szobák fűtéséről és légkondicionálásáról, a wellnessdézsáról, valamint a közös nagy étkezőről."
+      ro: "Clarificare din partea proprietarului privind bucătăriile de la fiecare etaj, încălzirea și climatizarea camerelor, ciubărul cu funcții de masaj și sala mare de mese comună."
+      en: "Owner clarification covering the kitchen on each floor, room heating and air conditioning, the wellness tub, and the large shared dining room."
+  - id: owner-price-confirmation
+    type: direct_confirmation
+    confirmed_at: "2026-08-05"
+    description:
+      hu: "A projektgazda átnézte és publikálásra jóváhagyta a teljes árlistát, a kedvezményeket, az 1%-os idegenforgalmi adót és a fizetési megjegyzést."
+      ro: "Proprietarul proiectului a verificat și a aprobat pentru publicare lista completă de tarife, reducerile, taxa turistică de 1% și nota privind plata."
+      en: "The project owner reviewed and approved the complete price list, discounts, 1% tourist tax, and payment note for publication."
+
+shared:
+  applicability:
+    guesthouse_ids: [nisztor, bukovina]
+    verification:
+      status: verified
+      source_ids: [owner-confirmation]
+      note:
+        hu: "A következő kapcsolati, cím-, szolgáltatás- és áradatok jelenleg mindkét panzióra vonatkoznak."
+        ro: "Următoarele date de contact, adresă, servicii și tarife se aplică în prezent ambelor pensiuni."
+        en: "The following contact, address, service, and pricing details currently apply to both guesthouses."
+
+  contact:
+    contact_people:
+      - "Nisztor István"
+      - "Nisztor Éva"
+    phones:
+      - id: landline_fax
+        value: "+40 254 236 172"
+        type: landline_and_fax
+      - id: mobile_primary
+        value: "+40 743 677 812"
+        type: mobile
+        preferred_public_number: true
+      - id: mobile_secondary
+        value: "+40 744 198 744"
+        type: mobile
+        preferred_public_number: false
+    email: "nisztorpanzio@gmail.com"
+    verification:
+      status: verified
+      source_ids: [nisztor-contact-hu, cserna-about-hu, owner-confirmation]
+
+  address:
+    postal_code: "330003"
+    locality:
+      ro: "Cristur"
+      hu: "Csernakeresztúr"
+      en: "Cristur (Csernakeresztúr)"
+    street:
+      ro: "Strada Bucovina"
+      hu: "Bucovina utca"
+      en: "Bucovina Street"
+    street_number: "17"
+    county:
+      code: HD
+      name:
+        hu: "Hunyad megye"
+        ro: "județul Hunedoara"
+        en: "Hunedoara County"
+    country:
+      code: RO
+      name:
+        hu: "Románia"
+        ro: "România"
+        en: "Romania"
+    gps:
+      latitude: 45.82361
+      longitude: 22.93869
+    formatted:
+      hu: "330003 Csernakeresztúr, Bucovina utca 17., Hunyad megye, Románia"
+      ro: "Strada Bucovina nr. 17, Cristur 330003, județul Hunedoara, România"
+      en: "17 Bucovina Street, Cristur 330003, Hunedoara County, Romania"
+    verification:
+      status: verified
+      source_ids: [nisztor-contact-hu, owner-confirmation]
+
+  services:
+    - id: private_parking
+      label:
+        hu: "Zárt parkoló"
+        ro: "Parcare privată închisă"
+        en: "Enclosed private parking"
+      availability: shared
+      verification:
+        status: verified
+        source_ids: [nisztor-about-hu, cserna-about-hu]
+    - id: wifi
+      label:
+        hu: "Vezeték nélküli internet"
+        ro: "Internet Wi-Fi"
+        en: "Wi-Fi internet"
+      availability: shared
+      verification:
+        status: verified
+        source_ids: [nisztor-about-hu, cserna-about-hu]
+    - id: private_bathroom
+      label:
+        hu: "Saját fürdőszoba minden szobához"
+        ro: "Baie proprie pentru fiecare cameră"
+        en: "Private bathroom for every room"
+      availability: shared
+      verification:
+        status: verified
+        source_ids: [nisztor-about-hu, project-seed]
+    - id: television
+      label:
+        hu: "Televízió minden szobában"
+        ro: "Televizor în fiecare cameră"
+        en: "Television in every room"
+      availability: shared
+      verification:
+        status: verified
+        source_ids: [nisztor-about-hu, project-seed]
+    - id: central_heating
+      label:
+        hu: "Központi fűtés minden szobában"
+        ro: "Încălzire centrală în fiecare cameră"
+        en: "Central heating in every room"
+      availability: shared
+      scope: every_room
+      verification:
+        status: verified
+        source_ids: [owner-service-update]
+    - id: air_conditioning
+      label:
+        hu: "Légkondicionálás minden szobában"
+        ro: "Aer condiționat în fiecare cameră"
+        en: "Air conditioning in every room"
+      availability: shared
+      scope: every_room
+      verification:
+        status: verified
+        source_ids: [owner-service-update]
+    - id: refrigerator
+      label:
+        hu: "Hűtőszekrény"
+        ro: "Frigider"
+        en: "Refrigerator"
+      availability: shared
+      verification:
+        status: verified
+        source_ids: [nisztor-about-hu]
+    - id: floor_kitchens
+      label:
+        hu: "Felszerelt közös konyha minden emeleten"
+        ro: "Bucătărie comună utilată la fiecare etaj"
+        en: "Equipped shared kitchen on every floor"
+      description:
+        hu: "Minden emeleten egy-egy közös konyha található mikrohullámú sütővel, kenyérpirítóval és vízforralóval."
+        ro: "La fiecare etaj se află câte o bucătărie comună, dotată cu cuptor cu microunde, prăjitor de pâine și fierbător de apă."
+        en: "Each floor has a shared kitchen equipped with a microwave oven, toaster, and electric kettle."
+      availability: shared
+      quantity_rule: one_per_floor
+      equipment: [microwave, toaster, electric_kettle]
+      verification:
+        status: verified
+        source_ids: [nisztor-about-hu, owner-service-update]
+    - id: sandwich_maker
+      label:
+        hu: "Szendvicssütő"
+        ro: "Aparat pentru sandvișuri"
+        en: "Sandwich maker"
+      availability: shared
+      verification:
+        status: verified
+        source_ids: [nisztor-about-hu]
+    - id: iron
+      label:
+        hu: "Vasaló és vasalódeszka"
+        ro: "Fier și masă de călcat"
+        en: "Iron and ironing board"
+      availability: shared
+      verification:
+        status: verified
+        source_ids: [nisztor-about-hu]
+    - id: drying_rack
+      label:
+        hu: "Ruhaszárító"
+        ro: "Uscător de rufe"
+        en: "Clothes drying rack"
+      availability: shared
+      verification:
+        status: verified
+        source_ids: [nisztor-about-hu]
+    - id: hairdryer
+      label:
+        hu: "Hajszárító"
+        ro: "Uscător de păr"
+        en: "Hairdryer"
+      availability: shared
+      verification:
+        status: verified
+        source_ids: [nisztor-about-hu]
+    - id: dining_air_conditioning
+      label:
+        hu: "Légkondicionált étkező"
+        ro: "Sală de mese cu aer condiționat"
+        en: "Air-conditioned dining area"
+      availability: shared
+      verification:
+        status: verified
+        source_ids: [nisztor-about-hu]
+    - id: outdoor_cooking
+      label:
+        hu: "Grillező, bogrács és kemence"
+        ro: "Grătar, ceaun și cuptor exterior"
+        en: "Barbecue, cauldron cooking, and outdoor oven"
+      availability: shared
+      verification:
+        status: verified
+        source_ids: [nisztor-about-hu, cserna-about-hu]
+    - id: terrace
+      label:
+        hu: "Terasz"
+        ro: "Terasă"
+        en: "Terrace"
+      availability: shared
+      verification:
+        status: verified
+        source_ids: [nisztor-about-hu, cserna-about-hu]
+    - id: dining_room
+      label:
+        hu: "Nagy, közös étkező minden vendég számára"
+        ro: "Sală de mese mare, comună, pentru toți oaspeții"
+        en: "Large shared dining room for all guests"
+      description:
+        hu: "A panziók vendégeit egy nagy, közös étkező fogadja."
+        ro: "Oaspeții pensiunilor au la dispoziție o sală de mese mare și comună."
+        en: "Guests of the guesthouses have access to one large shared dining room."
+      availability: shared
+      verification:
+        status: verified
+        source_ids: [owner-service-update]
+    - id: playground
+      label:
+        hu: "Játszótér"
+        ro: "Loc de joacă"
+        en: "Playground"
+      availability: shared
+      verification:
+        status: verified
+        source_ids: [nisztor-about-hu, cserna-about-hu]
+    - id: sun_loungers
+      label:
+        hu: "Napozóágyak"
+        ro: "Șezlonguri"
+        en: "Sun loungers"
+      description:
+        hu: "A wellnessdézsa mellett napozóágyak állnak a vendégek rendelkezésére."
+        ro: "Lângă ciubărul de relaxare sunt disponibile șezlonguri pentru oaspeți."
+        en: "Sun loungers are available beside the wellness tub."
+      availability: shared
+      verification:
+        status: verified
+        source_ids: [nisztor-about-hu, owner-service-update]
+    - id: wellness_tub
+      label:
+        hu: "Wellnessdézsa hidromasszázzsal és aeromasszázzsal"
+        ro: "Ciubăr wellness cu hidromasaj și aeromasaj"
+        en: "Wellness tub with hydro- and air massage"
+      description:
+        hu: "A dézsa hidromasszázs- és aeromasszázs-funkcióval rendelkezik; mellette napozóágyak és kültéri zuhanyzó található."
+        ro: "Ciubărul dispune de funcții de hidromasaj și aeromasaj, iar în apropiere se află șezlonguri și un duș exterior."
+        en: "The tub offers hydro- and air-massage functions, with sun loungers and an outdoor shower beside it."
+      availability: shared
+      features: [hydromassage, aeromassage, outdoor_shower, sun_loungers]
+      verification:
+        status: verified
+        source_ids: [owner-service-update]
+    - id: games
+      label:
+        hu: "Társas- és kártyajátékok"
+        ro: "Jocuri de societate și de cărți"
+        en: "Board and card games"
+      details:
+        hu: "Sakk, kártya és römi."
+        ro: "Șah, cărți și remi."
+        en: "Chess, cards, and rummy."
+      availability: shared
+      verification:
+        status: verified
+        source_ids: [nisztor-about-hu]
+    - id: homemade_meals
+      label:
+        hu: "Házi, erdélyi magyaros ételek"
+        ro: "Preparate de casă, ardelenești și ungurești"
+        en: "Homemade Transylvanian-Hungarian food"
+      description:
+        hu: "Hagyományos jellegű ételek és italok, nagyrészt saját előállítású alapanyagokból."
+        ro: "Mâncăruri și băuturi tradiționale, pregătite în mare parte din ingrediente produse în gospodărie."
+        en: "Traditional-style food and drinks, prepared largely from ingredients produced by the hosts."
+      availability: shared
+      verification:
+        status: verified
+        source_ids: [nisztor-home-hu, nisztor-home-ro]
+    - id: meal_plans
+      label:
+        hu: "Reggeli, félpanzió és teljes ellátás"
+        ro: "Mic dejun, demipensiune și pensiune completă"
+        en: "Breakfast, half-board, and full-board options"
+      availability: shared
+      verification:
+        status: verified
+        source_ids: [nisztor-prices-hu, cserna-about-hu]
+    - id: programme_planning
+      label:
+        hu: "Program- és csillagtúra-szervezési segítség"
+        ro: "Asistență pentru programe și excursii în circuit"
+        en: "Programme and day-trip planning assistance"
+      availability: shared
+      verification:
+        status: verified
+        source_ids: [nisztor-home-hu, nisztor-about-hu]
+    - id: bicycle_rental
+      label:
+        hu: "Kerékpárkölcsönzés"
+        ro: "Închiriere de biciclete"
+        en: "Bicycle rental"
+      availability: shared
+      verification:
+        status: needs_owner_confirmation
+        source_ids: [cserna-about-hu]
+    - id: domestic_animals
+      label:
+        hu: "Háziállatok megtekintése"
+        ro: "Vizitarea animalelor domestice"
+        en: "Opportunities to see domestic animals"
+      availability: shared
+      verification:
+        status: needs_owner_confirmation
+        source_ids: [cserna-about-hu]
+
+  pricing:
+    currency: RON
+    price_basis: per_person
+    source_accessed_at: "2026-08-05"
+    publication_requires_owner_confirmation: false
+    verification:
+      status: verified
+      source_ids: [nisztor-prices-hu, owner-confirmation, owner-price-confirmation]
+      note:
+        hu: "Az összegeket, kedvezményeket, az idegenforgalmi adót és a fizetési megjegyzést a projektgazda 2026-08-05-én publikálásra jóváhagyta."
+        ro: "Tarifele, reducerile, taxa turistică și nota privind plata au fost aprobate pentru publicare de proprietarul proiectului la 2026-08-05."
+        en: "The rates, discounts, tourist tax, and payment note were approved for publication by the project owner on 2026-08-05."
+    items:
+      - id: accommodation
+        label:
+          hu: "Szállás"
+          ro: "Cazare"
+          en: "Accommodation"
+        amount: 130
+        currency: RON
+        unit: person_night
+      - id: single_occupancy_room
+        label:
+          hu: "Egyágyas használat"
+          ro: "Cameră în regim single"
+          en: "Single occupancy"
+        amount: 200
+        currency: RON
+        unit: person_night
+      - id: breakfast
+        label:
+          hu: "Reggeli"
+          ro: "Mic dejun"
+          en: "Breakfast"
+        amount: 45
+        currency: RON
+        unit: person
+      - id: lunch
+        label:
+          hu: "Ebéd"
+          ro: "Prânz"
+          en: "Lunch"
+        amount: 75
+        currency: RON
+        unit: person
+      - id: dinner
+        label:
+          hu: "Vacsora"
+          ro: "Cină"
+          en: "Dinner"
+        amount: 75
+        currency: RON
+        unit: person
+      - id: bed_and_breakfast
+        label:
+          hu: "Szállás reggelivel"
+          ro: "Cazare cu mic dejun"
+          en: "Bed and breakfast"
+        amount: 175
+        currency: RON
+        unit: person_night
+      - id: half_board
+        label:
+          hu: "Szállás félpanzióval"
+          ro: "Cazare cu demipensiune"
+          en: "Accommodation with half-board"
+        amount: 250
+        currency: RON
+        unit: person_night
+      - id: full_board
+        label:
+          hu: "Szállás teljes ellátással"
+          ro: "Cazare cu pensiune completă"
+          en: "Accommodation with full-board"
+        amount: 325
+        currency: RON
+        unit: person_night
+      - id: tour_guide
+        label:
+          hu: "Idegenvezetés"
+          ro: "Servicii de ghidaj"
+          en: "Tour guide service"
+        amount: 600
+        currency: RON
+        unit: day
+    surcharges:
+      - id: tourist_tax
+        label:
+          hu: "Idegenforgalmi adó"
+          ro: "Taxă turistică"
+          en: "Tourist tax"
+        percentage: 1
+        applies_to: accommodation
+    discounts:
+      - id: coach_group
+        label:
+          hu: "Buszos csoport kedvezménye"
+          ro: "Reducere pentru grupuri cu autocarul"
+          en: "Coach-group discount"
+        percentage: 10
+      - id: children_under_10
+        label:
+          hu: "10 év alatti gyermekek kedvezménye"
+          ro: "Reducere pentru copiii sub 10 ani"
+          en: "Discount for children under 10"
+        percentage: 25
+        age_condition:
+          operator: less_than
+          years: 10
+    payment_notes:
+      hu: "Az árak forintra vagy euróra is átszámíthatók a napi árfolyamon; a forrásoldal szerint ezekben a pénznemekben is lehet fizetni."
+      ro: "Tarifele pot fi convertite în forinți sau euro la cursul zilei; potrivit paginii-sursă, plata este posibilă și în aceste monede."
+      en: "Rates may be converted to Hungarian forints or euros at the daily exchange rate; according to the source page, payment may also be made in these currencies."
+
+  booking_request:
+    action: inquiry
+    explanation:
+      hu: "Az űrlap foglalási kérelmet indít. A beküldés önmagában nem igazolja a szabad kapacitást, és nem jelent visszaigazolt foglalást."
+      ro: "Formularul inițiază o cerere de rezervare. Trimiterea lui nu confirmă disponibilitatea și nu reprezintă o rezervare confirmată."
+      en: "The form starts a booking inquiry. Submission does not confirm availability and does not constitute a confirmed reservation."
+    fields:
+      - id: guest_name
+        type: text
+        required: true
+        label:
+          hu: "Név"
+          ro: "Nume"
+          en: "Name"
+      - id: email
+        type: email
+        required: true
+        label:
+          hu: "E-mail-cím"
+          ro: "Adresă de e-mail"
+          en: "Email address"
+      - id: phone
+        type: tel
+        required: false
+        label:
+          hu: "Telefonszám"
+          ro: "Număr de telefon"
+          en: "Phone number"
+      - id: guesthouse
+        type: guesthouse_reference
+        required: true
+        label:
+          hu: "Választott panzió"
+          ro: "Pensiunea aleasă"
+          en: "Preferred guesthouse"
+      - id: arrival_date
+        type: date
+        required: true
+        label:
+          hu: "Érkezés"
+          ro: "Sosire"
+          en: "Arrival"
+      - id: departure_date
+        type: date
+        required: true
+        label:
+          hu: "Távozás"
+          ro: "Plecare"
+          en: "Departure"
+      - id: adult_count
+        type: integer
+        required: true
+        minimum: 1
+        label:
+          hu: "Felnőttek száma"
+          ro: "Număr de adulți"
+          en: "Number of adults"
+      - id: child_count
+        type: integer
+        required: false
+        minimum: 0
+        label:
+          hu: "Gyermekek száma"
+          ro: "Număr de copii"
+          en: "Number of children"
+      - id: requested_rooms
+        type: room_request
+        required: false
+        label:
+          hu: "Igényelt szobák"
+          ro: "Camere solicitate"
+          en: "Requested rooms"
+      - id: meal_plan
+        type: enum
+        required: false
+        label:
+          hu: "Ellátási igény"
+          ro: "Regim de masă dorit"
+          en: "Preferred meal plan"
+        options:
+          - id: none
+            label:
+              hu: "Ellátás nélkül"
+              ro: "Fără masă"
+              en: "No meals"
+          - id: breakfast
+            label:
+              hu: "Reggeli"
+              ro: "Mic dejun"
+              en: "Breakfast"
+          - id: half_board
+            label:
+              hu: "Félpanzió"
+              ro: "Demipensiune"
+              en: "Half-board"
+          - id: full_board
+            label:
+              hu: "Teljes ellátás"
+              ro: "Pensiune completă"
+              en: "Full-board"
+      - id: message
+        type: multiline_text
+        required: false
+        label:
+          hu: "Megjegyzés vagy egyedi kérés"
+          ro: "Observații sau cereri speciale"
+          en: "Notes or special requests"
+      - id: privacy_consent
+        type: boolean
+        required: true
+        label:
+          hu: "Elfogadom az adatkezelési tájékoztatóban foglaltakat."
+          ro: "Sunt de acord cu prevederile informării privind prelucrarea datelor."
+          en: "I agree to the terms described in the privacy notice."
+    privacy_policy_url:
+      value: null
+      verification:
+        status: needs_owner_confirmation
+        source_ids: [nisztor-home-hu]
+
+guesthouses:
+  - id: nisztor
+    slug: nisztor-panzio
+    room_count: 5
+    shared_content_refs: [contact, address, services, pricing, booking_request]
+    content:
+      name:
+        hu: "Nisztor Panzió"
+        ro: "Pensiunea Nisztor"
+        en: "Nisztor Guesthouse"
+      short_description:
+        hu: "Csendes, családias szállás Csernakeresztúr központjától mindössze 200 méterre."
+        ro: "Cazare liniștită și primitoare, la doar 200 de metri de centrul satului Cristur."
+        en: "Peaceful, welcoming accommodation just 200 metres from the centre of Cristur."
+      detailed_description:
+        hu: "A Nisztor Panzió Csernakeresztúron, Déva és Vajdahunyad között félúton, a falu központjától mindössze 200 méterre várja vendégeit. A főúttól távol eső, nyugodt környezet ideális egy rövid megállóhoz és többnapos pihenéshez is. Az öt rendezett, kényelmes szobához saját fürdőszoba, televízió, központi fűtés és légkondicionálás tartozik. Minden emeleten felszerelt közös konyha, a kikapcsolódáshoz pedig hidromasszázs- és aeromasszázs-funkciós wellnessdézsa, kültéri zuhanyzó és napozóágyak állnak rendelkezésre. A házigazdák családias vendéglátással, házi jellegű erdélyi magyaros ételekkel, valamint igény szerint program- és csillagtúra-ajánlatokkal teszik teljessé az itt-tartózkodást."
+        ro: "Pensiunea Nisztor își întâmpină oaspeții în satul Cristur, la jumătatea drumului dintre Deva și Hunedoara și la numai 200 de metri de centrul localității. Amplasarea liniștită, departe de traficul șoselei principale, este potrivită atât pentru un popas scurt, cât și pentru un sejur de mai multe zile. Cele cinci camere îngrijite și confortabile au baie proprie, televizor, încălzire centrală și aer condiționat. La fiecare etaj se află o bucătărie comună utilată, iar pentru relaxare sunt disponibile un ciubăr wellness cu hidromasaj și aeromasaj, duș exterior și șezlonguri. Ospitalitatea caldă, preparatele ardelenești și ungurești cu caracter tradițional, precum și recomandările de programe și excursii completează experiența șederii."
+        en: "Nisztor Guesthouse welcomes visitors in Cristur, halfway between Deva and Hunedoara and only 200 metres from the village centre. Its peaceful setting away from main-road traffic suits both an overnight stop and a longer stay. Each of the five tidy, comfortable rooms has a private bathroom, television, central heating, and air conditioning. Every floor has an equipped shared kitchen, while a wellness tub with hydro- and air massage, an outdoor shower, and sun loungers provide space to unwind. Warm family hospitality, homemade Transylvanian-Hungarian food, and optional programme and day-trip suggestions round out the experience."
+      verification:
+        status: derived
+        source_ids: [nisztor-home-hu, nisztor-home-ro, nisztor-about-hu, project-seed]
+    history:
+      community_heritage:
+        title:
+          hu: "Bukovinai székely örökség Csernakeresztúron"
+          ro: "Moștenirea secuilor bucovineni din Cristur"
+          en: "Bukovina Szekler heritage in Cristur"
+        text:
+          hu: "Csernakeresztúr lakosságának több mint fele bukovinai székely gyökerekkel rendelkezik. Őseik az 1764-es madéfalvi veszedelem után Bukovinába menekültek, ahol Istensegíts, Fogadjisten, Hadikfalva, Andrásfalva és Józseffalva közösségeiben telepedtek le. A magyar állam 1911-ben telepített családokat a mai Csernakeresztúrra. Az új közösség 1915–1916-ban templomot épített, 1920-ban pedig katolikus iskolát indított. A bukovinai székely hagyományokat és néptáncokat a helyiek nemzedékről nemzedékre továbbadják."
+          ro: "Mai mult de jumătate dintre locuitorii satului Cristur au rădăcini secuiești bucovinene. Strămoșii lor s-au refugiat în Bucovina după evenimentele de la Siculeni din 1764 și s-au așezat în comunitățile Istensegíts, Fogadjisten, Hadikfalva, Andrásfalva și Józseffalva. În 1911, statul maghiar a strămutat familii în actualul Cristur. Noua comunitate a ridicat o biserică în anii 1915–1916 și a deschis o școală catolică în 1920. Tradițiile și dansurile secuilor bucovineni sunt transmise și astăzi din generație în generație."
+          en: "More than half of Cristur's residents have Bukovina Szekler roots. Their ancestors fled to Bukovina after the 1764 events at Siculeni and settled in the communities of Istensegíts, Fogadjisten, Hadikfalva, Andrásfalva, and Józseffalva. In 1911, the Hungarian state resettled families in present-day Cristur. The new community built a church in 1915–1916 and opened a Catholic school in 1920. Bukovina Szekler traditions and folk dances continue to be passed down from one generation to the next."
+        verification:
+          status: derived
+          source_ids: [cserna-about-hu, cserna-about-en]
+      family_story:
+        editorial_note:
+          hu: "A jelenlegi források nem közölnek ellenőrizhető személyes Nisztor családtörténetet vagy panzióalapítási történetet. Ezt a részt csak a tulajdonos által jóváhagyott adatokkal szabad publikálni."
+          ro: "Sursele actuale nu oferă o istorie personală verificabilă a familiei Nisztor sau a înființării pensiunii. Această secțiune trebuie publicată numai după aprobarea informațiilor de către proprietar."
+          en: "The current sources do not provide a verifiable personal history of the Nisztor family or the founding of the guesthouse. This section should be published only after the owner has approved the information."
+        verification:
+          status: needs_owner_confirmation
+          source_ids: []
+    rooms:
+      - id: double
+        label:
+          hu: "Kétágyas szoba"
+          ro: "Cameră dublă"
+          en: "Double room"
+        quantity: 3
+        standard_occupancy: 2
+        extra_bed:
+          rooms_with_extra_bed: 1
+          extra_beds_per_eligible_room: 1
+        features: [private_bathroom, television, central_heating, air_conditioning]
+      - id: triple
+        label:
+          hu: "Háromágyas szoba"
+          ro: "Cameră triplă"
+          en: "Triple room"
+        quantity: 1
+        standard_occupancy: 3
+        extra_bed:
+          rooms_with_extra_bed: 0
+          extra_beds_per_eligible_room: 0
+        features: [private_bathroom, television, central_heating, air_conditioning]
+      - id: quadruple
+        label:
+          hu: "Négyágyas szoba"
+          ro: "Cameră cvadruplă"
+          en: "Quadruple room"
+        quantity: 1
+        standard_occupancy: 4
+        extra_bed:
+          rooms_with_extra_bed: 0
+          extra_beds_per_eligible_room: 0
+        features: [private_bathroom, television, central_heating, air_conditioning]
+    room_inventory_verification:
+      status: verified
+      source_ids: [nisztor-about-hu, project-seed]
+    media:
+      cover_path: "/images/guesthouses/nisztor/gallery-01.jpg"
+      gallery:
+        - id: nisztor-gallery-01
+          path: "/images/guesthouses/nisztor/gallery-01.jpg"
+          display_order: 0
+          cover: true
+          alt: {hu: "Ötfős csoport népviseleti ruhákban a Nisztor Panzió előtt", ro: "Grup de cinci persoane în costume tradiționale în fața Pensiunii Nisztor", en: "Group of five people in traditional clothing in front of Nisztor Guesthouse"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-02
+          path: "/images/guesthouses/nisztor/gallery-02.jpg"
+          display_order: 1
+          cover: false
+          alt: {hu: "Virágos erkély a Nisztor Panzió homlokzatán", ro: "Balcon cu flori pe fațada Pensiunii Nisztor", en: "Flower-filled balcony on the Nisztor Guesthouse façade"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-03
+          path: "/images/guesthouses/nisztor/gallery-03.jpg"
+          display_order: 2
+          cover: false
+          alt: {hu: "Két személy házi befőttekkel és savanyúságokkal", ro: "Două persoane alături de conserve și murături pregătite în casă", en: "Two people with homemade preserves and pickles"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-04
+          path: "/images/guesthouses/nisztor/gallery-04.jpg"
+          display_order: 3
+          cover: false
+          alt: {hu: "Házi savanyúságokkal megrakott tál", ro: "Platou cu murături pregătite în casă", en: "Display of homemade pickles"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-05
+          path: "/images/guesthouses/nisztor/gallery-05.jpg"
+          display_order: 4
+          cover: false
+          alt: {hu: "Szabadtéren megterített hosszú asztal", ro: "Masă lungă pregătită în aer liber", en: "Long table set for an outdoor meal"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-06
+          path: "/images/guesthouses/nisztor/gallery-06.jpg"
+          display_order: 5
+          cover: false
+          alt: {hu: "Világos vendégszoba több különálló ággyal", ro: "Cameră luminoasă cu mai multe paturi separate", en: "Bright guest room with several separate beds"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-07
+          path: "/images/guesthouses/nisztor/gallery-07.jpg"
+          display_order: 6
+          cover: false
+          alt: {hu: "Vendégszoba franciaággyal és egyszemélyes ággyal", ro: "Cameră cu pat dublu și pat de o persoană", en: "Guest room with a double bed and a single bed"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-08
+          path: "/images/guesthouses/nisztor/gallery-08.jpg"
+          display_order: 7
+          cover: false
+          alt: {hu: "Tetőtéri fürdőszoba zuhanykabinnal", ro: "Baie la mansardă cu cabină de duș", en: "Attic bathroom with a shower enclosure"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-09
+          path: "/images/guesthouses/nisztor/gallery-09.jpg"
+          display_order: 8
+          cover: false
+          alt: {hu: "Fagerendás vendégszoba franciaággyal és egyszemélyes ággyal", ro: "Cameră cu grinzi din lemn, pat dublu și pat de o persoană", en: "Wood-beamed guest room with a double bed and a single bed"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-10
+          path: "/images/guesthouses/nisztor/gallery-10.jpg"
+          display_order: 9
+          cover: false
+          alt: {hu: "Fagerendás szoba franciaággyal és ülősarokkal", ro: "Cameră cu grinzi din lemn, pat dublu și zonă de ședere", en: "Wood-beamed room with a double bed and seating area"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-11
+          path: "/images/guesthouses/nisztor/gallery-11.jpg"
+          display_order: 10
+          cover: false
+          alt: {hu: "Barna csempés fürdőszoba zuhanykabinnal", ro: "Baie cu faianță maro și cabină de duș", en: "Brown-tiled bathroom with a shower enclosure"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-12
+          path: "/images/guesthouses/nisztor/gallery-12.jpg"
+          display_order: 11
+          cover: false
+          alt: {hu: "Faborítású vendégszoba franciaággyal és egyszemélyes ággyal", ro: "Cameră cu finisaje din lemn, pat dublu și pat de o persoană", en: "Wood-finished guest room with a double bed and a single bed"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-13
+          path: "/images/guesthouses/nisztor/gallery-13.jpg"
+          display_order: 12
+          cover: false
+          alt: {hu: "Vendégszoba franciaággyal, asztallal és televízióval", ro: "Cameră cu pat dublu, masă și televizor", en: "Guest room with a double bed, table, and television"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-14
+          path: "/images/guesthouses/nisztor/gallery-14.jpg"
+          display_order: 13
+          cover: false
+          alt: {hu: "Piros-fehér csempés fürdőszoba zuhanykabinnal", ro: "Baie cu faianță roșie și albă și cabină de duș", en: "Red-and-white tiled bathroom with a shower enclosure"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-15
+          path: "/images/guesthouses/nisztor/gallery-15.jpg"
+          display_order: 14
+          cover: false
+          alt: {hu: "Fa mennyezetű étkező megterített asztallal", ro: "Sală de mese cu tavan din lemn și masă pregătită", en: "Wood-ceilinged dining room with a set table"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-16
+          path: "/images/guesthouses/nisztor/gallery-16.jpg"
+          display_order: 15
+          cover: false
+          alt: {hu: "Tágas étkező több asztallal és székekkel", ro: "Sală de mese spațioasă cu mai multe mese și scaune", en: "Spacious dining room with several tables and chairs"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-17
+          path: "/images/guesthouses/nisztor/gallery-17.jpg"
+          display_order: 16
+          cover: false
+          alt: {hu: "Fa mennyezetű társalgó kanapéval", ro: "Salon cu tavan din lemn și canapea", en: "Wood-ceilinged lounge with a sofa"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-18
+          path: "/images/guesthouses/nisztor/gallery-18.jpg"
+          display_order: 17
+          cover: false
+          alt: {hu: "Népi szőttesekkel díszített, többágyas tetőtéri szoba", ro: "Cameră mansardată cu mai multe paturi, decorată cu țesături tradiționale", en: "Multi-bed attic room decorated with traditional woven textiles"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-19
+          path: "/images/guesthouses/nisztor/gallery-19.jpg"
+          display_order: 18
+          cover: false
+          alt: {hu: "Tetőtéri vendégszoba egyszemélyes ágyakkal és népi szőttesekkel", ro: "Cameră mansardată cu paturi de o persoană și țesături tradiționale", en: "Attic guest room with single beds and traditional woven textiles"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-20
+          path: "/images/guesthouses/nisztor/gallery-20.jpg"
+          display_order: 19
+          cover: false
+          alt: {hu: "Faborítású fürdőszoba zuhanyzóval", ro: "Baie cu finisaje din lemn și duș", en: "Wood-finished bathroom with a shower"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-21
+          path: "/images/guesthouses/nisztor/gallery-21.jpg"
+          display_order: 20
+          cover: false
+          alt: {hu: "Virágokkal és díszkerékkel kialakított kerti bejárat", ro: "Intrare de grădină decorată cu flori și o roată din lemn", en: "Garden entrance decorated with flowers and a wooden wheel"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-22
+          path: "/images/guesthouses/nisztor/gallery-22.jpg"
+          display_order: 21
+          cover: false
+          alt: {hu: "Világos, többágyas vendégszoba", ro: "Cameră luminoasă cu mai multe paturi", en: "Bright guest room with several beds"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-23
+          path: "/images/guesthouses/nisztor/gallery-23.jpg"
+          display_order: 22
+          cover: false
+          alt: {hu: "Többágyas vendégszoba szekrénnyel és asztallal", ro: "Cameră cu mai multe paturi, dulap și masă", en: "Multi-bed guest room with a wardrobe and table"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-24
+          path: "/images/guesthouses/nisztor/gallery-24.jpg"
+          display_order: 23
+          cover: false
+          alt: {hu: "Világos fürdőszoba zuhanyzóval és vízmelegítővel", ro: "Baie luminoasă cu duș și boiler", en: "Bright bathroom with a shower and water heater"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-25
+          path: "/images/guesthouses/nisztor/gallery-25.jpg"
+          display_order: 24
+          cover: false
+          alt: {hu: "Fedett terasz kemencével és szabadtéri ülőhellyel", ro: "Terasă acoperită cu cuptor și locuri de ședere", en: "Covered terrace with an outdoor oven and seating"}
+          alt_verification: {status: verified}
+        - id: nisztor-gallery-26
+          path: "/images/guesthouses/nisztor/gallery-26.jpg"
+          display_order: 25
+          cover: false
+          alt: {hu: "Hosszú asztalos, hagyományos tárgyakkal díszített étkező", ro: "Sală de mese cu masă lungă și obiecte tradiționale", en: "Dining room with a long table and traditional decorations"}
+          alt_verification: {status: verified}
+
+  - id: bukovina
+    slug: bukovina-panzio
+    room_count: 12
+    shared_content_refs: [contact, address, services, pricing, booking_request]
+    content:
+      name:
+        hu: "Bukovina Panzió"
+        ro: "Pensiunea Bukovina"
+        en: "Bukovina Guesthouse"
+      short_description:
+        hu: "Tágas, családias szállás 12 szobával, párok, családok és nagyobb társaságok számára."
+        ro: "O pensiune spațioasă și primitoare, cu 12 camere pentru cupluri, familii și grupuri mai numeroase."
+        en: "A spacious, welcoming 12-room guesthouse for couples, families, and larger groups."
+      detailed_description:
+        hu: "A Bukovina Panzió 12 rendezett, kényelmes szobával kínál nyugodt szállást Csernakeresztúron. A két-, három- és négyágyas szobák párok, családok és nagyobb társaságok elhelyezésére is alkalmasak; mindegyikhez saját fürdőszoba, televízió, központi fűtés és légkondicionálás tartozik. Minden emeleten felszerelt közös konyha található. A közös szolgáltatások között házi jellegű erdélyi magyaros étkezés egy nagy étkezőben, zárt parkoló, internetkapcsolat, terasz, szabadtéri főzési lehetőség, valamint hidromasszázs- és aeromasszázs-funkciós wellnessdézsa, kültéri zuhanyzó és napozóágyak is szerepelnek. A vendégek pihenéssel tölthetik idejüket, vagy innen indulva felfedezhetik Dél-Erdély történelmi és természeti látnivalóit."
+        ro: "Pensiunea Bukovina oferă cazare liniștită în Cristur, în 12 camere îngrijite și confortabile. Camerele duble, triple și cvadruple sunt potrivite pentru cupluri, familii și grupuri mai numeroase; fiecare cameră are baie proprie, televizor, încălzire centrală și aer condiționat. La fiecare etaj se află o bucătărie comună utilată. Serviciile comune includ preparate ardelenești și ungurești cu caracter tradițional servite într-o sală de mese mare, parcare închisă, internet, terasă, posibilități de gătit în aer liber, precum și un ciubăr wellness cu hidromasaj și aeromasaj, duș exterior și șezlonguri. Oaspeții se pot bucura de odihnă sau pot porni de aici pentru a descoperi atracțiile istorice și naturale ale Transilvaniei de Sud."
+        en: "Bukovina Guesthouse offers peaceful accommodation in Cristur in 12 tidy, comfortable rooms. Its double, triple, and quadruple rooms suit couples, families, and larger groups; every room has a private bathroom, television, central heating, and air conditioning. Every floor has an equipped shared kitchen. Shared services include homemade Transylvanian-Hungarian meals served in one large dining room, enclosed parking, internet access, a terrace, outdoor cooking facilities, and a wellness tub with hydro- and air massage, an outdoor shower, and sun loungers. Guests can spend their time relaxing or use the guesthouse as a base for exploring the historic and natural sights of Southern Transylvania."
+      verification:
+        status: derived
+        source_ids: [nisztor-home-hu, nisztor-about-hu, project-seed, owner-confirmation]
+    history:
+      community_heritage:
+        title:
+          hu: "Bukovinai székely örökség Csernakeresztúron"
+          ro: "Moștenirea secuilor bucovineni din Cristur"
+          en: "Bukovina Szekler heritage in Cristur"
+        text:
+          hu: "Csernakeresztúr lakosságának több mint fele bukovinai székely gyökerekkel rendelkezik. Őseik az 1764-es madéfalvi veszedelem után Bukovinába menekültek, ahol Istensegíts, Fogadjisten, Hadikfalva, Andrásfalva és Józseffalva közösségeiben telepedtek le. A magyar állam 1911-ben telepített családokat a mai Csernakeresztúrra. Az új közösség 1915–1916-ban templomot épített, 1920-ban pedig katolikus iskolát indított. A bukovinai székely hagyományokat és néptáncokat a helyiek nemzedékről nemzedékre továbbadják."
+          ro: "Mai mult de jumătate dintre locuitorii satului Cristur au rădăcini secuiești bucovinene. Strămoșii lor s-au refugiat în Bucovina după evenimentele de la Siculeni din 1764 și s-au așezat în comunitățile Istensegíts, Fogadjisten, Hadikfalva, Andrásfalva și Józseffalva. În 1911, statul maghiar a strămutat familii în actualul Cristur. Noua comunitate a ridicat o biserică în anii 1915–1916 și a deschis o școală catolică în 1920. Tradițiile și dansurile secuilor bucovineni sunt transmise și astăzi din generație în generație."
+          en: "More than half of Cristur's residents have Bukovina Szekler roots. Their ancestors fled to Bukovina after the 1764 events at Siculeni and settled in the communities of Istensegíts, Fogadjisten, Hadikfalva, Andrásfalva, and Józseffalva. In 1911, the Hungarian state resettled families in present-day Cristur. The new community built a church in 1915–1916 and opened a Catholic school in 1920. Bukovina Szekler traditions and folk dances continue to be passed down from one generation to the next."
+        verification:
+          status: derived
+          source_ids: [cserna-about-hu, cserna-about-en]
+      family_story:
+        editorial_note:
+          hu: "A jelenlegi források nem közölnek ellenőrizhető történetet a Bukovina Panzió alapításáról vagy a hozzá kapcsolódó családi múltról. Ezt a részt csak a tulajdonos által jóváhagyott adatokkal szabad publikálni."
+          ro: "Sursele actuale nu oferă o istorie verificabilă a înființării Pensiunii Bukovina sau a familiei asociate acesteia. Această secțiune trebuie publicată numai după aprobarea informațiilor de către proprietar."
+          en: "The current sources do not provide a verifiable account of the founding of Bukovina Guesthouse or its associated family history. This section should be published only after the owner has approved the information."
+        verification:
+          status: needs_owner_confirmation
+          source_ids: []
+    rooms:
+      - id: double
+        label:
+          hu: "Kétágyas szoba"
+          ro: "Cameră dublă"
+          en: "Double room"
+        quantity: 6
+        standard_occupancy: 2
+        extra_bed:
+          rooms_with_extra_bed: 1
+          extra_beds_per_eligible_room: 1
+        features: [private_bathroom, television, central_heating, air_conditioning]
+      - id: triple
+        label:
+          hu: "Háromágyas szoba"
+          ro: "Cameră triplă"
+          en: "Triple room"
+        quantity: 5
+        standard_occupancy: 3
+        extra_bed:
+          rooms_with_extra_bed: 0
+          extra_beds_per_eligible_room: 0
+        features: [private_bathroom, television, central_heating, air_conditioning]
+      - id: quadruple
+        label:
+          hu: "Négyágyas szoba"
+          ro: "Cameră cvadruplă"
+          en: "Quadruple room"
+        quantity: 1
+        standard_occupancy: 4
+        extra_bed:
+          rooms_with_extra_bed: 0
+          extra_beds_per_eligible_room: 0
+        features: [private_bathroom, television, central_heating, air_conditioning]
+    room_inventory_verification:
+      status: verified
+      source_ids: [nisztor-about-hu, project-seed]
+    media:
+      cover_path: "/images/guesthouses/bukovina/gallery-01.jpg"
+      gallery:
+        - id: bukovina-gallery-01
+          path: "/images/guesthouses/bukovina/gallery-01.jpg"
+          display_order: 0
+          cover: true
+          alt: {hu: "Csoport a Bukovina Panzió épülete előtt", ro: "Grup în fața clădirii Pensiunii Bukovina", en: "Group in front of the Bukovina Guesthouse building"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-02
+          path: "/images/guesthouses/bukovina/gallery-02.jpg"
+          display_order: 1
+          cover: false
+          alt: {hu: "Két személy a kőburkolatú panzió előtt", ro: "Două persoane în fața pensiunii placate cu piatră", en: "Two people in front of the stone-clad guesthouse"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-03
+          path: "/images/guesthouses/bukovina/gallery-03.jpg"
+          display_order: 2
+          cover: false
+          alt: {hu: "A Bukovina Panzió udvara fedett terasszal", ro: "Curtea Pensiunii Bukovina cu terasă acoperită", en: "Bukovina Guesthouse courtyard with a covered terrace"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-04
+          path: "/images/guesthouses/bukovina/gallery-04.jpg"
+          display_order: 3
+          cover: false
+          alt: {hu: "A Bukovina Panzió utcai homlokzata", ro: "Fațada stradală a Pensiunii Bukovina", en: "Street-facing façade of Bukovina Guesthouse"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-05
+          path: "/images/guesthouses/bukovina/gallery-05.jpg"
+          display_order: 4
+          cover: false
+          alt: {hu: "A Bukovina Panzió oldalsó homlokzata és bejárata", ro: "Fațada laterală și intrarea Pensiunii Bukovina", en: "Side façade and entrance of Bukovina Guesthouse"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-06
+          path: "/images/guesthouses/bukovina/gallery-06.jpg"
+          display_order: 5
+          cover: false
+          alt: {hu: "Virágokkal díszített fedett bejárat", ro: "Intrare acoperită decorată cu flori", en: "Covered entrance decorated with flowers"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-07
+          path: "/images/guesthouses/bukovina/gallery-07.jpg"
+          display_order: 6
+          cover: false
+          alt: {hu: "Kerek tükörben tükröződő franciaágy", ro: "Pat dublu reflectat într-o oglindă rotundă", en: "Double bed reflected in a round mirror"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-08
+          path: "/images/guesthouses/bukovina/gallery-08.jpg"
+          display_order: 7
+          cover: false
+          alt: {hu: "Elegáns vendégszoba fehér franciaággyal", ro: "Cameră elegantă cu pat dublu alb", en: "Elegant guest room with a white double bed"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-09
+          path: "/images/guesthouses/bukovina/gallery-09.jpg"
+          display_order: 8
+          cover: false
+          alt: {hu: "Szürke csempés fürdőszoba zuhanykabinnal", ro: "Baie cu faianță gri și cabină de duș", en: "Grey-tiled bathroom with a shower enclosure"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-10
+          path: "/images/guesthouses/bukovina/gallery-10.jpg"
+          display_order: 9
+          cover: false
+          alt: {hu: "Megterített asztal mögött látható kétágyas szoba", ro: "Cameră cu două paturi văzută din spatele unei mese pregătite", en: "Twin room viewed past a set table"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-11
+          path: "/images/guesthouses/bukovina/gallery-11.jpg"
+          display_order: 10
+          cover: false
+          alt: {hu: "Világos kétágyas szoba székekkel", ro: "Cameră luminoasă cu două paturi și scaune", en: "Bright twin room with chairs"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-12
+          path: "/images/guesthouses/bukovina/gallery-12.jpg"
+          display_order: 11
+          cover: false
+          alt: {hu: "Mintás falú vendégszoba fa franciaággyal", ro: "Cameră cu perete decorativ și pat dublu din lemn", en: "Guest room with a patterned feature wall and wooden double bed"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-13
+          path: "/images/guesthouses/bukovina/gallery-13.jpg"
+          display_order: 12
+          cover: false
+          alt: {hu: "Fa franciaágyas szoba ülősarokkal", ro: "Cameră cu pat dublu din lemn și zonă de ședere", en: "Room with a wooden double bed and seating area"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-14
+          path: "/images/guesthouses/bukovina/gallery-14.jpg"
+          display_order: 13
+          cover: false
+          alt: {hu: "Barna csempés fürdőszoba zuhanyzóval", ro: "Baie cu faianță maro și duș", en: "Brown-tiled bathroom with a shower"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-15
+          path: "/images/guesthouses/bukovina/gallery-15.jpg"
+          display_order: 14
+          cover: false
+          alt: {hu: "Világos franciaágyas szoba kanapéval és televízióval", ro: "Cameră luminoasă cu pat dublu, canapea și televizor", en: "Bright double room with a sofa and television"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-16
+          path: "/images/guesthouses/bukovina/gallery-16.jpg"
+          display_order: 15
+          cover: false
+          alt: {hu: "Szürke-fehér fürdőszoba üvegfalú zuhanyzóval", ro: "Baie gri și albă cu duș cu perete din sticlă", en: "Grey-and-white bathroom with a glass-screen shower"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-17
+          path: "/images/guesthouses/bukovina/gallery-17.jpg"
+          display_order: 16
+          cover: false
+          alt: {hu: "Virágmintás falú szoba fa franciaággyal", ro: "Cameră cu perete floral și pat dublu din lemn", en: "Room with a floral feature wall and wooden double bed"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-18
+          path: "/images/guesthouses/bukovina/gallery-18.jpg"
+          display_order: 17
+          cover: false
+          alt: {hu: "Meleg tónusú franciaágyas szoba saját fürdőszobával", ro: "Cameră în tonuri calde, cu pat dublu și baie proprie", en: "Warm-toned double room with an en-suite bathroom"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-19
+          path: "/images/guesthouses/bukovina/gallery-19.jpg"
+          display_order: 18
+          cover: false
+          alt: {hu: "Lila-fehér csempés fürdőszoba zuhanyzóval", ro: "Baie cu faianță mov și albă și duș", en: "Purple-and-white tiled bathroom with a shower"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-20
+          path: "/images/guesthouses/bukovina/gallery-20.jpg"
+          display_order: 19
+          cover: false
+          alt: {hu: "Franciaágyas szoba televízióval és asztallal", ro: "Cameră cu pat dublu, televizor și masă", en: "Double room with a television and table"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-21
+          path: "/images/guesthouses/bukovina/gallery-21.jpg"
+          display_order: 20
+          cover: false
+          alt: {hu: "Tágas franciaágyas szoba televízióval", ro: "Cameră dublă spațioasă cu televizor", en: "Spacious double room with a television"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-22
+          path: "/images/guesthouses/bukovina/gallery-22.jpg"
+          display_order: 21
+          cover: false
+          alt: {hu: "Két különálló ágyas szoba asztallal és televízióval", ro: "Cameră cu două paturi separate, masă și televizor", en: "Twin room with a table and television"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-23
+          path: "/images/guesthouses/bukovina/gallery-23.jpg"
+          display_order: 22
+          cover: false
+          alt: {hu: "Franciaágyas szoba kanapéval és virágmintás fallal", ro: "Cameră cu pat dublu, canapea și perete floral", en: "Double room with a sofa and floral feature wall"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-24
+          path: "/images/guesthouses/bukovina/gallery-24.jpg"
+          display_order: 23
+          cover: false
+          alt: {hu: "Franciaágyas és egyszemélyes ágyas szoba", ro: "Cameră cu pat dublu și pat de o persoană", en: "Room with a double bed and a single bed"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-25
+          path: "/images/guesthouses/bukovina/gallery-25.jpg"
+          display_order: 24
+          cover: false
+          alt: {hu: "Fa franciaágyas szoba nagy ablakkal", ro: "Cameră cu pat dublu din lemn și fereastră mare", en: "Room with a wooden double bed and large window"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-26
+          path: "/images/guesthouses/bukovina/gallery-26.jpg"
+          display_order: 25
+          cover: false
+          alt: {hu: "Piros-fehér csempés fürdőszoba káddal", ro: "Baie cu faianță roșie și albă și cadă", en: "Red-and-white tiled bathroom with a bathtub"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-27
+          path: "/images/guesthouses/bukovina/gallery-27.jpg"
+          display_order: 26
+          cover: false
+          alt: {hu: "Étkezőasztal virágdísszel és konyhasarokkal", ro: "Masă de dining cu flori și chicinetă", en: "Dining table with flowers and a kitchenette"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-28
+          path: "/images/guesthouses/bukovina/gallery-28.jpg"
+          display_order: 27
+          cover: false
+          alt: {hu: "Közös konyhai és étkezőfolyosó", ro: "Spațiu comun de bucătărie și dining pe hol", en: "Shared kitchen and dining hallway"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-29
+          path: "/images/guesthouses/bukovina/gallery-29.jpg"
+          display_order: 28
+          cover: false
+          alt: {hu: "Virágmintás falú szoba franciaággyal és kanapéval", ro: "Cameră cu perete floral, pat dublu și canapea", en: "Room with a floral wall, double bed, and sofa"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-30
+          path: "/images/guesthouses/bukovina/gallery-30.jpg"
+          display_order: 29
+          cover: false
+          alt: {hu: "Tetőtéri szoba több ággyal és ülősarokkal", ro: "Cameră mansardată cu mai multe paturi și zonă de ședere", en: "Attic room with several beds and a seating area"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-31
+          path: "/images/guesthouses/bukovina/gallery-31.jpg"
+          display_order: 30
+          cover: false
+          alt: {hu: "Tetőtéri franciaágyas szoba kanapéval", ro: "Cameră mansardată cu pat dublu și canapea", en: "Attic double room with a sofa"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-32
+          path: "/images/guesthouses/bukovina/gallery-32.jpg"
+          display_order: 31
+          cover: false
+          alt: {hu: "Tetőtéri szoba franciaággyal, egyszemélyes ággyal és kanapéval", ro: "Cameră mansardată cu pat dublu, pat de o persoană și canapea", en: "Attic room with a double bed, single bed, and sofa"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-33
+          path: "/images/guesthouses/bukovina/gallery-33.jpg"
+          display_order: 32
+          cover: false
+          alt: {hu: "Kis konyha étkezősarokkal", ro: "Bucătărie mică cu zonă de luat masa", en: "Small kitchen with a dining nook"}
+          alt_verification: {status: verified}
+        - id: bukovina-gallery-34
+          path: "/images/guesthouses/bukovina/gallery-34.jpg"
+          display_order: 33
+          cover: false
+          alt: {hu: "Kék-fehér csempés fürdőszoba zuhanykabinnal", ro: "Baie cu faianță albastră și albă și cabină de duș", en: "Blue-and-white tiled bathroom with a shower enclosure"}
+          alt_verification: {status: verified}
+
+owner_confirmation_required:
+  - id: shared_services
+    applies_to: [nisztor, bukovina]
+    question:
+      hu: "A felsorolt közös szolgáltatások jelenleg mindkét épület vendégei számára elérhetők?"
+      ro: "Sunt disponibile în prezent toate serviciile comune enumerate pentru oaspeții ambelor clădiri?"
+      en: "Are all listed shared services currently available to guests of both buildings?"
+    reason:
+      hu: "A közös alkalmazhatóság tulajdonosi megerősítést kapott, de a szolgáltatások elérhetősége változhat."
+      ro: "Aplicabilitatea comună a fost confirmată de proprietar, însă disponibilitatea serviciilor se poate schimba."
+      en: "Shared applicability was confirmed by the owner, but service availability may change."
+    blocking_publication: false
+  - id: bicycle_and_animals
+    applies_to: [nisztor, bukovina]
+    question:
+      hu: "Jelenleg is igénybe vehető a kerékpárkölcsönzés és a háziállatok megtekintése?"
+      ro: "Mai sunt disponibile închirierea bicicletelor și vizitarea animalelor domestice?"
+      en: "Are bicycle rental and opportunities to see domestic animals still available?"
+    reason:
+      hu: "Ezek csak a vendégház-hálózat oldalán szerepelnek."
+      ro: "Aceste servicii apar numai pe pagina rețelei de pensiuni."
+      en: "These services appear only on the guesthouse-network website."
+    blocking_publication: false
+  - id: nisztor_family_story
+    applies_to: [nisztor]
+    question:
+      hu: "Mi a Nisztor család és a panzió alapításának hiteles, publikálható története?"
+      ro: "Care este istoria verificată și publicabilă a familiei Nisztor și a înființării pensiunii?"
+      en: "What is the verified, publishable history of the Nisztor family and the founding of the guesthouse?"
+    reason:
+      hu: "A jelenlegi források csak a helyi közösség történetét ismertetik."
+      ro: "Sursele actuale prezintă numai istoria comunității locale."
+      en: "The current sources describe only the history of the local community."
+    blocking_publication: false
+  - id: bukovina_foundation_story
+    applies_to: [bukovina]
+    question:
+      hu: "Mi a Bukovina Panzió alapításának és családi hátterének hiteles, publikálható története?"
+      ro: "Care este istoria verificată și publicabilă a înființării Pensiunii Bukovina și a familiei asociate?"
+      en: "What is the verified, publishable founding and family story of Bukovina Guesthouse?"
+    reason:
+      hu: "A jelenlegi források nem tartalmaznak külön panziótörténetet."
+      ro: "Sursele actuale nu conțin o istorie separată a pensiunii."
+      en: "The current sources do not contain a separate history of the guesthouse."
+    blocking_publication: false
+  - id: preferred_cover_images
+    applies_to: [nisztor, bukovina]
+    question:
+      hu: "Maradjon mindkét panziónál a galéria első képe fő képként?"
+      ro: "Să rămână prima imagine din fiecare galerie drept imagine principală?"
+      en: "Should the first image in each gallery remain the cover image?"
+    reason:
+      hu: "A jelenlegi projekt az első képet használja, de a marketingcélú választás tulajdonosi döntés."
+      ro: "Proiectul actual folosește prima imagine, însă alegerea imaginii de prezentare este o decizie a proprietarului."
+      en: "The current project uses the first image, but the marketing choice belongs to the owner."
+    blocking_publication: false
+  - id: privacy_policy_url
+    applies_to: [nisztor, bukovina]
+    question:
+      hu: "Melyik adatkezelési tájékoztató URL-jét kell a foglalási kérelem mellett megjeleníteni?"
+      ro: "Ce adresă URL a informării privind prelucrarea datelor trebuie afișată lângă cererea de rezervare?"
+      en: "Which privacy-notice URL should be displayed with the booking inquiry?"
+    reason:
+      hu: "A forrásoldalon hozzájárulás szerepel, de hiteles cél-URL nem azonosítható."
+      ro: "Pagina-sursă include consimțământul, dar nu a putut fi identificată o adresă URL verificată."
+      en: "The source page includes consent, but a verified destination URL could not be identified."
+    blocking_publication: true
+  - id: booking_delivery
+    applies_to: [nisztor, bukovina]
+    question:
+      hu: "Hová érkezzenek a foglalási kérelmek, és milyen válaszidőt ígérhetünk a vendégeknek?"
+      ro: "Unde trebuie trimise cererile de rezervare și ce termen de răspuns poate fi promis oaspeților?"
+      en: "Where should booking inquiries be delivered, and what response time may be promised to guests?"
+    reason:
+      hu: "A tartalom meghatározza a kérelem mezőit, de a feldolgozási folyamatot nem."
+      ro: "Conținutul definește câmpurile cererii, dar nu și fluxul de procesare."
+      en: "The content defines the inquiry fields but not the handling workflow."
+    blocking_publication: true

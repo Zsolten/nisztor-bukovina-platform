@@ -31,8 +31,9 @@ Az owner megjelölés elsődleges felelősséget jelent, nem jogosítja fel a mo
 | Követelmény | Állapot | Bizonyíték |
 | --- | --- | --- |
 | `FR-GH-001` | Megvalósítva | publikus lista és két külön részletútvonal; külön `guesthouse`, fordítás- és képmetadatok; `active` alapú elrejtés; backend integration és frontend route tesztek |
+| `FR-GH-002` | Részben megvalósítva | teljes publikus információs tartalom HU/RO/EN nyelven; normalizált szoba-, szolgáltatás-, ár-, kapcsolat- és címadatok; reszponzív információs UI és aszimmetrikus galéria; foglalás és adminisztráció még nincs |
 
-A részletes elfogadási leképezést az [`FR-GH-001` feature-dokumentum](../features/FR-GH-001-public-guesthouses.md) tartalmazza. A `FR-GH-002` és a további panzió-, szoba-, szolgáltatás-, ár-, kapcsolattartási, foglalási és adminisztrációs követelmények ettől továbbra is külön hatókörök.
+A részletes elfogadási leképezést az [`FR-GH-001` feature-dokumentum](../features/FR-GH-001-public-guesthouses.md) és az [`FR-GH-002` publikus információs szeletének dokumentuma](../features/FR-GH-002-public-detail-content.md) tartalmazza. Az `FR-GH-002` foglalási és adminisztrációs része, valamint a további foglalási és adminisztrációs követelmények ettől továbbra is külön hatókörök.
 
 ## Változtatási szabály
 

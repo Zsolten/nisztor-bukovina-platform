@@ -2,7 +2,7 @@
 
 ## Technológiai alap
 
-A frontend React, TypeScript és Vite alapú alkalmazás. A routingot React Router, a háromnyelvű működést i18next és react-i18next támogatja. A foundation nem vezet be UI komponenskönyvtárat vagy külön globális állapotkezelőt.
+A frontend React, TypeScript és Vite alapú alkalmazás. A routingot React Router, a háromnyelvű működést i18next és react-i18next támogatja. A reszponzív elrendezés és az általános UI-viselkedés alapja a React-Bootstrap; külön globális állapotkezelő nincs.
 
 ## Feature szerkezet
 
@@ -19,6 +19,7 @@ src/
 |-- shared/
 |   |-- api/
 |   |-- components/
+|   |-- styles/
 |   `-- types/
 |-- i18n/
 |   |-- config.ts
@@ -26,11 +27,18 @@ src/
 |   `-- resources.ts
 |-- test/
 |   `-- setup.ts
-|-- main.tsx
-`-- styles.css
+`-- main.tsx
 ```
 
 Az üzleti képernyők és klienslogika a megfelelő feature alatt maradnak. A `shared` csak több feature által ténylegesen használt API-, komponens- és típusépítő elemeket tartalmaz. Üres feature könyvtár nem kerül verziókezelésbe.
+
+## Megjelenés és UI-komponensek
+
+A React-Bootstrap biztosítja a React-komponenseket, az akadálymentes interakciókat és a reszponzív rácsrendszert. Új navigáció, űrlap, modál, figyelmeztetés és általános reszponzív elrendezés elsődlegesen React-Bootstrap elemekből készüljön.
+
+A Bootstrap megjelenése a `shared/styles` alatti Sass belépési ponton keresztül, a projekt saját szín-, tipográfiai és térköztokenjeivel épül. CDN-ről betöltött Bootstrap CSS, Bootstrap JavaScript és közvetlen DOM-alapú Bootstrap inicializálás nem használható.
+
+Az oldal saját papír–erdőzöld–arany–téglavörös arculata és a feature-specifikus vizuális részletek alkalmazásstílusok maradnak. A Bootstrap a szerkezetet és a viselkedést adja, nem írja felül az arculatot. Külön wrapper komponens csak akkor készüljön, ha több helyen ismétlődő alkalmazásszintű viselkedést vagy vizuális szabályt foglal egységbe; egyszeri használatnál a React-Bootstrap komponens közvetlenül használható.
 
 ## Nyelvi routing
 
