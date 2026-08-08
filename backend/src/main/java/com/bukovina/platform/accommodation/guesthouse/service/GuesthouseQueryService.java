@@ -65,6 +65,7 @@ public class GuesthouseQueryService {
     PricingView pricing = pricingQuery.findPublished(guesthouse.getId(), language);
 
     return new GuesthouseDetailResponse(
+        guesthouse.getId(),
         guesthouse.getSlug(),
         translation.getName(),
         translation.getShortDescription(),
@@ -88,6 +89,7 @@ public class GuesthouseQueryService {
   private GuesthouseSummaryResponse toSummary(Guesthouse guesthouse, String language) {
     GuesthouseTranslation translation = translationFor(guesthouse, language);
     return new GuesthouseSummaryResponse(
+        guesthouse.getId(),
         guesthouse.getSlug(),
         translation.getName(),
         translation.getShortDescription(),

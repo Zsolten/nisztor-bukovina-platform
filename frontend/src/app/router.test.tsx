@@ -7,6 +7,7 @@ import { appRoutes } from './router'
 
 const guesthouses = [
   {
+    id: '10000000-0000-0000-0000-000000000001',
     slug: 'nisztor-panzio',
     name: 'Nisztor Panzió',
     shortDescription: 'Csendes, nyugodt, családias környezet.',
@@ -18,6 +19,7 @@ const guesthouses = [
     },
   },
   {
+    id: '10000000-0000-0000-0000-000000000002',
     slug: 'bukovina-panzio',
     name: 'Bukovina Panzió',
     shortDescription: 'Igényes szálláslehetőség Csernakeresztúron.',
@@ -160,7 +162,7 @@ describe('guesthouse and language routing', () => {
     )
     expect(screen.getByRole('link', { name: 'Foglalási kérelem' })).toHaveAttribute(
       'href',
-      'mailto:nisztorpanzio@gmail.com',
+      '/hu/booking',
     )
     expect(
       document.querySelector('.section-index, .card-number, .destination-image-wrap > span'),

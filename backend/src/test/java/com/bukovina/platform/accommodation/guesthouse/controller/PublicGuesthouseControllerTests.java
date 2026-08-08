@@ -29,6 +29,7 @@ class PublicGuesthouseControllerTests {
         .perform(get("/api/guesthouses").queryParam("lang", "hu"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(2))
+        .andExpect(jsonPath("$[0].id").isNotEmpty())
         .andExpect(jsonPath("$[0].slug").value("nisztor-panzio"))
         .andExpect(jsonPath("$[0].name").value("Nisztor Panzió"))
         .andExpect(jsonPath("$[0].roomCount").value(5))
@@ -42,6 +43,7 @@ class PublicGuesthouseControllerTests {
     mockMvc
         .perform(get("/api/guesthouses/nisztor-panzio").queryParam("lang", "hu"))
         .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").isNotEmpty())
         .andExpect(jsonPath("$.slug").value("nisztor-panzio"))
         .andExpect(jsonPath("$.images.length()").value(10))
         .andExpect(jsonPath("$.coverImage.cover").value(true));

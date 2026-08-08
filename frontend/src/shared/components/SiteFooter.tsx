@@ -11,7 +11,6 @@ export default function SiteFooter({ language }: SiteFooterProps) {
 
   return (
     <footer className="site-footer">
-
       <div className="site-footer-main">
         <div className="footer-brand-column">
           <div className="footer-logos">
@@ -26,9 +25,9 @@ export default function SiteFooter({ language }: SiteFooterProps) {
           <a href="tel:+40743677812">+40 743 677 812</a>
           <a href="mailto:nisztorpanzio@gmail.com">nisztorpanzio@gmail.com</a>
           <address>{t('app.footer.address')}</address>
-          <a className="footer-booking-link" href="mailto:nisztorpanzio@gmail.com">
+          <Link className="footer-booking-link" to={`/${language}/booking`}>
             {t('app.footer.bookingRequest')}
-          </a>
+          </Link>
         </section>
 
         <nav className="footer-navigation" aria-label={t('app.footer.navigationTitle')}>
