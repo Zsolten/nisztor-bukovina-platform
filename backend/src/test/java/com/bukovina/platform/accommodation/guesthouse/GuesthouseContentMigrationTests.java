@@ -23,6 +23,11 @@ class GuesthouseContentMigrationTests {
     assertEquals(23, count("amenity"));
     assertEquals(46, count("guesthouse_amenity"));
     assertEquals(18, count("price_item"));
+    assertEquals(0, activePriceItemCount("lunch"));
+    assertEquals(0, activePriceItemCount("full_board"));
+    assertEquals(2, priceItemLanguageCount("tour_guide", "hu"));
+    assertEquals(0, priceItemLanguageCount("tour_guide", "ro"));
+    assertEquals(0, priceItemLanguageCount("tour_guide", "en"));
     assertEquals(4, count("pricing_adjustment"));
     assertEquals(12, count("guesthouse_contact"));
     assertEquals(2, count("guesthouse_address"));
@@ -76,6 +81,24 @@ class GuesthouseContentMigrationTests {
 
   private int count(String tableName) {
     return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM " + tableName, Integer.class);
+  }
+
+  private int activePriceItemCount(String code) {
+    return jdbcTemplate.queryForObject(
+        "SELECT COUNT(*) FROM price_item WHERE code = ? AND active = TRUE", Integer.class, code);
+  }
+
+  private int priceItemLanguageCount(String code, String languageCode) {
+    return jdbcTemplate.queryForObject(
+        """
+        SELECT COUNT(*)
+        FROM price_item_language_availability availability
+        JOIN price_item item ON item.id = availability.price_item_id
+        WHERE item.code = ? AND availability.language_code = ?
+        """,
+        Integer.class,
+        code,
+        languageCode);
   }
 
   private int roomTypeQuantity(String slug, String code) {

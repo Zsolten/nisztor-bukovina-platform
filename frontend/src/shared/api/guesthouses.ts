@@ -7,6 +7,7 @@ export interface GuesthouseImage {
 }
 
 export interface GuesthouseSummary {
+  id: string
   slug: string
   name: string
   shortDescription: string

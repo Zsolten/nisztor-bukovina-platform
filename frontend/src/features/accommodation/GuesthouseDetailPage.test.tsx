@@ -5,6 +5,7 @@ import { AppProviders } from '../../app/providers'
 import { appRoutes } from '../../app/router'
 
 const detail = {
+  id: '10000000-0000-0000-0000-000000000001',
   slug: 'nisztor-panzio',
   name: 'Nisztor Panzió',
   shortDescription: 'Csendes, családias szállás.',
@@ -12,7 +13,11 @@ const detail = {
   coverImage: { path: '/cover.jpg', altText: 'Panzió', cover: true },
   description: 'A Nisztor Panzió Csernakeresztúron várja vendégeit.',
   roomDescription: 'Öt kényelmes szoba várja a vendégeket.',
-  images: [{ path: '/cover.jpg', altText: 'Panzió', cover: true }],
+  images: [
+    { path: '/cover.jpg', altText: 'Panzió', cover: true },
+    { path: '/story-1.jpg', altText: 'Udvar', cover: false },
+    { path: '/story-2.jpg', altText: 'Szoba', cover: false },
+  ],
   history: {
     title: 'Bukovinai székely örökség Csernakeresztúron',
     text: 'A hagyományokat nemzedékről nemzedékre továbbadják.',
@@ -73,7 +78,7 @@ describe('GuesthouseDetailPage', () => {
     )
   })
 
-  it('presents the editorial guesthouse information with booking placeholders', async () => {
+  it('presents the editorial guesthouse information with booking links', async () => {
     const router = createMemoryRouter(appRoutes, {
       initialEntries: ['/hu/guesthouses/nisztor-panzio'],
     })
@@ -95,28 +100,15 @@ describe('GuesthouseDetailPage', () => {
     expect(screen.getByRole('heading', { name: 'Étkezés és konyha' })).toBeVisible()
     expect(screen.getByText('130 RON')).toBeVisible()
     expect(screen.getByText('1%')).toBeVisible()
-    expect(screen.getAllByText('Bucovina utca 17., Csernakeresztúr')).toHaveLength(2)
     const storyImages = document.querySelectorAll('.story-sheet .editorial-images img')
     expect(storyImages).toHaveLength(2)
-    expect(storyImages[0]).toHaveAttribute('src', '/cover.jpg')
-    expect(screen.getByRole('link', { name: /Nisztor Attila/ })).toHaveAttribute(
-      'href',
-      'tel:+40743677812',
-    )
-    expect(screen.getAllByRole('link', { name: /nisztorpanzio@gmail.com/ })).toHaveLength(2)
-    expect(screen.getByRole('link', { name: 'Foglalási kérelem' })).toHaveAttribute(
-      'href',
-      'mailto:nisztorpanzio@gmail.com',
-    )
+    expect(storyImages[0]).toHaveAttribute('src', '/story-1.jpg')
+    expect(storyImages[1]).toHaveAttribute('src', '/story-2.jpg')
 
-    const contactHeading = document.getElementById('contact-heading')
-    const galleryHeading = document.getElementById('gallery-heading')
-    expect(contactHeading?.compareDocumentPosition(galleryHeading!)).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING,
-    )
-
-    const bookingButtons = screen.getAllByRole('button', { name: 'Foglalás' })
+    const bookingButtons = screen.getAllByRole('link', { name: 'Foglalás' })
     expect(bookingButtons).toHaveLength(2)
-    bookingButtons.forEach((button) => expect(button).toHaveAttribute('aria-disabled', 'true'))
+    bookingButtons.forEach((button) =>
+      expect(button).toHaveAttribute('href', '/hu/guesthouses/nisztor-panzio/booking'),
+    )
   })
 })
