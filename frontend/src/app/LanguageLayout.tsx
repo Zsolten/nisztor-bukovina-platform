@@ -71,9 +71,7 @@ export default function LanguageLayout() {
             to={`/${lang}`}
             aria-label={t('app.navigation.home')}
           >
-            <span className="brand-mark" aria-hidden="true">
-              NB
-            </span>
+            {/* <img className="brand-logo" src="/images/logo/logo-anniversary.png" alt="Anniversary Logo" /> */}
             <span>
               <strong>{t('app.title')}</strong>
               <small>{t('app.location')}</small>

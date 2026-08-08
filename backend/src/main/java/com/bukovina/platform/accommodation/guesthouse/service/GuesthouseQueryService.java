@@ -136,6 +136,7 @@ public class GuesthouseQueryService {
         pricing.items().stream()
             .map(item -> new PriceItemResponse(item.id(), item.label(), item.amount(), item.unit()))
             .toList(),
+        pricing.taxes().stream().map(this::toAdjustment).toList(),
         pricing.surcharges().stream().map(this::toAdjustment).toList(),
         pricing.discounts().stream().map(this::toAdjustment).toList(),
         pricing.paymentNote());

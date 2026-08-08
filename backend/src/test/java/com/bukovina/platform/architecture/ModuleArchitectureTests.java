@@ -86,6 +86,15 @@ class ModuleArchitectureTests {
           .resideInAPackage("..accommodation.pricing.dao..");
 
   @ArchTest
+  static final ArchRule BOOKING_DAO_MUST_REMAIN_INSIDE_BOOKING_MODULE =
+      noClasses()
+          .that()
+          .resideOutsideOfPackage("..accommodation.booking..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("..accommodation.booking.dao..");
+
+  @ArchTest
   static final ArchRule TOP_LEVEL_PACKAGES_MUST_BE_FREE_OF_CYCLES =
       slices().matching("com.bukovina.platform.(*)..").should().beFreeOfCycles();
 }

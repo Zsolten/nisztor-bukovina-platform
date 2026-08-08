@@ -54,7 +54,11 @@ const detail = {
   pricing: {
     currency: 'RON',
     items: [{ id: 'lodging', label: 'Szállás', amount: 130, unit: 'person_night' }],
-    surcharges: [{ id: 'tourist-tax', label: 'Idegenforgalmi adó', percentage: 1 }],
+    taxes: [
+      { id: 'accommodation_tax', label: 'Szállás áfája', percentage: 11 },
+      { id: 'city_tax', label: 'Idegenforgalmi adó', percentage: 1 },
+    ],
+    surcharges: [],
     discounts: [{ id: 'children', label: 'Gyermekkedvezmény', percentage: 50 }],
     paymentNote: 'Fizetés érkezéskor.',
   },
