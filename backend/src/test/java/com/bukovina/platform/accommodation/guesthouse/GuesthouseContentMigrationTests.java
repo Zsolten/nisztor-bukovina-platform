@@ -23,7 +23,7 @@ class GuesthouseContentMigrationTests {
     assertEquals(23, count("amenity"));
     assertEquals(46, count("guesthouse_amenity"));
     assertEquals(18, count("price_item"));
-    assertEquals(6, count("pricing_adjustment"));
+    assertEquals(4, count("pricing_adjustment"));
     assertEquals(12, count("guesthouse_contact"));
     assertEquals(2, count("guesthouse_address"));
   }

@@ -105,17 +105,15 @@ img {
   color: var(--ink);
 }
 
-.brand-mark {
+.brand-logo {
   display: grid;
-  width: 48px;
-  height: 48px;
-  place-items: center;
-  border: 1px solid var(--forest);
-  color: var(--forest);
-  font-family: var(--serif);
-  font-size: 1.1rem;
-  letter-spacing: 0;
-  transform: rotate(-3deg);
+  width: 60px;
+  height: 60px;
+  padding: 0.25rem;
+  object-fit: contain;
+  // background: var(--paper-light);
+  // border: 1px solid var(--forest);
+  // transform: rotate(-3deg);
 }
 
 .brand strong,
@@ -193,9 +191,8 @@ img {
   color: var(--paper-light);
 }
 
-.site-header:not(.site-header-scrolled) .brand-mark {
+.site-header:not(.site-header-scrolled) .brand-logo {
   border-color: rgba(255, 255, 255, 0.72);
-  color: var(--paper-light);
 }
 
 .site-header:not(.site-header-scrolled) .brand small {

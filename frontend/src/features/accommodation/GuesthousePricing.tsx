@@ -45,6 +45,12 @@ export default function GuesthousePricing({ pricing }: GuesthousePricingProps) {
         </Col>
         <Col xs={12} lg={4}>
           <div className="pricing-notes">
+            {pricing.taxes.map((tax) => (
+              <div key={tax.id}>
+                <span>{tax.label}</span>
+                <strong>{tax.percentage}%</strong>
+              </div>
+            ))}
             {pricing.surcharges.map((adjustment) => (
               <div key={adjustment.id}>
                 <span>{adjustment.label}</span>

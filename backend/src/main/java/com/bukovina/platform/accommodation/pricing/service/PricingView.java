@@ -6,6 +6,7 @@ import java.util.List;
 public record PricingView(
     String currency,
     List<Item> items,
+    List<Adjustment> taxes,
     List<Adjustment> surcharges,
     List<Adjustment> discounts,
     String paymentNote) {

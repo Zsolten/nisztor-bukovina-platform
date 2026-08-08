@@ -71,6 +71,7 @@ export interface GuesthousePricingAdjustment {
 export interface GuesthousePricing {
   currency: 'RON'
   items: GuesthousePriceItem[]
+  taxes: GuesthousePricingAdjustment[]
   surcharges: GuesthousePricingAdjustment[]
   discounts: GuesthousePricingAdjustment[]
   paymentNote: string

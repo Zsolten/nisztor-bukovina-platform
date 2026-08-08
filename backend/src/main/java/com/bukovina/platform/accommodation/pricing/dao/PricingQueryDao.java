@@ -46,6 +46,7 @@ public class PricingQueryDao {
     return new PricingView(
         header.currency(),
         findItems(header.id(), language),
+        findTaxes(language),
         findAdjustments(header.id(), language, "SURCHARGE"),
         findAdjustments(header.id(), language, "DISCOUNT"),
         header.paymentNote());
@@ -103,6 +104,33 @@ public class PricingQueryDao {
         .param("pricingId", pricingId)
         .param("language", language)
         .param("kind", kind)
+        .query(
+            (resultSet, rowNumber) ->
+                new PricingView.Adjustment(
+                    resultSet.getString("code"),
+                    resultSet.getString("label"),
+                    resultSet.getBigDecimal("percentage")))
+        .list();
+  }
+
+  private List<PricingView.Adjustment> findTaxes(String language) {
+    return jdbcClient
+        .sql(
+            """
+            SELECT tax.code,
+                   COALESCE(requested.label, fallback.label) AS label,
+                   tax.percentage
+            FROM tax_configuration tax
+            LEFT JOIN tax_configuration_translation requested
+              ON requested.tax_code = tax.code
+             AND requested.language_code = :language
+            JOIN tax_configuration_translation fallback
+              ON fallback.tax_code = tax.code
+             AND fallback.language_code = 'hu'
+            WHERE tax.active = TRUE
+            ORDER BY tax.display_order
+            """)
+        .param("language", language)
         .query(
             (resultSet, rowNumber) ->
                 new PricingView.Adjustment(
