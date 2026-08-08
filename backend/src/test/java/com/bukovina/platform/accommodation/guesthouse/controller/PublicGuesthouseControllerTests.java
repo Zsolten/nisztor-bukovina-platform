@@ -72,11 +72,26 @@ class PublicGuesthouseControllerTests {
         .andExpect(jsonPath("$.pricing.taxes[0].percentage").value(11))
         .andExpect(jsonPath("$.pricing.taxes[1].id").value("city_tax"))
         .andExpect(jsonPath("$.pricing.taxes[1].percentage").value(1))
+        .andExpect(jsonPath("$.pricing.items.length()").value(6))
+        .andExpect(jsonPath("$.pricing.items[?(@.id == 'tour_guide')]").isEmpty())
         .andExpect(
             jsonPath("$.address.formatted")
                 .value("17 Bucovina Street, Cristur 330003, Hunedoara County, Romania"))
         .andExpect(
             jsonPath("$.images[0].altText").value("Street-facing facade of Nisztor Guesthouse"));
+  }
+
+  @Test
+  void exposesTourGuideOnlyInHungarian() throws Exception {
+    mockMvc
+        .perform(get("/api/guesthouses/nisztor-panzio").queryParam("lang", "hu"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.pricing.items[?(@.id == 'tour_guide')]").isNotEmpty());
+
+    mockMvc
+        .perform(get("/api/guesthouses/nisztor-panzio").queryParam("lang", "ro"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.pricing.items[?(@.id == 'tour_guide')]").isEmpty());
   }
 
   @Test
@@ -117,7 +132,7 @@ class PublicGuesthouseControllerTests {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.roomTypes.length()").value(2))
         .andExpect(jsonPath("$.amenities.length()").value(22))
-        .andExpect(jsonPath("$.pricing.items.length()").value(8));
+        .andExpect(jsonPath("$.pricing.items.length()").value(6));
   }
 
   @Test

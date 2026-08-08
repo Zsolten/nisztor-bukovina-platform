@@ -59,6 +59,9 @@ public class PricingQueryDao {
             SELECT item.code, COALESCE(requested.label, fallback.label) AS label,
                    item.amount, item.unit
             FROM price_item item
+            JOIN price_item_language_availability availability
+              ON availability.price_item_id = item.id
+             AND availability.language_code = :language
             LEFT JOIN price_item_translation requested
               ON requested.price_item_id = item.id
              AND requested.language_code = :language

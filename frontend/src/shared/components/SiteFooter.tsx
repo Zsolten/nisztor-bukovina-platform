@@ -25,7 +25,11 @@ export default function SiteFooter({ language }: SiteFooterProps) {
           <a href="tel:+40743677812">+40 743 677 812</a>
           <a href="mailto:nisztorpanzio@gmail.com">nisztorpanzio@gmail.com</a>
           <address>{t('app.footer.address')}</address>
-          <Link className="footer-booking-link" to={`/${language}/booking`}>
+          <Link
+            className="footer-booking-link"
+            to={`/${language}/booking?guesthouse=bukovina-panzio`}
+            title={t('app.footer.bookingRequest')}
+          >
             {t('app.footer.bookingRequest')}
           </Link>
         </section>

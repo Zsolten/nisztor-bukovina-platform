@@ -77,6 +77,24 @@ const details: Record<string, GuesthouseDetail> = {
   'bukovina-panzio': detailFor(guesthouses[1], 'Négyágyas szoba', 4, 140, 'Bukovina kert'),
 }
 
+details['bukovina-panzio'].pricing.items = [
+  ...details['bukovina-panzio'].pricing.items,
+  { id: 'breakfast', label: 'Reggeli', amount: 45, unit: 'person' },
+  { id: 'dinner', label: 'Vacsora', amount: 75, unit: 'person' },
+  { id: 'sauna', label: 'Szauna', amount: 80, unit: 'person' },
+  { id: 'guide', label: 'Idegenvezetés', amount: 600, unit: 'day' },
+]
+details['bukovina-panzio'].amenities = [
+  ...details['bukovina-panzio'].amenities,
+  ...['Parkoló', 'Wi-Fi', 'Terasz', 'Közös konyha', 'Dézsafürdő', 'Bukovina szauna'].map(
+    (name, index) => ({
+      id: `bukovina-extra-${index}`,
+      name,
+      category: 'OUTDOOR_WELLNESS' as const,
+    }),
+  ),
+]
+
 function okJson(body: unknown): Response {
   return { ok: true, status: 200, json: async () => body } as Response
 }
@@ -113,6 +131,7 @@ describe('BookingPage guesthouse entry step', () => {
     expect(await screen.findByRole('radio', { name: /Nisztor Panzió/ })).not.toBeChecked()
     expect(screen.getByRole('group', { name: 'A kiválasztott panzió részletei' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Tovább a foglalási adatokhoz' })).toBeDisabled()
+    expect(screen.getByText('A foglalási igényt a panzió visszajelzése véglegesíti.')).toBeVisible()
   })
 
   it('carries the selected id and refreshes guesthouse-specific content', async () => {
@@ -127,9 +146,17 @@ describe('BookingPage guesthouse entry step', () => {
     )
     expect(bukovina).toHaveAttribute('value', bukovinaId)
     expect(bukovina).toBeChecked()
+    expect(bukovina.closest('label')).toHaveClass('is-selected')
+    expect(screen.queryByText('✓')).not.toBeInTheDocument()
     expect(await screen.findByText('Négyágyas szoba')).toBeVisible()
     expect(screen.getByText('140 RON')).toBeVisible()
     expect(screen.getByText('Bukovina kert')).toBeVisible()
+    expect(screen.getByText('Idegenvezetés')).toBeVisible()
+    expect(screen.queryByText('Bukovina szauna')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '+1 további' }))
+    expect(screen.getByText('Bukovina szauna')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Kevesebb' })).toBeVisible()
     expect(screen.getByRole('button', { name: 'Tovább a foglalási adatokhoz' })).toBeEnabled()
 
     await user.click(screen.getByRole('radio', { name: /Nisztor Panzió/ }))
