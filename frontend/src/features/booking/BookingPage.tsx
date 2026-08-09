@@ -176,9 +176,9 @@ export default function BookingPage() {
           dispatch={dispatch}
           onBack={() => void navigate(`/${language}/guesthouses/${selection.slug}/booking`)}
           onSubmitted={(booking) =>
-            void navigate(
-              `/${language}/booking-request-success?reference=${encodeURIComponent(booking.reference)}&status=${booking.status}`,
-            )
+            void navigate(`/${language}/booking-request-success`, {
+              state: { booking, bookingState: state, guesthouse: selection },
+            })
           }
         />
       )
