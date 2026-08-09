@@ -3495,6 +3495,117 @@ img {
   letter-spacing: 0.04em;
 }
 
+.booking-success-facts,
+.booking-success-summary,
+.booking-success-contact {
+  display: grid;
+  margin-top: 1.25rem;
+  gap: 0.65rem;
+  text-align: left;
+}
+
+.booking-success-facts {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.booking-success-facts article,
+.booking-success-contact,
+.booking-success-summary {
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+}
+
+.booking-success-facts strong,
+.booking-success-contact h2,
+.booking-success-summary h2 {
+  display: block;
+  margin: 0;
+  color: var(--forest);
+  font-size: 0.82rem;
+}
+
+.booking-success-facts span,
+.booking-success-contact a,
+.booking-success-summary dl {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.booking-reference button {
+  display: inline-flex;
+  width: fit-content;
+  margin: 0.5rem auto 0;
+  padding: 0;
+  align-items: center;
+  gap: 0.35rem;
+  border: 0;
+  background: transparent;
+  color: var(--brick);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.booking-reference small {
+  color: var(--forest);
+  font-size: 0.74rem;
+}
+
+.booking-success-contact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.booking-success-contact h2 {
+  grid-column: 1 / -1;
+}
+
+.booking-success-contact a {
+  display: inline-flex;
+  margin: 0;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.booking-success-summary dl {
+  display: grid;
+  margin: 0;
+  gap: 0.4rem;
+}
+
+.booking-success-summary dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.booking-success-summary dt {
+  color: var(--muted);
+}
+
+.booking-success-summary dd {
+  margin: 0;
+  color: var(--ink);
+  text-align: right;
+}
+
+.booking-success-total {
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--gold);
+}
+
+.booking-success-total dd {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+}
+
+.booking-success-payment {
+  margin: 1rem 0 0 !important;
+  font-size: 0.78rem;
+}
+
 @keyframes booking-spin {
   to {
     transform: rotate(360deg);
@@ -3514,6 +3625,20 @@ img {
 @media (max-width: 620px) {
   .booking-contact-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .booking-success-facts,
+  .booking-success-contact {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .booking-success-summary dl > div {
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .booking-success-summary dd {
+    text-align: left;
   }
 }
 
