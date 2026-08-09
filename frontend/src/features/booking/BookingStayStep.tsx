@@ -211,7 +211,6 @@ export default function BookingStayStep({
 
       <form className="booking-stay-form" onSubmit={(event) => event.preventDefault()}>
         <section className="booking-stay-inputs" aria-labelledby="booking-stay-heading">
-
           <div className="booking-date-grid">
             <label>
               <span>{t('booking.arrival')}</span>
