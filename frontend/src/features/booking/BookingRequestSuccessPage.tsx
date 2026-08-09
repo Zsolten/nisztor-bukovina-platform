@@ -19,7 +19,12 @@ const LOCALES: Record<Language, string> = { hu: 'hu-HU', ro: 'ro-RO', en: 'en-GB
 function isSuccessNavigationState(value: unknown): value is BookingSuccessNavigationState {
   if (!value || typeof value !== 'object') return false
   const state = value as Partial<BookingSuccessNavigationState>
-  return Boolean(state.booking?.reference && state.guesthouse?.name && state.bookingState)
+  return Boolean(
+    state.booking?.reference &&
+    state.booking?.requestOnly &&
+    state.guesthouse?.name &&
+    state.bookingState,
+  )
 }
 
 function preferredContact(guesthouse: GuesthouseDetail, type: 'PHONE' | 'EMAIL') {
@@ -157,7 +162,7 @@ export default function BookingRequestSuccessPage() {
             </div>
             <div>
               <dt>{t('booking.status')}</dt>
-              <dd>{booking.status}</dd>
+              <dd>{t('booking.statusReceived')}</dd>
             </div>
             <div className="booking-success-total">
               <dt>{t('booking.total')}</dt>

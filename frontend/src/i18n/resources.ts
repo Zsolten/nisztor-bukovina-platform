@@ -133,6 +133,7 @@ export const resources = {
         guesthouseContact: 'Panzió elérhetőségei',
         guesthouse: 'Panzió',
         status: 'Állapot',
+        statusReceived: 'Beérkezett',
         backToHome: 'Vissza a főoldalra',
         errors: {
           generic: 'A foglalási igényt most nem tudtuk elküldeni. Kérjük, próbálja újra.',
@@ -429,6 +430,7 @@ export const resources = {
         guesthouseContact: 'Contact pensiune',
         guesthouse: 'Pensiune',
         status: 'Stare',
+        statusReceived: 'Primită',
         backToHome: 'Înapoi la pagina principală',
         errors: {
           generic: 'Cererea nu a putut fi trimisă acum. Încercați din nou.',
@@ -723,6 +725,7 @@ export const resources = {
         guesthouseContact: 'Guesthouse contact',
         guesthouse: 'Guesthouse',
         status: 'Status',
+        statusReceived: 'Received',
         backToHome: 'Back to home',
         errors: {
           generic: 'We could not send the booking request right now. Please try again.',

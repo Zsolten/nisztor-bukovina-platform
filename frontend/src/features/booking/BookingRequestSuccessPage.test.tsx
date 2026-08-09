@@ -92,7 +92,7 @@ describe('BookingRequestSuccessPage', () => {
     )
 
     expect(screen.getByText('NB-0123456789ABCDEF')).toBeVisible()
-    expect(screen.getByText('RECEIVED')).toBeVisible()
+    expect(screen.getByText('Beérkezett')).toBeVisible()
     expect(screen.getByText(/520/)).toBeVisible()
     expect(screen.getByRole('link', { name: '+40743677812' })).toHaveAttribute(
       'href',
