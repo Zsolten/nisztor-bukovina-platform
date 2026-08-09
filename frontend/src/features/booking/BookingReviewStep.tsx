@@ -334,12 +334,16 @@ export default function BookingReviewStep({
                 <span>
                   {t('booking.adults')}: {state.adults}
                 </span>
-                <span>
-                  {t('booking.childrenAge3to10')}: {state.childrenAge3to10}
-                </span>
-                <span>
-                  {t('booking.childrenAge0to3')}: {state.childrenAge0to3}
-                </span>
+                {state.childrenAge3to10 > 0 && (
+                  <span>
+                    {t('booking.childrenAge3to10')}: {state.childrenAge3to10}
+                  </span>
+                )}
+                {state.childrenAge0to3 > 0 && (
+                  <span>
+                    {t('booking.childrenAge0to3')}: {state.childrenAge0to3}
+                  </span>
+                )}
               </dd>
             </div>
             <div>
