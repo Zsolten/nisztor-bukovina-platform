@@ -8,7 +8,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.bukovina.platform.testsupport.PostgreSqlTestContainerConfiguration;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,6 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest(properties = "DB_PASSWORD=test-password")
@@ -387,6 +393,44 @@ class PublicBookingControllerTests {
   }
 
   @Test
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
+  void serializesConcurrentSubmissionsWithTheSameIdempotencyKey() throws Exception {
+    UUID guesthouseId = guesthouseId("bukovina-panzio");
+    UUID roomTypeId = roomTypeId("bukovina-panzio", "double");
+    String email = "parallel@example.com";
+    String body =
+        submitJson(
+            guesthouseId,
+            roomTypeId,
+            "Parallel Guest",
+            email,
+            "+40 700 000 001",
+            "en",
+            null,
+            "700.00");
+    ExecutorService executor = Executors.newFixedThreadPool(2);
+
+    try {
+      List<Future<MvcResult>> results =
+          executor.invokeAll(
+              List.of(
+                  submission(body, "parallel-idempotency-key"),
+                  submission(body, "parallel-idempotency-key")));
+
+      MvcResult first = results.getFirst().get();
+      MvcResult second = results.get(1).get();
+      assertEquals(201, first.getResponse().getStatus());
+      assertEquals(201, second.getResponse().getStatus());
+      assertEquals(
+          first.getResponse().getContentAsString(), second.getResponse().getContentAsString());
+      assertEquals(1, count("booking_request"));
+    } finally {
+      executor.shutdownNow();
+      jdbcTemplate.update("DELETE FROM booking_request WHERE contact_email = ?", email);
+    }
+  }
+
+  @Test
   void requiresAnIdempotencyKeyAndRollsBackInvalidCreation() throws Exception {
     UUID guesthouseId = guesthouseId("bukovina-panzio");
     UUID roomTypeId = roomTypeId("bukovina-panzio", "double");
@@ -411,6 +455,10 @@ class PublicBookingControllerTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
         .andReturn();
+  }
+
+  private Callable<MvcResult> submission(String body, String idempotencyKey) {
+    return () -> submit(body, idempotencyKey);
   }
 
   private void expectError(String body, String code) throws Exception {
