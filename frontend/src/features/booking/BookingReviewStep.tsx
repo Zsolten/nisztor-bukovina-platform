@@ -1,7 +1,7 @@
 import { ArrowLeft, LoaderCircle, Send } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type Dispatch, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { Language } from '../../i18n/languages'
+import { isSupportedLanguage, type Language } from '../../i18n/languages'
 import {
   BookingApiError,
   fetchBookingQuote,
@@ -273,7 +273,10 @@ export default function BookingReviewStep({
                 value={state.contact.preferredLanguage}
                 aria-invalid={Boolean(clientErrors.preferredLanguage)}
                 onChange={(event) => {
-                  dispatch({ type: 'preferredLanguageSelected', value: event.target.value })
+                  const selectedLanguage = event.target.value
+                  if (!isSupportedLanguage(selectedLanguage)) return
+
+                  dispatch({ type: 'preferredLanguageSelected', value: selectedLanguage })
                   setClientErrors((current) => ({ ...current, preferredLanguage: undefined }))
                   setSubmissionError(null)
                 }}

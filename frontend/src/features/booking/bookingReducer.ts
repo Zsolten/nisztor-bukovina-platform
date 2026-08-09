@@ -52,7 +52,7 @@ export type BookingFlowAction =
       value: number
     }
   | { type: 'contactChanged'; field: keyof BookingContactDetails; value: string }
-  | { type: 'preferredLanguageSelected'; value: string }
+  | { type: 'preferredLanguageSelected'; value: '' | 'hu' | 'ro' | 'en' }
 
 export const BOOKING_FLOW_STORAGE_KEY = 'bukovina-booking-flow'
 
