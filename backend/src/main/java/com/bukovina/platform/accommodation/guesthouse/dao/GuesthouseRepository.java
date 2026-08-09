@@ -11,4 +11,6 @@ public interface GuesthouseRepository extends JpaRepository<Guesthouse, UUID> {
   List<Guesthouse> findAllByActiveTrueOrderByDisplayOrderAsc();
 
   Optional<Guesthouse> findBySlugAndActiveTrue(String slug);
+
+  boolean existsByIdAndActiveTrue(UUID id);
 }

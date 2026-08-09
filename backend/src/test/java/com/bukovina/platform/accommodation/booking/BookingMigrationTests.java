@@ -47,10 +47,10 @@ class BookingMigrationTests {
     String constraints =
         constraintsFor("booking_request") + constraintsFor("booking_status_history");
 
-    for (String status :
-        List.of("RECEIVED", "UNDER_REVIEW", "CONFIRMED", "REJECTED", "CANCELLED")) {
+    for (String status : List.of("RECEIVED", "CONFIRMED", "REJECTED", "CANCELLED")) {
       assertTrue(constraints.contains(status));
     }
+    assertFalse(constraints.contains("UNDER_REVIEW"));
     assertFalse(constraints.contains("PENDING_EMAIL_VERIFICATION"));
   }
 
@@ -71,32 +71,58 @@ class BookingMigrationTests {
   }
 
   @Test
-  void storesGenericTaxRatesAndAmountsWithoutEncodingCurrentRatesInColumnNames() {
+  void storesPriceSnapshotWithoutTaxInformation() {
+    assertTrue(columnExists("booking_request", "accommodation_total"));
     for (String columnName :
         List.of(
             "accommodation_tax_rate",
             "accommodation_tax_amount",
             "city_tax_rate",
             "city_tax_amount")) {
-      assertTrue(columnExists("booking_request", columnName));
+      assertFalse(columnExists("booking_request", columnName));
     }
-
-    assertFalse(columnExists("booking_request", "tax_11_percent"));
-    assertFalse(columnExists("booking_request", "city_tax_1_percent"));
+    assertFalse(columnExists("booking_request", "net_accommodation"));
   }
 
   @Test
-  void storesCountryWideTaxRatesAsEditableGlobalConfiguration() {
+  void keepsCityTaxAsInformationalGlobalConfigurationWithoutVat() {
     assertTrue(tableExists("tax_configuration"));
     assertTrue(tableExists("tax_configuration_translation"));
-    assertEquals("11.00", taxRate("accommodation_tax"));
     assertEquals("1.00", taxRate("city_tax"));
+    assertEquals(0, taxRowCount("accommodation_tax"));
     assertTrue(foreignKeyExists("tax_configuration_translation", "tax_configuration"));
 
     Integer obsoleteTouristTaxRows =
         jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM pricing_adjustment WHERE code = 'tourist_tax'", Integer.class);
     assertEquals(0, obsoleteTouristTaxRows);
+  }
+
+  @Test
+  void addsPublicReferenceIdempotencyAndCompletePriceSnapshotColumns() {
+    for (String columnName :
+        List.of(
+            "public_reference",
+            "idempotency_key_hash",
+            "request_fingerprint",
+            "currency",
+            "breakfast_participants",
+            "dinner_participants",
+            "breakfast_total",
+            "dinner_total")) {
+      assertTrue(columnExists("booking_request", columnName));
+    }
+
+    List<String> indexes =
+        jdbcTemplate.queryForList(
+            "SELECT indexdef FROM pg_indexes WHERE tablename = 'booking_request'", String.class);
+    assertTrue(
+        indexes.stream()
+            .anyMatch(index -> index.contains("UNIQUE") && index.contains("(public_reference)")));
+    assertTrue(
+        indexes.stream()
+            .anyMatch(
+                index -> index.contains("UNIQUE") && index.contains("(idempotency_key_hash)")));
   }
 
   private boolean tableExists(String tableName) {
@@ -122,6 +148,11 @@ class BookingMigrationTests {
         """,
         String.class,
         taxCode);
+  }
+
+  private int taxRowCount(String taxCode) {
+    return jdbcTemplate.queryForObject(
+        "SELECT COUNT(*) FROM tax_configuration WHERE code = ?", Integer.class, taxCode);
   }
 
   private boolean foreignKeyExists(String tableName, String referencedTableName) {

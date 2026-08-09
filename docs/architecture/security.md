@@ -12,7 +12,7 @@ A Spring Security függőség és konfiguráció jelen van, de a foundation mind
 
 ## Validáció
 
-Minden felhasználói bemenetet frontend- és backendoldalon is validálni kell, de a backend ellenőrzése az irányadó. Kötelező a mezőhossz, e-mail, telefonszám, dátumtartomány, nem negatív létszám és szobaszám, valamint a hivatkozott panzió és szobatípus ellenőrzése. A szabad szöveg nem renderelhető HTML-ként. Az árakat, adókat, férőhelyet és végösszeget a backend a kliens értékétől függetlenül újraszámítja.
+Minden felhasználói bemenetet frontend- és backendoldalon is validálni kell, de a backend ellenőrzése az irányadó. Kötelező a mezőhossz, e-mail, telefonszám, dátumtartomány, nem negatív létszám és szobaszám, valamint a hivatkozott panzió és szobatípus ellenőrzése. A szabad szöveg nem renderelhető HTML-ként. Az árakat, férőhelyet és végösszeget a backend a kliens értékétől függetlenül újraszámítja. A foglalási végösszeg nem tartalmaz ÁFA- vagy idegenforgalmiadó-számítást; az idegenforgalmi adó kizárólag külön tájékoztatóként jelenhet meg.
 
 ## Adatvédelem
 

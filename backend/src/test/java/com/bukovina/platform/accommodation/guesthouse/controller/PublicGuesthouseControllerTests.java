@@ -68,10 +68,9 @@ class PublicGuesthouseControllerTests {
         .andExpect(jsonPath("$.amenities.length()").value(23))
         .andExpect(jsonPath("$.pricing.currency").value("RON"))
         .andExpect(jsonPath("$.pricing.items[0].amount").value(130))
-        .andExpect(jsonPath("$.pricing.taxes[0].id").value("accommodation_tax"))
-        .andExpect(jsonPath("$.pricing.taxes[0].percentage").value(11))
-        .andExpect(jsonPath("$.pricing.taxes[1].id").value("city_tax"))
-        .andExpect(jsonPath("$.pricing.taxes[1].percentage").value(1))
+        .andExpect(jsonPath("$.pricing.taxes.length()").value(1))
+        .andExpect(jsonPath("$.pricing.taxes[0].id").value("city_tax"))
+        .andExpect(jsonPath("$.pricing.taxes[0].percentage").value(1))
         .andExpect(jsonPath("$.pricing.items.length()").value(6))
         .andExpect(jsonPath("$.pricing.items[?(@.id == 'tour_guide')]").isEmpty())
         .andExpect(

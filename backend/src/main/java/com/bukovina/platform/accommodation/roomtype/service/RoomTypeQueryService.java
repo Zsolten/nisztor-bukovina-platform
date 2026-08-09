@@ -6,7 +6,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RoomTypeQueryService implements RoomTypeQuery {
+public class RoomTypeQueryService implements RoomTypeQuery, BookingRoomTypeQuery {
 
   private final RoomTypeQueryDao queryDao;
 
@@ -17,5 +17,10 @@ public class RoomTypeQueryService implements RoomTypeQuery {
   @Override
   public List<RoomTypeView> findPublished(UUID guesthouseId, String language) {
     return queryDao.findPublished(guesthouseId, language);
+  }
+
+  @Override
+  public java.util.Optional<BookableRoomTypeView> findById(UUID roomTypeId) {
+    return queryDao.findById(roomTypeId);
   }
 }

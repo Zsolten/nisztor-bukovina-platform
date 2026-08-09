@@ -37,6 +37,15 @@ public class BookingRequest {
   @Column(name = "guesthouse_id", nullable = false)
   private UUID guesthouseId;
 
+  @Column(name = "public_reference", nullable = false, unique = true, length = 24)
+  private String publicReference;
+
+  @Column(name = "idempotency_key_hash", nullable = false, unique = true, length = 64)
+  private String idempotencyKeyHash;
+
+  @Column(name = "request_fingerprint", nullable = false, length = 64)
+  private String requestFingerprint;
+
   @Column(name = "check_in_date", nullable = false)
   private LocalDate checkInDate;
 
@@ -51,6 +60,12 @@ public class BookingRequest {
 
   @Column(name = "children_age_0_to_3", nullable = false)
   private int childrenAge0to3;
+
+  @Column(name = "breakfast_participants", nullable = false)
+  private int breakfastParticipants;
+
+  @Column(name = "dinner_participants", nullable = false)
+  private int dinnerParticipants;
 
   @Column(name = "contact_name", nullable = false, length = 160)
   private String contactName;
@@ -71,6 +86,9 @@ public class BookingRequest {
   private BookingStatus status;
 
   @Embedded private BookingPriceBreakdown priceBreakdown;
+
+  @Column(nullable = false, length = 3)
+  private String currency;
 
   @Column(name = "management_token_hash", nullable = false, unique = true, length = 128)
   private String managementTokenHash;
@@ -95,34 +113,44 @@ public class BookingRequest {
 
   public BookingRequest(
       UUID guesthouseId,
+      String publicReference,
+      String idempotencyKeyHash,
+      String requestFingerprint,
       LocalDate checkInDate,
       LocalDate checkOutDate,
       int adults,
       int childrenAge3to10,
       int childrenAge0to3,
+      int breakfastParticipants,
+      int dinnerParticipants,
       String contactName,
       String contactEmail,
       String contactPhone,
       String preferredLanguage,
       String note,
-      BookingStatus status,
       BookingPriceBreakdown priceBreakdown,
       String managementTokenHash,
       Instant managementTokenExpiresAt) {
     this.id = UUID.randomUUID();
     this.guesthouseId = Objects.requireNonNull(guesthouseId);
+    this.publicReference = Objects.requireNonNull(publicReference);
+    this.idempotencyKeyHash = Objects.requireNonNull(idempotencyKeyHash);
+    this.requestFingerprint = Objects.requireNonNull(requestFingerprint);
     this.checkInDate = Objects.requireNonNull(checkInDate);
     this.checkOutDate = Objects.requireNonNull(checkOutDate);
     this.adults = adults;
     this.childrenAge3to10 = childrenAge3to10;
     this.childrenAge0to3 = childrenAge0to3;
+    this.breakfastParticipants = breakfastParticipants;
+    this.dinnerParticipants = dinnerParticipants;
     this.contactName = Objects.requireNonNull(contactName);
     this.contactEmail = Objects.requireNonNull(contactEmail);
     this.contactPhone = Objects.requireNonNull(contactPhone);
     this.preferredLanguage = Objects.requireNonNull(preferredLanguage);
     this.note = note;
-    this.status = Objects.requireNonNull(status);
+    this.status = BookingStatus.RECEIVED;
     this.priceBreakdown = Objects.requireNonNull(priceBreakdown);
+    this.currency = "RON";
     this.managementTokenHash = Objects.requireNonNull(managementTokenHash);
     this.managementTokenExpiresAt = Objects.requireNonNull(managementTokenExpiresAt);
   }
@@ -157,6 +185,18 @@ public class BookingRequest {
     return guesthouseId;
   }
 
+  public String getPublicReference() {
+    return publicReference;
+  }
+
+  public String getIdempotencyKeyHash() {
+    return idempotencyKeyHash;
+  }
+
+  public String getRequestFingerprint() {
+    return requestFingerprint;
+  }
+
   public LocalDate getCheckInDate() {
     return checkInDate;
   }
@@ -179,6 +219,14 @@ public class BookingRequest {
 
   public int getChildrenAge0to3() {
     return childrenAge0to3;
+  }
+
+  public int getBreakfastParticipants() {
+    return breakfastParticipants;
+  }
+
+  public int getDinnerParticipants() {
+    return dinnerParticipants;
   }
 
   public String getContactName() {
@@ -207,6 +255,25 @@ public class BookingRequest {
 
   public BookingPriceBreakdown getPriceBreakdown() {
     return priceBreakdown;
+  }
+
+  public String getCurrency() {
+    return currency;
+  }
+
+  public void transitionTo(BookingStatus nextStatus, Instant changedAt, String changedBy) {
+    Objects.requireNonNull(nextStatus);
+    boolean allowed =
+        (status == BookingStatus.RECEIVED
+                && (nextStatus == BookingStatus.CONFIRMED
+                    || nextStatus == BookingStatus.REJECTED
+                    || nextStatus == BookingStatus.CANCELLED))
+            || (status == BookingStatus.CONFIRMED && nextStatus == BookingStatus.CANCELLED);
+    if (!allowed) {
+      throw new IllegalStateException("Invalid booking status transition");
+    }
+    status = nextStatus;
+    addStatusHistory(nextStatus, changedAt, changedBy);
   }
 
   public String getManagementTokenHash() {
