@@ -3289,24 +3289,17 @@ img {
 }
 
 .booking-review-details {
-  gap: 0.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--line);
 }
 
 .booking-review-details div {
   display: grid;
-  min-width: 0;
-  padding: 0.6rem 0.7rem;
-  align-items: center;
-  grid-template-columns: minmax(6.5rem, 0.8fr) minmax(0, 1.2fr);
-  gap: 0.75rem;
-  border-left: 3px solid var(--gold);
-  background: rgb(200 152 76 / 9%);
+  gap: 0.2rem;
 }
 
 .booking-review-details dt {
-  color: var(--forest);
+  color: var(--muted);
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -3314,10 +3307,12 @@ img {
 
 .booking-review-details dd {
   margin: 0;
-  color: var(--ink);
-  font-size: 0.88rem;
-  font-weight: 600;
-  line-height: 1.45;
+  line-height: 1.4;
+}
+
+.booking-review-list {
+  display: grid;
+  gap: 0.15rem;
 }
 
 .booking-review-price {
@@ -3514,11 +3509,6 @@ img {
 @media (max-width: 620px) {
   .booking-contact-grid {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .booking-review-details div {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.2rem;
   }
 }
 

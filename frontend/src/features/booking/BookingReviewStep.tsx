@@ -305,10 +305,12 @@ export default function BookingReviewStep({
           </div>
           <dl className="booking-review-details">
             <div>
-              <dt>{t('booking.stayPeriod')}</dt>
-              <dd>
-                {formatDate(state.checkInDate)} - {formatDate(state.checkOutDate)}
-              </dd>
+              <dt>{t('booking.arrival')}</dt>
+              <dd>{formatDate(state.checkInDate)}</dd>
+            </div>
+            <div>
+              <dt>{t('booking.departure')}</dt>
+              <dd>{formatDate(state.checkOutDate)}</dd>
             </div>
             <div>
               <dt>{t('booking.nights')}</dt>
@@ -316,12 +318,16 @@ export default function BookingReviewStep({
             </div>
             <div>
               <dt>{t('booking.guests')}</dt>
-              <dd>
-                {t('booking.reviewGuestComposition', {
-                  adults: state.adults,
-                  children3to10: state.childrenAge3to10,
-                  children0to3: state.childrenAge0to3,
-                })}
+              <dd className="booking-review-list">
+                <span>
+                  {t('booking.adults')}: {state.adults}
+                </span>
+                <span>
+                  {t('booking.childrenAge3to10')}: {state.childrenAge3to10}
+                </span>
+                <span>
+                  {t('booking.childrenAge0to3')}: {state.childrenAge0to3}
+                </span>
               </dd>
             </div>
             <div>
@@ -334,11 +340,13 @@ export default function BookingReviewStep({
             </div>
             <div>
               <dt>{t('booking.selectedMeals')}</dt>
-              <dd>
-                {t('booking.reviewMeals', {
-                  breakfast: state.breakfastParticipants,
-                  dinner: state.dinnerParticipants,
-                })}
+              <dd className="booking-review-list">
+                <span>
+                  {t('booking.breakfast')}: {state.breakfastParticipants}
+                </span>
+                <span>
+                  {t('booking.dinner')}: {state.dinnerParticipants}
+                </span>
               </dd>
             </div>
           </dl>
