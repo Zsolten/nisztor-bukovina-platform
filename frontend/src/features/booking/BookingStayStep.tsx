@@ -30,6 +30,7 @@ interface BookingStayStepProps {
   state: BookingFlowState
   dispatch: Dispatch<BookingFlowAction>
   onBack: () => void
+  onContinue?: () => void
 }
 
 interface NumericCounterProps {
@@ -85,6 +86,7 @@ export default function BookingStayStep({
   state,
   dispatch,
   onBack,
+  onContinue,
 }: BookingStayStepProps) {
   const { t } = useTranslation()
   const [quoteRetry, setQuoteRetry] = useState(0)
@@ -209,7 +211,13 @@ export default function BookingStayStep({
         </button>
       </header>
 
-      <form className="booking-stay-form" onSubmit={(event) => event.preventDefault()}>
+      <form
+        className="booking-stay-form"
+        onSubmit={(event) => {
+          event.preventDefault()
+          if (canContinue) onContinue?.()
+        }}
+      >
         <section className="booking-stay-inputs" aria-labelledby="booking-stay-heading">
           <div className="booking-date-grid">
             <label>
