@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class BookingPriceCalculator {
 
+  private static final String CHILDREN_UNDER_TEN_DISCOUNT = "children_under_10";
   private final PricingQuery pricingQuery;
 
   public BookingPriceCalculator(PricingQuery pricingQuery) {
@@ -33,10 +34,19 @@ public class BookingPriceCalculator {
         booking.singleRoomCount() == 0
             ? accommodationRate
             : requiredItem(items, "single_occupancy_room").amount();
-    long accommodationUnits = (long) booking.totalGuests() * booking.nights();
+    BigDecimal childAccommodationRate =
+        booking.childrenAge3to10() == 0
+            ? BigDecimal.ZERO
+            : discountedAccommodationRate(pricing, accommodationRate);
+    long adultAccommodationUnits = (long) booking.adults() * booking.nights();
+    long childAccommodationUnits = (long) booking.childrenAge3to10() * booking.nights();
+    long freeChildAccommodationUnits = (long) booking.childrenAge0to3() * booking.nights();
     long singleUnits = (long) booking.singleRoomCount() * booking.nights();
     BigDecimal accommodationTotal =
-        money(accommodationRate.multiply(BigDecimal.valueOf(accommodationUnits)));
+        money(
+            accommodationRate
+                .multiply(BigDecimal.valueOf(adultAccommodationUnits))
+                .add(childAccommodationRate.multiply(BigDecimal.valueOf(childAccommodationUnits))));
     BigDecimal singleUnitSurcharge = singleRate.subtract(accommodationRate).max(BigDecimal.ZERO);
     BigDecimal singleRoomSurcharge =
         money(singleUnitSurcharge.multiply(BigDecimal.valueOf(singleUnits)));
@@ -48,9 +58,30 @@ public class BookingPriceCalculator {
         money(accommodationTotal.add(singleRoomSurcharge).add(breakfastTotal).add(dinnerTotal));
 
     List<BookingPriceLineResponse> lines = new ArrayList<>();
-    lines.add(
-        new BookingPriceLineResponse(
-            "accommodation", accommodationUnits, money(accommodationRate), accommodationTotal));
+    if (adultAccommodationUnits > 0) {
+      lines.add(
+          new BookingPriceLineResponse(
+              "accommodation",
+              adultAccommodationUnits,
+              money(accommodationRate),
+              money(accommodationRate.multiply(BigDecimal.valueOf(adultAccommodationUnits)))));
+    }
+    if (childAccommodationUnits > 0) {
+      lines.add(
+          new BookingPriceLineResponse(
+              "children_under_10_accommodation",
+              childAccommodationUnits,
+              money(childAccommodationRate),
+              money(childAccommodationRate.multiply(BigDecimal.valueOf(childAccommodationUnits)))));
+    }
+    if (freeChildAccommodationUnits > 0) {
+      lines.add(
+          new BookingPriceLineResponse(
+              "children_under_3_accommodation",
+              freeChildAccommodationUnits,
+              money(BigDecimal.ZERO),
+              money(BigDecimal.ZERO)));
+    }
     if (singleUnits > 0) {
       lines.add(
           new BookingPriceLineResponse(
@@ -91,6 +122,20 @@ public class BookingPriceCalculator {
           "BOOKING_SERVICE_NOT_AVAILABLE", "services." + code + "Participants", "activeService");
     }
     return money(item.amount().multiply(BigDecimal.valueOf((long) participants * nights)));
+  }
+
+  private BigDecimal discountedAccommodationRate(
+      PricingView pricing, BigDecimal accommodationRate) {
+    BigDecimal discountPercentage =
+        pricing.discounts().stream()
+            .filter(adjustment -> CHILDREN_UNDER_TEN_DISCOUNT.equals(adjustment.id()))
+            .findFirst()
+            .map(PricingView.Adjustment::percentage)
+            .orElseThrow(
+                () ->
+                    new IllegalStateException(
+                        "Required children-under-ten accommodation discount is not configured"));
+    return accommodationRate.multiply(BigDecimal.ONE.subtract(discountPercentage.movePointLeft(2)));
   }
 
   private void addServiceLine(

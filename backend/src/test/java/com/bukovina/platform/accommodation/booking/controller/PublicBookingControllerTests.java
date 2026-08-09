@@ -62,6 +62,25 @@ class PublicBookingControllerTests {
   }
 
   @Test
+  void appliesChildAccommodationDiscountsToThePublicQuote() throws Exception {
+    UUID guesthouseId = guesthouseId("bukovina-panzio");
+    UUID roomTypeId = roomTypeId("bukovina-panzio", "double");
+
+    mockMvc
+        .perform(
+            post("/api/booking-quotes")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(quoteJson(guesthouseId, roomTypeId, 2, 1, 1, 2, 0, 0)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.priceBreakdown.accommodationTotal").value(715.00))
+        .andExpect(jsonPath("$.priceBreakdown.totalPayable").value(715.00))
+        .andExpect(jsonPath("$.lines[1].code").value("children_under_10_accommodation"))
+        .andExpect(jsonPath("$.lines[1].unitAmount").value(97.50))
+        .andExpect(jsonPath("$.lines[2].code").value("children_under_3_accommodation"))
+        .andExpect(jsonPath("$.lines[2].lineTotal").value(0.00));
+  }
+
+  @Test
   void rejectsInvalidInactiveAndMismatchedGuesthouseOrRoomTypes() throws Exception {
     UUID bukovinaId = guesthouseId("bukovina-panzio");
     UUID nisztorRoomId = roomTypeId("nisztor-panzio", "double");
