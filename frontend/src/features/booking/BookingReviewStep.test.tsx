@@ -134,6 +134,7 @@ describe('BookingReviewStep', () => {
     )
 
     await screen.findAllByText('520 RON')
+    expect(screen.queryByText('Egyágyas felár')).not.toBeInTheDocument()
     await user.type(screen.getByRole('textbox', { name: 'Kapcsolattartó neve' }), 'Nisztor Zsolt')
     await user.type(screen.getByRole('textbox', { name: 'E-mail-cím' }), 'zsolt@example.com')
     await user.type(screen.getByRole('textbox', { name: 'Telefonszám' }), '+40743677812')

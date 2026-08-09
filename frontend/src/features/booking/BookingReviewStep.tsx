@@ -363,10 +363,6 @@ export default function BookingReviewStep({
                   <dd>{formatMoney(quote.priceBreakdown.accommodationTotal, quote.currency)}</dd>
                 </div>
                 <div>
-                  <dt>{t('booking.singleRoomSurcharge')}</dt>
-                  <dd>{formatMoney(quote.priceBreakdown.singleRoomSurcharge, quote.currency)}</dd>
-                </div>
-                <div>
                   <dt>{t('booking.breakfast')}</dt>
                   <dd>{formatMoney(quote.priceBreakdown.breakfastTotal, quote.currency)}</dd>
                 </div>
