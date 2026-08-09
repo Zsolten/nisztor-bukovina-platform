@@ -203,28 +203,6 @@ export default function BookingStayStep({
     <main id="main-content" className="booking-page booking-stay-page">
       <header className="booking-build-header">
         <h1>{t('booking.composeTitle')}</h1>
-        {/* <div className="booking-overview" aria-label={t('booking.staySummary')}>
-          <span>
-            <CalendarDays aria-hidden="true" size={17} />
-            <small>{t('booking.arrival')}</small>
-            <strong>{formatDate(state.checkInDate)}</strong>
-          </span>
-          <span>
-            <CalendarDays aria-hidden="true" size={17} />
-            <small>{t('booking.departure')}</small>
-            <strong>{formatDate(state.checkOutDate)}</strong>
-          </span>
-          <span>
-            <Moon aria-hidden="true" size={17} />
-            <small>{t('booking.nights')}</small>
-            <strong>{t('booking.nightTotal', { count: nights })}</strong>
-          </span>
-          <span>
-            <Users aria-hidden="true" size={17} />
-            <small>{t('booking.guests')}</small>
-            <strong>{t('booking.guestTotal', { count: guestTotal })}</strong>
-          </span>
-        </div> */}
         <button type="button" className="booking-back-button" onClick={onBack}>
           <ArrowLeft aria-hidden="true" size={19} />
           {t('booking.chooseAnotherGuesthouse')}
@@ -233,13 +211,6 @@ export default function BookingStayStep({
 
       <form className="booking-stay-form" onSubmit={(event) => event.preventDefault()}>
         <section className="booking-stay-inputs" aria-labelledby="booking-stay-heading">
-          {/* <div className="booking-section-heading">
-            <span>01</span>
-            <div>
-              <h2 id="booking-stay-heading">{t('booking.stayAndGuests')}</h2>
-              <p>{t('booking.stayAndGuestsHint')}</p>
-            </div>
-          </div> */}
 
           <div className="booking-date-grid">
             <label>
