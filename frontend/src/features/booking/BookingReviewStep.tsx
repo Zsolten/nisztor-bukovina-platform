@@ -110,7 +110,12 @@ export default function BookingReviewStep({
     if (!state.preferredLanguageSelectedByVisitor && state.contact.preferredLanguage !== language) {
       dispatch({ type: 'contactChanged', field: 'preferredLanguage', value: language })
     }
-  }, [dispatch, language, state.contact.preferredLanguage, state.preferredLanguageSelectedByVisitor])
+  }, [
+    dispatch,
+    language,
+    state.contact.preferredLanguage,
+    state.preferredLanguageSelectedByVisitor,
+  ])
 
   useEffect(() => {
     const controller = new AbortController()
