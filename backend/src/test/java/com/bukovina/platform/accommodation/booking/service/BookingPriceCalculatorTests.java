@@ -27,12 +27,12 @@ class BookingPriceCalculatorTests {
   }
 
   @Test
-  void representsSingleRoomPriceAsBaseAccommodationPlusSurcharge() {
+  void includesSingleRoomUseInTheAccommodationPrice() {
     BookingQuoteResponse quote = calculator.calculate(booking(5, 1, 0, 0), "hu");
 
     assertEquals(new BigDecimal("1950.00"), quote.priceBreakdown().accommodationTotal());
-    assertEquals(new BigDecimal("210.00"), quote.priceBreakdown().singleRoomSurcharge());
-    assertEquals(new BigDecimal("2160.00"), quote.priceBreakdown().totalPayable());
+    assertEquals(new BigDecimal("0.00"), quote.priceBreakdown().singleRoomSurcharge());
+    assertEquals(new BigDecimal("1950.00"), quote.priceBreakdown().totalPayable());
   }
 
   @Test

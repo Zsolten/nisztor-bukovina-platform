@@ -30,10 +30,6 @@ public class BookingPriceCalculator {
         pricing.items().stream()
             .collect(Collectors.toMap(PricingView.Item::id, Function.identity()));
     BigDecimal accommodationRate = requiredItem(items, "accommodation").amount();
-    BigDecimal singleRate =
-        booking.singleRoomCount() == 0
-            ? accommodationRate
-            : requiredItem(items, "single_occupancy_room").amount();
     BigDecimal childAccommodationRate =
         booking.childrenAge3to10() == 0
             ? BigDecimal.ZERO
@@ -41,21 +37,17 @@ public class BookingPriceCalculator {
     long adultAccommodationUnits = (long) booking.adults() * booking.nights();
     long childAccommodationUnits = (long) booking.childrenAge3to10() * booking.nights();
     long freeChildAccommodationUnits = (long) booking.childrenAge0to3() * booking.nights();
-    long singleUnits = (long) booking.singleRoomCount() * booking.nights();
     BigDecimal accommodationTotal =
         money(
             accommodationRate
                 .multiply(BigDecimal.valueOf(adultAccommodationUnits))
                 .add(childAccommodationRate.multiply(BigDecimal.valueOf(childAccommodationUnits))));
-    BigDecimal singleUnitSurcharge = singleRate.subtract(accommodationRate).max(BigDecimal.ZERO);
-    BigDecimal singleRoomSurcharge =
-        money(singleUnitSurcharge.multiply(BigDecimal.valueOf(singleUnits)));
+    BigDecimal singleRoomSurcharge = money(BigDecimal.ZERO);
     BigDecimal breakfastTotal =
         serviceTotal(items, "breakfast", booking.breakfastParticipants(), booking.nights());
     BigDecimal dinnerTotal =
         serviceTotal(items, "dinner", booking.dinnerParticipants(), booking.nights());
-    BigDecimal totalPayable =
-        money(accommodationTotal.add(singleRoomSurcharge).add(breakfastTotal).add(dinnerTotal));
+    BigDecimal totalPayable = money(accommodationTotal.add(breakfastTotal).add(dinnerTotal));
 
     List<BookingPriceLineResponse> lines = new ArrayList<>();
     if (adultAccommodationUnits > 0) {
@@ -81,14 +73,6 @@ public class BookingPriceCalculator {
               freeChildAccommodationUnits,
               money(BigDecimal.ZERO),
               money(BigDecimal.ZERO)));
-    }
-    if (singleUnits > 0) {
-      lines.add(
-          new BookingPriceLineResponse(
-              "single_room_surcharge",
-              singleUnits,
-              money(singleUnitSurcharge),
-              singleRoomSurcharge));
     }
     addServiceLine(
         lines,

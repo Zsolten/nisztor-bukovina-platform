@@ -1,11 +1,18 @@
 import { useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useOutletContext, useParams, useSearchParams } from 'react-router-dom'
+import {
+  useLocation,
+  useNavigate,
+  useOutletContext,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom'
 import type { LanguageOutletContext } from '../../app/LanguageLayout'
 import type { GuesthouseSummary } from '../../shared/api/guesthouses'
 import AsyncStatus from '../../shared/components/AsyncStatus'
 import { useGuesthouse, useGuesthouses } from '../accommodation/useGuesthouseData'
 import BookingStayStep from './BookingStayStep'
+import BookingReviewStep from './BookingReviewStep'
 import {
   bookingReducer,
   initialBookingFlowState,
@@ -41,6 +48,7 @@ export default function BookingPage() {
   const { language } = useOutletContext<LanguageOutletContext>()
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
   const [state, dispatch] = useReducer(
     bookingReducer,
@@ -54,6 +62,7 @@ export default function BookingPage() {
   const guesthouses = useGuesthouses(language)
   const selectedGuesthouse = useGuesthouse(state.guesthouseSlug, language)
   const requestedSlug = routeSlug ?? searchParams.get('guesthouse')
+  const reviewStep = location.pathname.endsWith('/review')
 
   useEffect(() => {
     if (!requestedSlug || !guesthouses.data) return
@@ -158,6 +167,23 @@ export default function BookingPage() {
       )
     }
 
+    if (reviewStep) {
+      return (
+        <BookingReviewStep
+          language={language}
+          guesthouse={selection}
+          state={state}
+          dispatch={dispatch}
+          onBack={() => void navigate(`/${language}/guesthouses/${selection.slug}/booking`)}
+          onSubmitted={(booking) =>
+            void navigate(
+              `/${language}/booking-request-success?reference=${encodeURIComponent(booking.reference)}&status=${booking.status}`,
+            )
+          }
+        />
+      )
+    }
+
     return (
       <BookingStayStep
         language={language}
@@ -165,6 +191,9 @@ export default function BookingPage() {
         state={state}
         dispatch={dispatch}
         onBack={() => void navigate(`/${language}/booking`)}
+        onContinue={() =>
+          void navigate(`/${language}/guesthouses/${selection.slug}/booking/review`)
+        }
       />
     )
   }

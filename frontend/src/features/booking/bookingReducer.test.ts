@@ -90,4 +90,20 @@ describe('bookingReducer', () => {
     expect(reduced.dinnerParticipants).toBe(1)
     expect(nonNegative.adults).toBe(0)
   })
+
+  it('marks the contact language as visitor-selected only after an explicit selection', () => {
+    const defaulted = bookingReducer(initialBookingFlowState, {
+      type: 'contactChanged',
+      field: 'preferredLanguage',
+      value: 'ro',
+    })
+    const selected = bookingReducer(defaulted, {
+      type: 'preferredLanguageSelected',
+      value: 'en',
+    })
+
+    expect(defaulted.preferredLanguageSelectedByVisitor).toBe(false)
+    expect(selected.contact.preferredLanguage).toBe('en')
+    expect(selected.preferredLanguageSelectedByVisitor).toBe(true)
+  })
 })

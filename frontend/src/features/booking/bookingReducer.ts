@@ -1,3 +1,5 @@
+import type { BookingContactDetails } from '../../shared/api/bookings'
+
 export interface BookingFlowState {
   guesthouseId: string | null
   guesthouseSlug: string | null
@@ -9,6 +11,8 @@ export interface BookingFlowState {
   roomQuantities: Record<string, number>
   breakfastParticipants: number
   dinnerParticipants: number
+  contact: BookingContactDetails
+  preferredLanguageSelectedByVisitor: boolean
 }
 
 export const initialBookingFlowState: BookingFlowState = {
@@ -22,6 +26,14 @@ export const initialBookingFlowState: BookingFlowState = {
   roomQuantities: {},
   breakfastParticipants: 0,
   dinnerParticipants: 0,
+  contact: {
+    contactName: '',
+    contactEmail: '',
+    contactPhone: '',
+    preferredLanguage: '',
+    note: '',
+  },
+  preferredLanguageSelectedByVisitor: false,
 }
 
 export type BookingFlowAction =
@@ -39,6 +51,8 @@ export type BookingFlowAction =
       field: 'breakfastParticipants' | 'dinnerParticipants'
       value: number
     }
+  | { type: 'contactChanged'; field: keyof BookingContactDetails; value: string }
+  | { type: 'preferredLanguageSelected'; value: '' | 'hu' | 'ro' | 'en' }
 
 export const BOOKING_FLOW_STORAGE_KEY = 'bukovina-booking-flow'
 
@@ -52,6 +66,10 @@ export function restoreBookingFlowState(): BookingFlowState {
       ...initialBookingFlowState,
       ...parsed,
       roomQuantities: parsed.roomQuantities ?? {},
+      contact: {
+        ...initialBookingFlowState.contact,
+        ...parsed.contact,
+      },
     }
   } catch {
     return initialBookingFlowState
@@ -98,5 +116,22 @@ export function bookingReducer(
       }
     case 'mealParticipantsChanged':
       return { ...state, [action.field]: Math.max(0, action.value) }
+    case 'contactChanged':
+      return {
+        ...state,
+        contact: {
+          ...state.contact,
+          [action.field]: action.value,
+        },
+      }
+    case 'preferredLanguageSelected':
+      return {
+        ...state,
+        preferredLanguageSelectedByVisitor: true,
+        contact: {
+          ...state.contact,
+          preferredLanguage: action.value,
+        },
+      }
   }
 }
