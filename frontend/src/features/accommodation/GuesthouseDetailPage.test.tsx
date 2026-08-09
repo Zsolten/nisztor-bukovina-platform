@@ -59,10 +59,7 @@ const detail = {
   pricing: {
     currency: 'RON',
     items: [{ id: 'lodging', label: 'Szállás', amount: 130, unit: 'person_night' }],
-    taxes: [
-      { id: 'accommodation_tax', label: 'Szállás áfája', percentage: 11 },
-      { id: 'city_tax', label: 'Idegenforgalmi adó', percentage: 1 },
-    ],
+    taxes: [{ id: 'city_tax', label: 'Idegenforgalmi adó', percentage: 1 }],
     surcharges: [],
     discounts: [{ id: 'children', label: 'Gyermekkedvezmény', percentage: 50 }],
     paymentNote: 'Fizetés érkezéskor.',
@@ -100,6 +97,7 @@ describe('GuesthouseDetailPage', () => {
     expect(screen.getByRole('heading', { name: 'Étkezés és konyha' })).toBeVisible()
     expect(screen.getByText('130 RON')).toBeVisible()
     expect(screen.getByText('1%')).toBeVisible()
+    expect(screen.queryByText('Szállás áfája')).not.toBeInTheDocument()
     const storyImages = document.querySelectorAll('.story-sheet .editorial-images img')
     expect(storyImages).toHaveLength(2)
     expect(storyImages[0]).toHaveAttribute('src', '/story-1.jpg')

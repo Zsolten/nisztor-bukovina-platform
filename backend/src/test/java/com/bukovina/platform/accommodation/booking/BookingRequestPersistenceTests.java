@@ -40,25 +40,27 @@ class BookingRequestPersistenceTests {
     BookingRequest bookingRequest =
         new BookingRequest(
             guesthouseId,
+            "NB-0123456789ABCDEF",
+            "b".repeat(64),
+            "c".repeat(64),
             LocalDate.of(2026, 8, 21),
             LocalDate.of(2026, 8, 24),
             2,
             1,
+            0,
+            0,
             0,
             "Teszt Vendég",
             "guest@example.com",
             "+40 700 000 000",
             "hu",
             "Csendes szobát szeretnénk.",
-            BookingStatus.RECEIVED,
             new BookingPriceBreakdown(
                 new BigDecimal("1170.00"),
-                new BigDecimal("11.00"),
-                new BigDecimal("128.70"),
                 new BigDecimal("0.00"),
-                new BigDecimal("1.00"),
-                new BigDecimal("12.99"),
-                new BigDecimal("1311.69")),
+                new BigDecimal("0.00"),
+                new BigDecimal("0.00"),
+                new BigDecimal("1170.00")),
             "a".repeat(64),
             Instant.parse("2026-09-07T09:30:00Z"));
     bookingRequest.addRoomSelection(roomTypeId, 1);
@@ -72,13 +74,10 @@ class BookingRequestPersistenceTests {
 
     assertEquals(3, reloaded.getNights());
     assertEquals(guesthouseId, reloaded.getGuesthouseId());
+    assertEquals("NB-0123456789ABCDEF", reloaded.getPublicReference());
     assertEquals(BookingStatus.RECEIVED, reloaded.getStatus());
-    assertEquals(new BigDecimal("11.00"), reloaded.getPriceBreakdown().getAccommodationTaxRate());
-    assertEquals(
-        new BigDecimal("128.70"), reloaded.getPriceBreakdown().getAccommodationTaxAmount());
-    assertEquals(new BigDecimal("1.00"), reloaded.getPriceBreakdown().getCityTaxRate());
-    assertEquals(new BigDecimal("12.99"), reloaded.getPriceBreakdown().getCityTaxAmount());
-    assertEquals(new BigDecimal("1311.69"), reloaded.getPriceBreakdown().getTotalPayable());
+    assertEquals(new BigDecimal("1170.00"), reloaded.getPriceBreakdown().getAccommodationTotal());
+    assertEquals(new BigDecimal("1170.00"), reloaded.getPriceBreakdown().getTotalPayable());
     assertEquals(1, reloaded.getRoomSelections().size());
     assertEquals(roomTypeId, reloaded.getRoomSelections().getFirst().getRoomTypeId());
     assertEquals(1, reloaded.getRoomSelections().getFirst().getQuantity());

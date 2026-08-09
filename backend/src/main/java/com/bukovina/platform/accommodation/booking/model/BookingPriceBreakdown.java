@@ -8,23 +8,17 @@ import java.util.Objects;
 @Embeddable
 public class BookingPriceBreakdown {
 
-  @Column(name = "net_accommodation", nullable = false, precision = 12, scale = 2)
-  private BigDecimal netAccommodation;
-
-  @Column(name = "accommodation_tax_rate", nullable = false, precision = 5, scale = 2)
-  private BigDecimal accommodationTaxRate;
-
-  @Column(name = "accommodation_tax_amount", nullable = false, precision = 12, scale = 2)
-  private BigDecimal accommodationTaxAmount;
+  @Column(name = "accommodation_total", nullable = false, precision = 12, scale = 2)
+  private BigDecimal accommodationTotal;
 
   @Column(name = "single_room_surcharge", nullable = false, precision = 12, scale = 2)
   private BigDecimal singleRoomSurcharge;
 
-  @Column(name = "city_tax_rate", nullable = false, precision = 5, scale = 2)
-  private BigDecimal cityTaxRate;
+  @Column(name = "breakfast_total", nullable = false, precision = 12, scale = 2)
+  private BigDecimal breakfastTotal;
 
-  @Column(name = "city_tax_amount", nullable = false, precision = 12, scale = 2)
-  private BigDecimal cityTaxAmount;
+  @Column(name = "dinner_total", nullable = false, precision = 12, scale = 2)
+  private BigDecimal dinnerTotal;
 
   @Column(name = "total_payable", nullable = false, precision = 12, scale = 2)
   private BigDecimal totalPayable;
@@ -32,44 +26,32 @@ public class BookingPriceBreakdown {
   protected BookingPriceBreakdown() {}
 
   public BookingPriceBreakdown(
-      BigDecimal netAccommodation,
-      BigDecimal accommodationTaxRate,
-      BigDecimal accommodationTaxAmount,
+      BigDecimal accommodationTotal,
       BigDecimal singleRoomSurcharge,
-      BigDecimal cityTaxRate,
-      BigDecimal cityTaxAmount,
+      BigDecimal breakfastTotal,
+      BigDecimal dinnerTotal,
       BigDecimal totalPayable) {
-    this.netAccommodation = Objects.requireNonNull(netAccommodation);
-    this.accommodationTaxRate = Objects.requireNonNull(accommodationTaxRate);
-    this.accommodationTaxAmount = Objects.requireNonNull(accommodationTaxAmount);
+    this.accommodationTotal = Objects.requireNonNull(accommodationTotal);
     this.singleRoomSurcharge = Objects.requireNonNull(singleRoomSurcharge);
-    this.cityTaxRate = Objects.requireNonNull(cityTaxRate);
-    this.cityTaxAmount = Objects.requireNonNull(cityTaxAmount);
+    this.breakfastTotal = Objects.requireNonNull(breakfastTotal);
+    this.dinnerTotal = Objects.requireNonNull(dinnerTotal);
     this.totalPayable = Objects.requireNonNull(totalPayable);
   }
 
-  public BigDecimal getNetAccommodation() {
-    return netAccommodation;
-  }
-
-  public BigDecimal getAccommodationTaxRate() {
-    return accommodationTaxRate;
-  }
-
-  public BigDecimal getAccommodationTaxAmount() {
-    return accommodationTaxAmount;
+  public BigDecimal getAccommodationTotal() {
+    return accommodationTotal;
   }
 
   public BigDecimal getSingleRoomSurcharge() {
     return singleRoomSurcharge;
   }
 
-  public BigDecimal getCityTaxRate() {
-    return cityTaxRate;
+  public BigDecimal getBreakfastTotal() {
+    return breakfastTotal;
   }
 
-  public BigDecimal getCityTaxAmount() {
-    return cityTaxAmount;
+  public BigDecimal getDinnerTotal() {
+    return dinnerTotal;
   }
 
   public BigDecimal getTotalPayable() {

@@ -197,6 +197,8 @@ mealTotal      = breakfastTotal + dinnerTotal
 grandTotal = accommodationTotal + breakfastTotal + dinnerTotal
 ```
 
+A foglalási kalkuláció nem számol és nem tárol ÁFA-adatot. Az idegenforgalmi adó nem része a végösszegnek és nem kerül a foglalási ár-pillanatképbe; a publikus felületen kizárólag külön tájékoztató blokkban jelenhet meg.
+
 A publikus összesítő nem számolhat régi csomagárból, szobánkénti árból vagy frontendbe égetett próbaértékből.
 
 ### 5.7. Számítási példák
@@ -935,7 +937,7 @@ A feature akkor tekinthető késznek, ha:
 7. A reggeli 45, a vacsora 75 RON/fő/nap; mindkettő külön kapcsolható és személyszámmal adható meg.
 8. Ebéd sem a felületen, sem az ajánlat API-ban nem választható.
 9. A hivatalos árat a backend számítja és a beküldéskor újraszámolja.
-10. A vendég látja a tételes szállás-, reggeli-, vacsora- és végösszeget.
+10. A vendég látja a tételes szállás-, reggeli-, vacsora- és végösszeget; a végösszeg nem tartalmaz ÁFA- vagy idegenforgalmiadó-számítást.
 11. A felület jelzi, hogy a kérelem szállásadói visszaigazolást igényel.
 12. A beküldött kérés `PENDING` állapotú és ár-pillanatképet tartalmaz.
 13. Személyes adat nem kerül böngészőoldali tartós tárba vagy érzékeny logba.

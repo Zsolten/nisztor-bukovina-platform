@@ -50,7 +50,71 @@ paths:
           description: The guesthouse does not exist or is inactive.
         '400':
           description: The slug or requested language is invalid.
+  /booking-quotes:
+    post:
+      operationId: createBookingQuote
+      summary: Validate and calculate a public booking quote
+      description: Does not persist a booking and does not check date-based availability.
+      tags: [Bookings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingQuoteRequest'
+      responses:
+        '200':
+          description: Authoritative current quote.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingQuote'
+        '400':
+          $ref: '#/components/responses/BookingValidationError'
+  /booking-requests:
+    post:
+      operationId: createBookingRequest
+      summary: Submit a public booking request
+      description: Revalidates and recalculates the quote before atomically persisting a request in RECEIVED state.
+      tags: [Bookings]
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: Unique key for safe retry of one logical submission.
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookingRequest'
+      responses:
+        '201':
+          description: Booking request received; this is not a confirmed reservation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingRequestCreated'
+        '400':
+          $ref: '#/components/responses/BookingValidationError'
+        '409':
+          description: The accepted quote changed or the idempotency key was reused for different input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingError'
 components:
+  responses:
+    BookingValidationError:
+      description: One or more request fields or cross-field booking rules are invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BookingError'
   parameters:
     Language:
       name: lang
@@ -119,6 +183,7 @@ components:
       properties:
         id:
           type: string
+          format: uuid
         name:
           type: string
         quantity:
@@ -178,7 +243,7 @@ components:
           maximum: 100
     GuesthousePricing:
       type: object
-      required: [currency, items, surcharges, discounts, paymentNote]
+      required: [currency, items, taxes, surcharges, discounts, paymentNote]
       properties:
         currency:
           type: string
@@ -187,6 +252,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PriceItem'
+        taxes:
+          type: array
+          description: Informational taxes displayed separately and excluded from booking totals.
+          items:
+            $ref: '#/components/schemas/PricingAdjustment'
         surcharges:
           type: array
           items:
@@ -199,8 +269,11 @@ components:
           type: string
     GuesthouseSummary:
       type: object
-      required: [slug, name, shortDescription, roomCount, coverImage]
+      required: [id, slug, name, shortDescription, roomCount, coverImage]
       properties:
+        id:
+          type: string
+          format: uuid
         slug:
           type: string
         name:
@@ -254,3 +327,241 @@ components:
                 $ref: '#/components/schemas/Amenity'
             pricing:
               $ref: '#/components/schemas/GuesthousePricing'
+    BookingRoomSelection:
+      type: object
+      additionalProperties: false
+      required: [roomTypeId, quantity]
+      properties:
+        roomTypeId:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+    BookingServices:
+      type: object
+      additionalProperties: false
+      properties:
+        breakfastParticipants:
+          type: integer
+          minimum: 0
+          default: 0
+        dinnerParticipants:
+          type: integer
+          minimum: 0
+          default: 0
+    BookingQuoteRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - guesthouseId
+        - checkInDate
+        - checkOutDate
+        - adults
+        - childrenAge3to10
+        - childrenAge0to3
+        - roomSelections
+      properties:
+        guesthouseId:
+          type: string
+          format: uuid
+        checkInDate:
+          type: string
+          format: date
+        checkOutDate:
+          type: string
+          format: date
+        adults:
+          type: integer
+          minimum: 0
+        childrenAge3to10:
+          type: integer
+          minimum: 0
+        childrenAge0to3:
+          type: integer
+          minimum: 0
+        roomSelections:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/BookingRoomSelection'
+        services:
+          $ref: '#/components/schemas/BookingServices'
+    CreateBookingRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - guesthouseId
+        - checkInDate
+        - checkOutDate
+        - adults
+        - childrenAge3to10
+        - childrenAge0to3
+        - roomSelections
+        - contactName
+        - contactEmail
+        - contactPhone
+        - preferredLanguage
+        - acceptedTotal
+      properties:
+        guesthouseId:
+          type: string
+          format: uuid
+        checkInDate:
+          type: string
+          format: date
+        checkOutDate:
+          type: string
+          format: date
+        adults:
+          type: integer
+          minimum: 0
+        childrenAge3to10:
+          type: integer
+          minimum: 0
+        childrenAge0to3:
+          type: integer
+          minimum: 0
+        roomSelections:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/BookingRoomSelection'
+        services:
+          $ref: '#/components/schemas/BookingServices'
+        contactName:
+          type: string
+          minLength: 1
+          maxLength: 160
+        contactEmail:
+          type: string
+          format: email
+          maxLength: 320
+        contactPhone:
+          type: string
+          pattern: '^\+?[0-9][0-9 ()-]{6,38}$'
+          maxLength: 40
+        preferredLanguage:
+          type: string
+          enum: [hu, ro, en]
+        note:
+          type: string
+          maxLength: 2000
+        acceptedTotal:
+          type: number
+          minimum: 0
+    BookingPriceLine:
+      type: object
+      required: [code, quantity, unitAmount, lineTotal]
+      properties:
+        code:
+          type: string
+        quantity:
+          type: integer
+          format: int64
+          minimum: 0
+        unitAmount:
+          type: number
+          minimum: 0
+        lineTotal:
+          type: number
+          minimum: 0
+    BookingPriceBreakdown:
+      type: object
+      description: Stored booking price snapshot without VAT or city tax calculation.
+      required:
+        - accommodationTotal
+        - singleRoomSurcharge
+        - breakfastTotal
+        - dinnerTotal
+        - totalPayable
+      properties:
+        accommodationTotal: { type: number, minimum: 0 }
+        singleRoomSurcharge: { type: number, minimum: 0 }
+        breakfastTotal: { type: number, minimum: 0 }
+        dinnerTotal: { type: number, minimum: 0 }
+        totalPayable: { type: number, minimum: 0 }
+    BookingQuote:
+      type: object
+      required:
+        - currency
+        - nights
+        - totalGuests
+        - selectedRoomCount
+        - selectedCapacity
+        - lines
+        - priceBreakdown
+        - requestOnly
+      properties:
+        currency:
+          type: string
+          enum: [RON]
+        nights:
+          type: integer
+          format: int64
+          minimum: 1
+        totalGuests:
+          type: integer
+          minimum: 1
+        selectedRoomCount:
+          type: integer
+          minimum: 1
+        selectedCapacity:
+          type: integer
+          minimum: 1
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookingPriceLine'
+        priceBreakdown:
+          $ref: '#/components/schemas/BookingPriceBreakdown'
+        requestOnly:
+          type: boolean
+          const: true
+    BookingRequestCreated:
+      type: object
+      required: [reference, status, currency, nights, totalGuests, totalPayable, requestOnly]
+      properties:
+        reference:
+          type: string
+          pattern: '^NB-[A-F0-9]{16}$'
+        status:
+          type: string
+          enum: [RECEIVED]
+        currency:
+          type: string
+          enum: [RON]
+        nights:
+          type: integer
+          format: int64
+          minimum: 1
+        totalGuests:
+          type: integer
+          minimum: 1
+        totalPayable:
+          type: number
+          minimum: 0
+        requestOnly:
+          type: boolean
+          const: true
+    BookingFieldError:
+      type: object
+      required: [code, field, rule]
+      properties:
+        code:
+          type: string
+        field:
+          type: string
+        rule:
+          type: string
+    BookingError:
+      type: object
+      required: [code, errors]
+      properties:
+        code:
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookingFieldError'
+        currentQuote:
+          $ref: '#/components/schemas/BookingQuote'
