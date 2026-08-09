@@ -107,10 +107,10 @@ export default function BookingReviewStep({
   )
 
   useEffect(() => {
-    if (!state.contact.preferredLanguage) {
+    if (!state.preferredLanguageSelectedByVisitor && state.contact.preferredLanguage !== language) {
       dispatch({ type: 'contactChanged', field: 'preferredLanguage', value: language })
     }
-  }, [dispatch, language, state.contact.preferredLanguage])
+  }, [dispatch, language, state.contact.preferredLanguage, state.preferredLanguageSelectedByVisitor])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -272,7 +272,11 @@ export default function BookingReviewStep({
               <select
                 value={state.contact.preferredLanguage}
                 aria-invalid={Boolean(clientErrors.preferredLanguage)}
-                onChange={(event) => updateContact('preferredLanguage', event.target.value)}
+                onChange={(event) => {
+                  dispatch({ type: 'preferredLanguageSelected', value: event.target.value })
+                  setClientErrors((current) => ({ ...current, preferredLanguage: undefined }))
+                  setSubmissionError(null)
+                }}
               >
                 <option value="hu">{t('booking.languageHu')}</option>
                 <option value="ro">{t('booking.languageRo')}</option>

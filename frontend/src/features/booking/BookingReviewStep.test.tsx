@@ -3,6 +3,7 @@ import { useReducer } from 'react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AppProviders } from '../../app/providers'
+import type { Language } from '../../i18n/languages'
 import type { GuesthouseDetail } from '../../shared/api/guesthouses'
 import BookingReviewStep from './BookingReviewStep'
 import { bookingReducer, initialBookingFlowState } from './bookingReducer'
@@ -73,7 +74,15 @@ function requestBody(init: RequestInit | undefined) {
   return typeof init?.body === 'string' ? init.body : ''
 }
 
-function ReviewHarness({ onSubmitted }: { onSubmitted: () => void }) {
+function ReviewHarness({
+  onSubmitted,
+  language = 'hu',
+  preferredLanguage = 'hu',
+}: {
+  onSubmitted: () => void
+  language?: Language
+  preferredLanguage?: 'hu' | 'ro' | 'en' | ''
+}) {
   const [state, dispatch] = useReducer(bookingReducer, {
     ...initialBookingFlowState,
     guesthouseId: guesthouse.id,
@@ -84,13 +93,13 @@ function ReviewHarness({ onSubmitted }: { onSubmitted: () => void }) {
     roomQuantities: { [guesthouse.roomTypes[0].id]: 1 },
     contact: {
       ...initialBookingFlowState.contact,
-      preferredLanguage: 'hu',
+      preferredLanguage,
     },
   })
 
   return (
     <BookingReviewStep
-      language="hu"
+      language={language}
       guesthouse={guesthouse}
       state={state}
       dispatch={dispatch}
@@ -101,6 +110,26 @@ function ReviewHarness({ onSubmitted }: { onSubmitted: () => void }) {
 }
 
 describe('BookingReviewStep', () => {
+  it('defaults the contact language to the current interface language until the visitor chooses one', async () => {
+    const user = userEvent.setup()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.resolve({ ok: true, json: async () => quote })),
+    )
+
+    render(
+      <AppProviders>
+        <ReviewHarness onSubmitted={vi.fn()} language="ro" preferredLanguage="hu" />
+      </AppProviders>,
+    )
+
+    const languageSelect = screen.getByRole('combobox')
+    await waitFor(() => expect(languageSelect).toHaveValue('ro'))
+
+    await user.selectOptions(languageSelect, 'en')
+    expect(languageSelect).toHaveValue('en')
+  })
+
   it('submits one idempotent request when submit is triggered twice quickly', async () => {
     const user = userEvent.setup()
     let completeSubmission: (value: unknown) => void = () => undefined

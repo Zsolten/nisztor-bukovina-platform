@@ -12,6 +12,7 @@ export interface BookingFlowState {
   breakfastParticipants: number
   dinnerParticipants: number
   contact: BookingContactDetails
+  preferredLanguageSelectedByVisitor: boolean
 }
 
 export const initialBookingFlowState: BookingFlowState = {
@@ -32,6 +33,7 @@ export const initialBookingFlowState: BookingFlowState = {
     preferredLanguage: '',
     note: '',
   },
+  preferredLanguageSelectedByVisitor: false,
 }
 
 export type BookingFlowAction =
@@ -50,6 +52,7 @@ export type BookingFlowAction =
       value: number
     }
   | { type: 'contactChanged'; field: keyof BookingContactDetails; value: string }
+  | { type: 'preferredLanguageSelected'; value: string }
 
 export const BOOKING_FLOW_STORAGE_KEY = 'bukovina-booking-flow'
 
@@ -119,6 +122,15 @@ export function bookingReducer(
         contact: {
           ...state.contact,
           [action.field]: action.value,
+        },
+      }
+    case 'preferredLanguageSelected':
+      return {
+        ...state,
+        preferredLanguageSelectedByVisitor: true,
+        contact: {
+          ...state.contact,
+          preferredLanguage: action.value,
         },
       }
   }
