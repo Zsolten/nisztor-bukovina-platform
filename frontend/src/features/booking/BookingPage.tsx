@@ -1,11 +1,17 @@
 import { useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
+import { useNavigate, useOutletContext, useParams, useSearchParams } from 'react-router-dom'
 import type { LanguageOutletContext } from '../../app/LanguageLayout'
 import type { GuesthouseSummary } from '../../shared/api/guesthouses'
 import AsyncStatus from '../../shared/components/AsyncStatus'
 import { useGuesthouse, useGuesthouses } from '../accommodation/useGuesthouseData'
-import { bookingReducer, initialBookingFlowState } from './bookingReducer'
+import BookingStayStep from './BookingStayStep'
+import {
+  bookingReducer,
+  initialBookingFlowState,
+  persistBookingFlowState,
+  restoreBookingFlowState,
+} from './bookingReducer'
 
 const DEFAULT_VISIBLE_SERVICE_COUNT = 6
 
@@ -35,18 +41,24 @@ export default function BookingPage() {
   const { language } = useOutletContext<LanguageOutletContext>()
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [state, dispatch] = useReducer(bookingReducer, initialBookingFlowState)
+  const [searchParams] = useSearchParams()
+  const [state, dispatch] = useReducer(
+    bookingReducer,
+    initialBookingFlowState,
+    restoreBookingFlowState,
+  )
   const [servicesExpandedFor, setServicesExpandedFor] = useState<string | null>(null)
   const [collapsedServiceCount, setCollapsedServiceCount] = useState(DEFAULT_VISIBLE_SERVICE_COUNT)
   const servicesSectionRef = useRef<HTMLElement>(null)
   const servicesMeasureRef = useRef<HTMLUListElement>(null)
   const guesthouses = useGuesthouses(language)
   const selectedGuesthouse = useGuesthouse(state.guesthouseSlug, language)
+  const requestedSlug = routeSlug ?? searchParams.get('guesthouse')
 
   useEffect(() => {
-    if (!routeSlug || !guesthouses.data) return
+    if (!requestedSlug || !guesthouses.data) return
 
-    const routeGuesthouse = guesthouses.data.find((guesthouse) => guesthouse.slug === routeSlug)
+    const routeGuesthouse = guesthouses.data.find((guesthouse) => guesthouse.slug === requestedSlug)
     if (!routeGuesthouse) return
 
     dispatch({
@@ -54,7 +66,11 @@ export default function BookingPage() {
       guesthouseId: routeGuesthouse.id,
       guesthouseSlug: routeGuesthouse.slug,
     })
-  }, [guesthouses.data, routeSlug])
+  }, [guesthouses.data, requestedSlug])
+
+  useEffect(() => {
+    persistBookingFlowState(state)
+  }, [state])
 
   function selectGuesthouse(guesthouse: GuesthouseSummary) {
     dispatch({
@@ -62,7 +78,7 @@ export default function BookingPage() {
       guesthouseId: guesthouse.id,
       guesthouseSlug: guesthouse.slug,
     })
-    void navigate(`/${language}/guesthouses/${guesthouse.slug}/booking`, { replace: true })
+    void navigate(`/${language}/guesthouses/${guesthouse.slug}/booking`)
   }
 
   const selection = selectedGuesthouse.data
@@ -128,6 +144,36 @@ export default function BookingPage() {
     return () => observer.disconnect()
   }, [selection, t])
 
+  if (routeSlug) {
+    if (selectedGuesthouse.loading || !selection) {
+      return (
+        <main id="main-content" className="booking-page">
+          <AsyncStatus
+            variant={selectedGuesthouse.error ? 'error' : 'loading'}
+            message={
+              selectedGuesthouse.error ? t('booking.selectionError') : t('booking.loadingSelection')
+            }
+          />
+        </main>
+      )
+    }
+
+    return (
+      <BookingStayStep
+        language={language}
+        guesthouse={selection}
+        state={state}
+        dispatch={dispatch}
+        onBack={() => void navigate(`/${language}/booking`)}
+      />
+    )
+  }
+
+  function continueToStayDetails() {
+    if (!state.guesthouseSlug) return
+    void navigate(`/${language}/guesthouses/${state.guesthouseSlug}/booking`)
+  }
+
   return (
     <main id="main-content" className="booking-page">
       <header className="booking-intro">
@@ -135,7 +181,13 @@ export default function BookingPage() {
         <p>{t('booking.introduction')}</p>
       </header>
 
-      <form className="booking-entry-form" onSubmit={(event) => event.preventDefault()}>
+      <form
+        className="booking-entry-form"
+        onSubmit={(event) => {
+          event.preventDefault()
+          continueToStayDetails()
+        }}
+      >
         <fieldset className="guesthouse-choice">
           <legend className="visually-hidden">{t('booking.selectLegend')}</legend>
 

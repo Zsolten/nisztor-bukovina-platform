@@ -43,16 +43,39 @@ class BookingPriceCalculatorTests {
     assertEquals(new BigDecimal("675.00"), quote.priceBreakdown().dinnerTotal());
   }
 
+  @Test
+  void appliesTheConfiguredDiscountForChildrenAndMakesUnderThreesFreeForAccommodation() {
+    BookingQuoteResponse quote = calculator.calculate(booking(2, 1, 1, 0, 0, 0), "hu");
+
+    assertEquals(new BigDecimal("1072.50"), quote.priceBreakdown().accommodationTotal());
+    assertEquals(new BigDecimal("1072.50"), quote.priceBreakdown().totalPayable());
+    assertEquals("children_under_10_accommodation", quote.lines().get(1).code());
+    assertEquals(new BigDecimal("97.50"), quote.lines().get(1).unitAmount());
+    assertEquals("children_under_3_accommodation", quote.lines().get(2).code());
+    assertEquals(new BigDecimal("0.00"), quote.lines().get(2).lineTotal());
+  }
+
   private ValidatedBooking booking(
       int guests, int singleRooms, int breakfastParticipants, int dinnerParticipants) {
+    return booking(guests, 0, 0, singleRooms, breakfastParticipants, dinnerParticipants);
+  }
+
+  private ValidatedBooking booking(
+      int adults,
+      int childrenAge3to10,
+      int childrenAge0to3,
+      int singleRooms,
+      int breakfastParticipants,
+      int dinnerParticipants) {
+    int guests = adults + childrenAge3to10 + childrenAge0to3;
     return new ValidatedBooking(
         GUESTHOUSE_ID,
         LocalDate.of(2030, 1, 10),
         LocalDate.of(2030, 1, 13),
         3,
-        guests,
-        0,
-        0,
+        adults,
+        childrenAge3to10,
+        childrenAge0to3,
         guests,
         breakfastParticipants,
         dinnerParticipants,
@@ -75,7 +98,9 @@ class BookingPriceCalculatorTests {
                 new PricingView.Item("dinner", "Dinner", new BigDecimal("75"), "person")),
             List.of(new PricingView.Adjustment("city_tax", "City tax", new BigDecimal("99"))),
             List.of(),
-            List.of(),
+            List.of(
+                new PricingView.Adjustment(
+                    "children_under_10", "Children under ten", new BigDecimal("25"))),
             "Payment on arrival");
   }
 }
