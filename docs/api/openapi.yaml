@@ -107,7 +107,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BookingError'
+  /admin/auth/login:
+    post:
+      operationId: loginAdministrator
+      summary: Authenticate an administrator
+      tags: [Administration]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminLoginRequest'
+      responses:
+        '200':
+          description: Short-lived administrator access token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminLoginResponse'
+        '401':
+          description: Invalid, inactive, or missing administrator credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminAuthenticationError'
+  /admin/auth/logout:
+    post:
+      operationId: logoutAdministrator
+      summary: Revoke the current administrator access token
+      tags: [Administration]
+      security:
+        - AdminBearerAuth: []
+      responses:
+        '204':
+          description: The current token was revoked.
+        '401':
+          description: The access token is missing, invalid, expired, or revoked.
 components:
+  securitySchemes:
+    AdminBearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   responses:
     BookingValidationError:
       description: One or more request fields or cross-field booking rules are invalid.
@@ -565,3 +606,35 @@ components:
             $ref: '#/components/schemas/BookingFieldError'
         currentQuote:
           $ref: '#/components/schemas/BookingQuote'
+    AdminLoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 320
+        password:
+          type: string
+          minLength: 1
+          maxLength: 256
+    AdminLoginResponse:
+      type: object
+      required: [accessToken, tokenType, expiresAt]
+      properties:
+        accessToken:
+          type: string
+        tokenType:
+          type: string
+          const: Bearer
+        expiresAt:
+          type: string
+          format: date-time
+    AdminAuthenticationError:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          const: INVALID_ADMIN_CREDENTIALS

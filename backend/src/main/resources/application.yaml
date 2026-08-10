@@ -25,3 +25,13 @@ management:
 booking:
   public:
     large-group-threshold: ${BOOKING_LARGE_GROUP_THRESHOLD:20}
+
+admin:
+  authentication:
+    jwt:
+      issuer: ${ADMIN_JWT_ISSUER:nisztor-bukovina-platform}
+      secret: ${ADMIN_JWT_SECRET:}
+      access-token-ttl: ${ADMIN_JWT_ACCESS_TOKEN_TTL:PT30M}
+    bootstrap:
+      email: ${ADMIN_BOOTSTRAP_EMAIL:}
+      password: ${ADMIN_BOOTSTRAP_PASSWORD:}
