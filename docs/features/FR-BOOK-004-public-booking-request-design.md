@@ -171,17 +171,20 @@ Szabályok:
 Definíciók:
 
 - `singleRoomCount`: kiválasztott egyágyas szobák darabszáma;
-- `guestCount`: vendégek teljes száma;
-- `multiRoomGuests = guestCount - singleRoomCount`;
+- `adults`: felnőtt vendégek száma;
+- `childrenAge3to10`: 3–10 év közötti gyermekek száma;
+- `childrenAge0to3`: 3 év alatti gyermekek száma;
 - `nights`: foglalt éjszakák száma.
 
 ```text
-singleAccommodation = singleRoomCount × 200 RON × nights
-multiAccommodation  = multiRoomGuests × 130 RON × nights
-accommodationTotal  = singleAccommodation + multiAccommodation
+adultAccommodation      = adults × 130 RON × nights
+childAccommodation      = childrenAge3to10 × (130 RON × 0.75) × nights
+underThreeAccommodation = childrenAge0to3 × 0 RON × nights
+singleRoomSurcharge     = singleRoomCount × (200 RON - 130 RON) × nights
+accommodationTotal      = adultAccommodation + childAccommodation + underThreeAccommodation + singleRoomSurcharge
 ```
 
-Minden kiválasztott egyágyas szobához pontosan egy vendég tartozik.
+Minden kiválasztott egyágyas szobához pontosan egy vendég tartozik. A 3–10 éves gyermekek szállásdíjából 25% kedvezmény jár, a 3 év alatti gyermekek szállásdíja díjmentes. Az étkezések továbbra is a kiválasztott résztvevők teljes darabszáma alapján számolódnak.
 
 ### 5.5. Étkezési díj képlete
 
@@ -196,6 +199,8 @@ mealTotal      = breakfastTotal + dinnerTotal
 ```text
 grandTotal = accommodationTotal + breakfastTotal + dinnerTotal
 ```
+
+A foglalási kalkuláció nem számol és nem tárol ÁFA-adatot. Az idegenforgalmi adó nem része a végösszegnek és nem kerül a foglalási ár-pillanatképbe; a publikus felületen kizárólag külön tájékoztató blokkban jelenhet meg.
 
 A publikus összesítő nem számolhat régi csomagárból, szobánkénti árból vagy frontendbe égetett próbaértékből.
 
@@ -861,6 +866,7 @@ Megkötések:
 - ugyanaz 7 reggelivel: `3 675 RON`;
 - ugyanaz 7 reggelivel és 7 vacsorával: `5 250 RON`;
 - 1 egyágyas + 2 kétágyas, 5 vendég, 3 éjszaka: `2 160 RON`;
+- 2 felnőtt + 1 gyermek (3–10 év) + 1 gyermek (0–3 év), 2 éjszaka: `715 RON` étkezés nélkül;
 - részleges étkezési létszám;
 - kevés férőhely;
 - több kiválasztott szoba, mint vendég;
@@ -935,7 +941,7 @@ A feature akkor tekinthető késznek, ha:
 7. A reggeli 45, a vacsora 75 RON/fő/nap; mindkettő külön kapcsolható és személyszámmal adható meg.
 8. Ebéd sem a felületen, sem az ajánlat API-ban nem választható.
 9. A hivatalos árat a backend számítja és a beküldéskor újraszámolja.
-10. A vendég látja a tételes szállás-, reggeli-, vacsora- és végösszeget.
+10. A vendég látja a tételes szállás-, reggeli-, vacsora- és végösszeget; a végösszeg nem tartalmaz ÁFA- vagy idegenforgalmiadó-számítást.
 11. A felület jelzi, hogy a kérelem szállásadói visszaigazolást igényel.
 12. A beküldött kérés `PENDING` állapotú és ár-pillanatképet tartalmaz.
 13. Személyes adat nem kerül böngészőoldali tartós tárba vagy érzékeny logba.

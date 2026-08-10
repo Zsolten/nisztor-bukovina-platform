@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class GuesthouseQueryService {
+public class GuesthouseQueryService implements GuesthouseBookingQuery {
 
   private static final String DEFAULT_LANGUAGE = "hu";
 
@@ -54,6 +54,12 @@ public class GuesthouseQueryService {
         .toList();
   }
 
+  @Override
+  @Transactional(readOnly = true)
+  public boolean existsActive(java.util.UUID guesthouseId) {
+    return guesthouseRepository.existsByIdAndActiveTrue(guesthouseId);
+  }
+
   @Transactional(readOnly = true)
   public GuesthouseDetailResponse getActive(String slug, String language) {
     Guesthouse guesthouse =
@@ -65,6 +71,7 @@ public class GuesthouseQueryService {
     PricingView pricing = pricingQuery.findPublished(guesthouse.getId(), language);
 
     return new GuesthouseDetailResponse(
+        guesthouse.getId(),
         guesthouse.getSlug(),
         translation.getName(),
         translation.getShortDescription(),
@@ -88,6 +95,7 @@ public class GuesthouseQueryService {
   private GuesthouseSummaryResponse toSummary(Guesthouse guesthouse, String language) {
     GuesthouseTranslation translation = translationFor(guesthouse, language);
     return new GuesthouseSummaryResponse(
+        guesthouse.getId(),
         guesthouse.getSlug(),
         translation.getName(),
         translation.getShortDescription(),
@@ -136,6 +144,7 @@ public class GuesthouseQueryService {
         pricing.items().stream()
             .map(item -> new PriceItemResponse(item.id(), item.label(), item.amount(), item.unit()))
             .toList(),
+        pricing.taxes().stream().map(this::toAdjustment).toList(),
         pricing.surcharges().stream().map(this::toAdjustment).toList(),
         pricing.discounts().stream().map(this::toAdjustment).toList(),
         pricing.paymentNote());

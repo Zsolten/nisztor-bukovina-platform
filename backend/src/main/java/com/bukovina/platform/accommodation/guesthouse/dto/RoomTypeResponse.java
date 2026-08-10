@@ -1,9 +1,10 @@
 package com.bukovina.platform.accommodation.guesthouse.dto;
 
 import java.util.List;
+import java.util.UUID;
 
 public record RoomTypeResponse(
-    String id,
+    UUID id,
     String name,
     int quantity,
     int standardOccupancy,

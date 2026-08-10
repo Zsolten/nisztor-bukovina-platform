@@ -4,11 +4,9 @@ import { Link, useOutletContext, useParams } from 'react-router-dom'
 import type { LanguageOutletContext } from '../../app/LanguageLayout'
 import AsyncStatus from '../../shared/components/AsyncStatus'
 import GuesthouseAmenities from './GuesthouseAmenities'
-import GuesthouseContact from './GuesthouseContact'
 import GuesthouseDining from './GuesthouseDining'
 import GuesthouseGallery from './GuesthouseGallery'
 import GuesthousePricing from './GuesthousePricing'
-import GuesthouseQuickFacts from './GuesthouseQuickFacts'
 import GuesthouseRoomTypes from './GuesthouseRoomTypes'
 import GuesthouseStory from './GuesthouseStory'
 import { useGuesthouse } from './useGuesthouseData'
@@ -59,15 +57,12 @@ export default function GuesthouseDetailPage() {
         </div>
       </section>
 
-      {/* <GuesthouseQuickFacts guesthouse={data} /> */}
-
       <div className="detail-sheet-stack">
         <GuesthouseStory description={data.description} images={storyImages} />
         <GuesthouseDining />
         <GuesthouseAmenities amenities={data.amenities} />
         <GuesthouseRoomTypes roomTypes={data.roomTypes} description={data.roomDescription} />
         <GuesthousePricing pricing={data.pricing} />
-        {/* <GuesthouseContact contacts={data.contacts} address={data.address} /> */}
       </div>
 
       <section className="gallery-section" aria-labelledby="gallery-heading">

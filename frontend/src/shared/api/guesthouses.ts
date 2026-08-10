@@ -7,6 +7,7 @@ export interface GuesthouseImage {
 }
 
 export interface GuesthouseSummary {
+  id: string
   slug: string
   name: string
   shortDescription: string
@@ -71,6 +72,7 @@ export interface GuesthousePricingAdjustment {
 export interface GuesthousePricing {
   currency: 'RON'
   items: GuesthousePriceItem[]
+  taxes: GuesthousePricingAdjustment[]
   surcharges: GuesthousePricingAdjustment[]
   discounts: GuesthousePricingAdjustment[]
   paymentNote: string

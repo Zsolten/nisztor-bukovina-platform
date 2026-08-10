@@ -21,7 +21,9 @@ interface SettledQuery<T> {
 
 const INITIAL_QUERY = { data: null, error: false, requestKey: null }
 
-function visibleState<T>(state: SettledQuery<T>, requestKey: string): QueryState<T> {
+function visibleState<T>(state: SettledQuery<T>, requestKey: string | null): QueryState<T> {
+  if (requestKey === null) return { data: null, loading: false, error: false }
+
   const isCurrent = state.requestKey === requestKey
   return {
     data: isCurrent ? state.data : null,
@@ -49,11 +51,16 @@ export function useGuesthouses(language: Language): QueryState<GuesthouseSummary
   return visibleState(state, language)
 }
 
-export function useGuesthouse(slug: string, language: Language): QueryState<GuesthouseDetail> {
-  const requestKey = `${language}:${slug}`
+export function useGuesthouse(
+  slug: string | null,
+  language: Language,
+): QueryState<GuesthouseDetail> {
+  const requestKey = slug ? `${language}:${slug}` : null
   const [state, setState] = useState<SettledQuery<GuesthouseDetail>>(INITIAL_QUERY)
 
   useEffect(() => {
+    if (!slug || !requestKey) return
+
     const controller = new AbortController()
 
     void fetchGuesthouse(slug, language, controller.signal)

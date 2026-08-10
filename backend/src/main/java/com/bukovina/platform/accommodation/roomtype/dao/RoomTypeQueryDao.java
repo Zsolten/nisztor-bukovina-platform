@@ -1,7 +1,9 @@
 package com.bukovina.platform.accommodation.roomtype.dao;
 
+import com.bukovina.platform.accommodation.roomtype.service.BookableRoomTypeView;
 import com.bukovina.platform.accommodation.roomtype.service.RoomTypeView;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -39,7 +41,7 @@ public class RoomTypeQueryDao {
         .query(
             (resultSet, rowNumber) ->
                 new RoomTypeView(
-                    resultSet.getString("code"),
+                    resultSet.getObject("id", UUID.class),
                     resultSet.getString("name"),
                     resultSet.getInt("quantity"),
                     resultSet.getInt("standard_occupancy"),
@@ -47,6 +49,26 @@ public class RoomTypeQueryDao {
                     resultSet.getInt("extra_beds_per_eligible_room"),
                     findFeatures(resultSet.getObject("id", UUID.class))))
         .list();
+  }
+
+  public Optional<BookableRoomTypeView> findById(UUID roomTypeId) {
+    return jdbcClient
+        .sql(
+            """
+            SELECT id, guesthouse_id, quantity, standard_occupancy, active
+            FROM room_type
+            WHERE id = :roomTypeId
+            """)
+        .param("roomTypeId", roomTypeId)
+        .query(
+            (resultSet, rowNumber) ->
+                new BookableRoomTypeView(
+                    resultSet.getObject("id", UUID.class),
+                    resultSet.getObject("guesthouse_id", UUID.class),
+                    resultSet.getInt("quantity"),
+                    resultSet.getInt("standard_occupancy"),
+                    resultSet.getBoolean("active")))
+        .optional();
   }
 
   private List<String> findFeatures(UUID roomTypeId) {

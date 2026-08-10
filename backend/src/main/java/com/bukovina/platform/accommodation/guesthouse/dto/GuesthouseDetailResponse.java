@@ -1,8 +1,10 @@
 package com.bukovina.platform.accommodation.guesthouse.dto;
 
 import java.util.List;
+import java.util.UUID;
 
 public record GuesthouseDetailResponse(
+    UUID id,
     String slug,
     String name,
     String shortDescription,

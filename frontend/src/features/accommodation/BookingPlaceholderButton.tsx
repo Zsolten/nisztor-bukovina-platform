@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
 export default function BookingPlaceholderButton() {
   const { t } = useTranslation()
 
   return (
-    <button className="booking-placeholder-button" type="button" aria-disabled="true">
+    <Link className="booking-placeholder-button" to="booking">
       {t('guesthouses.booking')}
-    </button>
+    </Link>
   )
 }
