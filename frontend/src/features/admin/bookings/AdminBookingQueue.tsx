@@ -65,6 +65,7 @@ export default function AdminBookingQueue() {
   const [sort, setSort] = useState(initialSort)
   const [retryKey, setRetryKey] = useState(0)
   const [queue, setQueue] = useState<QueueState>({ status: 'loading', data: null })
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -81,7 +82,7 @@ export default function AdminBookingQueue() {
     if (search === filters.search) return undefined
 
     const timeout = window.setTimeout(() => {
-      setQueue({ status: 'loading', data: null })
+      setIsRefreshing(true)
       setFilters((current) => ({ ...current, search }))
       setPage(0)
     }, 350)
@@ -98,10 +99,14 @@ export default function AdminBookingQueue() {
       sort.direction,
       controller.signal,
     )
-      .then((data) => setQueue({ status: 'success', data }))
+      .then((data) => {
+        setQueue({ status: 'success', data })
+        setIsRefreshing(false)
+      })
       .catch((error: unknown) => {
         if (!(error instanceof DOMException && error.name === 'AbortError')) {
           setQueue({ status: 'error', data: null })
+          setIsRefreshing(false)
         }
       })
     return () => controller.abort()
@@ -121,13 +126,14 @@ export default function AdminBookingQueue() {
   }, [guesthouses, queue])
 
   function updateFilter(field: keyof AdminBookingFilters, value: string) {
-    setQueue({ status: 'loading', data: null })
+    setIsRefreshing(true)
     setFilters((current) => ({ ...current, [field]: value }))
     setPage(0)
   }
 
   function changePage(nextPage: number) {
-    setQueue({ status: 'loading', data: null })
+    if (nextPage === page) return
+    setIsRefreshing(true)
     setPage(nextPage)
   }
 
@@ -137,7 +143,7 @@ export default function AdminBookingQueue() {
   }
 
   function updateSort(field: AdminBookingSortField) {
-    setQueue({ status: 'loading', data: null })
+    setIsRefreshing(true)
     setSort((current) => ({
       field,
       direction:
@@ -250,7 +256,16 @@ export default function AdminBookingQueue() {
 
       {queue.status === 'success' && queue.data.content.length > 0 && (
         <>
-          <div className="admin-booking-list" aria-label="Foglalási kérelmek">
+          <div
+            className="admin-booking-list"
+            aria-busy={isRefreshing}
+            aria-label="Foglalási kérelmek"
+          >
+            {isRefreshing && (
+              <span className="visually-hidden" role="status">
+                Lista frissítése
+              </span>
+            )}
             <div className="admin-booking-list-header">
               <span>Kérelem</span>
               <button type="button" onClick={() => updateSort('checkInDate')}>

@@ -115,6 +115,21 @@ describe('AdminBookingQueue', () => {
     expect(screen.getByText(booking.id)).toBeVisible()
   })
 
+  it('keeps the current rows visible while sorting refreshes the data', async () => {
+    const user = userEvent.setup()
+    const authorizedFetch = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(200, bookingPage()))
+      .mockImplementation(() => new Promise<Response>(() => undefined))
+    renderQueue(authorizedFetch)
+    await screen.findByText(booking.publicReference)
+
+    await user.click(screen.getByRole('button', { name: /Összeg/ }))
+
+    expect(screen.getByText(booking.publicReference)).toBeVisible()
+    expect(screen.queryByText('Foglalások betöltése')).not.toBeInTheDocument()
+  })
+
   it('updates filters, sorting and numbered pagination', async () => {
     const user = userEvent.setup()
     const authorizedFetch = vi.fn().mockResolvedValue(jsonResponse(200, bookingPage()))
