@@ -160,6 +160,42 @@ class AdminBookingControllerTests {
 
   @Test
   @WithMockUser(roles = "ADMIN")
+  void keepsBookingsAndRoomSelectionsVisibleWhenHungarianNamesAreMissing() throws Exception {
+    UUID guesthouseId = guesthouseId("bukovina-panzio");
+    UUID roomTypeId = roomTypeId("bukovina-panzio", "double");
+    UUID bookingId =
+        insertBooking(
+            guesthouseId, "NB-0000000000000011", "RECEIVED", Instant.parse("2026-08-11T08:00:00Z"));
+    jdbcTemplate.update(
+        """
+        INSERT INTO booking_room_selection (id, booking_request_id, room_type_id, quantity)
+        VALUES (?, ?, ?, 1)
+        """,
+        UUID.randomUUID(),
+        bookingId,
+        roomTypeId);
+    jdbcTemplate.update(
+        "DELETE FROM guesthouse_translation WHERE guesthouse_id = ? AND language_code = 'hu'",
+        guesthouseId);
+    jdbcTemplate.update(
+        "DELETE FROM room_type_translation WHERE room_type_id = ? AND language_code = 'hu'",
+        roomTypeId);
+
+    mockMvc
+        .perform(get("/api/admin/bookings"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].id").value(bookingId.toString()))
+        .andExpect(jsonPath("$.content[0].guesthouseName").value("bukovina-panzio"));
+    mockMvc
+        .perform(get("/api/admin/bookings/{bookingId}", bookingId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.guesthouse.name").value("bukovina-panzio"))
+        .andExpect(jsonPath("$.rooms[0].roomTypeId").value(roomTypeId.toString()))
+        .andExpect(jsonPath("$.rooms[0].roomTypeName").value("double"));
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN")
   void returnsNotFoundAndRejectsInvalidPaginationOrDateRange() throws Exception {
     mockMvc
         .perform(get("/api/admin/bookings/{bookingId}", UUID.randomUUID()))
@@ -180,6 +216,15 @@ class AdminBookingControllerTests {
                 .param("createdTo", "2026-08-11"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("INVALID_ADMIN_BOOKING_QUERY"));
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN")
+  void returnsTheDocumentedErrorForMalformedQueryParameters() throws Exception {
+    assertInvalidQuery("guesthouseId", "not-a-uuid");
+    assertInvalidQuery("status", "UNKNOWN");
+    assertInvalidQuery("createdFrom", "not-a-date");
+    assertInvalidQuery("page", "not-a-number");
   }
 
   private UUID insertBooking(
@@ -220,6 +265,13 @@ class AdminBookingControllerTests {
         Timestamp.from(createdAt),
         Timestamp.from(createdAt));
     return id;
+  }
+
+  private void assertInvalidQuery(String parameter, String value) throws Exception {
+    mockMvc
+        .perform(get("/api/admin/bookings").param(parameter, value))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_ADMIN_BOOKING_QUERY"));
   }
 
   private UUID guesthouseId(String slug) {

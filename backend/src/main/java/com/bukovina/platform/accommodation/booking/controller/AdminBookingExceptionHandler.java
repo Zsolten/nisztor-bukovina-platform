@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice(assignableTypes = AdminBookingController.class)
 public class AdminBookingExceptionHandler {
@@ -17,7 +18,10 @@ public class AdminBookingExceptionHandler {
         .body(new AdminBookingErrorResponse("ADMIN_BOOKING_NOT_FOUND"));
   }
 
-  @ExceptionHandler(AdminBookingQueryValidationException.class)
+  @ExceptionHandler({
+    AdminBookingQueryValidationException.class,
+    MethodArgumentTypeMismatchException.class
+  })
   ResponseEntity<AdminBookingErrorResponse> invalidQuery() {
     return ResponseEntity.badRequest()
         .body(new AdminBookingErrorResponse("INVALID_ADMIN_BOOKING_QUERY"));

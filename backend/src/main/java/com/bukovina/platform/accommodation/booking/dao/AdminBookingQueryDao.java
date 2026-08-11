@@ -23,7 +23,7 @@ public class AdminBookingQueryDao {
       """
       FROM booking_request booking
       JOIN guesthouse ON guesthouse.id = booking.guesthouse_id
-      JOIN guesthouse_translation guesthouse_name
+      LEFT JOIN guesthouse_translation guesthouse_name
         ON guesthouse_name.guesthouse_id = guesthouse.id
        AND guesthouse_name.language_code = 'hu'
       WHERE 1 = 1
@@ -46,7 +46,8 @@ public class AdminBookingQueryDao {
     String sql =
         """
         SELECT booking.id, booking.public_reference, booking.guesthouse_id,
-               guesthouse_name.name AS guesthouse_name, booking.status,
+               COALESCE(guesthouse_name.name, guesthouse.slug) AS guesthouse_name,
+               booking.status,
                booking.check_in_date, booking.check_out_date,
                booking.adults, booking.children_age_3_to_10, booking.children_age_0_to_3,
                booking.contact_name, booking.total_payable, booking.currency, booking.created_at
@@ -92,7 +93,7 @@ public class AdminBookingQueryDao {
             .sql(
                 """
                 SELECT booking.id, booking.public_reference, booking.guesthouse_id,
-                       guesthouse_name.name AS guesthouse_name,
+                       COALESCE(guesthouse_name.name, guesthouse.slug) AS guesthouse_name,
                        booking.check_in_date, booking.check_out_date,
                        booking.adults, booking.children_age_3_to_10,
                        booking.children_age_0_to_3, booking.breakfast_participants,
@@ -105,7 +106,7 @@ public class AdminBookingQueryDao {
                        booking.created_at, booking.updated_at
                 FROM booking_request booking
                 JOIN guesthouse ON guesthouse.id = booking.guesthouse_id
-                JOIN guesthouse_translation guesthouse_name
+                LEFT JOIN guesthouse_translation guesthouse_name
                   ON guesthouse_name.guesthouse_id = guesthouse.id
                  AND guesthouse_name.language_code = 'hu'
                 WHERE booking.id = :bookingId
@@ -181,13 +182,16 @@ public class AdminBookingQueryDao {
     return jdbcClient
         .sql(
             """
-            SELECT selection.room_type_id, room_name.name AS room_type_name, selection.quantity
+            SELECT selection.room_type_id,
+                   COALESCE(room_name.name, room.code) AS room_type_name,
+                   selection.quantity
             FROM booking_room_selection selection
-            JOIN room_type_translation room_name
-              ON room_name.room_type_id = selection.room_type_id
+            JOIN room_type room ON room.id = selection.room_type_id
+            LEFT JOIN room_type_translation room_name
+              ON room_name.room_type_id = room.id
              AND room_name.language_code = 'hu'
             WHERE selection.booking_request_id = :bookingId
-            ORDER BY room_name.name, selection.room_type_id
+            ORDER BY room_type_name, selection.room_type_id
             """)
         .param("bookingId", bookingId)
         .query(
