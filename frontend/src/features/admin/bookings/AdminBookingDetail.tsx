@@ -1,12 +1,15 @@
 import {
   AlertTriangle,
   ArrowLeft,
+  BedDouble,
   CalendarDays,
   Check,
+  CircleDollarSign,
   Clock3,
   Mail,
   MapPin,
   Phone,
+  Printer,
   RefreshCw,
   Save,
   Users,
@@ -53,6 +56,7 @@ const dateTimeFormatter = new Intl.DateTimeFormat('hu-HU', {
   hour: '2-digit',
   minute: '2-digit',
 })
+const weekdayFormatter = new Intl.DateTimeFormat('hu-HU', { weekday: 'long' })
 
 type DetailState =
   | { status: 'loading' }
@@ -187,24 +191,47 @@ export default function AdminBookingDetail() {
   const booking = detail.data
   const price = booking.priceSnapshot
   const noteChanged = internalNote.trim() !== (booking.internalNote ?? '')
+  const roomSummary = booking.rooms
+    .map((room) => `${room.quantity} × ${room.roomTypeName}`)
+    .join(', ')
+  const mealSummary = [
+    booking.services.breakfastParticipants > 0
+      ? `Reggeli: ${booking.services.breakfastParticipants} fő`
+      : null,
+    booking.services.dinnerParticipants > 0
+      ? `Vacsora: ${booking.services.dinnerParticipants} fő`
+      : null,
+  ]
+    .filter(Boolean)
+    .join(', ')
 
   return (
     <section className="admin-booking-detail" aria-labelledby="admin-booking-detail-title">
-      <Link className="admin-booking-back" to="/admin/bookings">
-        <ArrowLeft aria-hidden="true" size={17} /> Vissza a kérelmekhez
-      </Link>
+      <div className="admin-booking-toolbar">
+        <Link className="admin-booking-back" to="/admin/bookings">
+          <ArrowLeft aria-hidden="true" size={17} /> Vissza a foglalásokhoz
+        </Link>
+        <div>
+          <span>Kérelem {booking.publicReference}</span>
+          <button type="button" onClick={() => window.print()}>
+            <Printer aria-hidden="true" size={16} />
+            Nyomtatás
+          </button>
+        </div>
+      </div>
 
       <header className="admin-booking-detail-heading">
         <div>
-          <p className="admin-eyebrow">Foglalási kérelem</p>
-          <h1 id="admin-booking-detail-title">{booking.publicReference}</h1>
+          <div className="admin-booking-title-row">
+            <h1 id="admin-booking-detail-title">{booking.publicReference}</h1>
+            <span
+              className={`admin-booking-status admin-booking-status-${statusClass(booking.status)}`}
+            >
+              {STATUS_LABELS[booking.status]}
+            </span>
+          </div>
           <p>{booking.guesthouse.name}</p>
         </div>
-        <span
-          className={`admin-booking-status admin-booking-status-${statusClass(booking.status)}`}
-        >
-          {STATUS_LABELS[booking.status]}
-        </span>
       </header>
 
       {(feedback || error) && (
@@ -227,16 +254,18 @@ export default function AdminBookingDetail() {
             className="admin-detail-card admin-detail-overview"
             aria-labelledby="stay-heading"
           >
-            <h2 id="stay-heading">Tartózkodás és vendégek</h2>
+            <h2 id="stay-heading">Tartózkodás részletei</h2>
             <DetailItem
               icon={<CalendarDays />}
               label="Érkezés"
               value={formatDate(booking.stay.checkInDate)}
+              detail={formatWeekday(booking.stay.checkInDate)}
             />
             <DetailItem
               icon={<CalendarDays />}
               label="Távozás"
               value={formatDate(booking.stay.checkOutDate)}
+              detail={formatWeekday(booking.stay.checkOutDate)}
             />
             <DetailItem
               icon={<Clock3 />}
@@ -244,6 +273,12 @@ export default function AdminBookingDetail() {
               value={`${booking.stay.nights} éjszaka`}
             />
             <DetailItem icon={<Users />} label="Vendégek" value={`${totalGuests} fő`} />
+            <DetailItem icon={<BedDouble />} label="Szobák" value={roomSummary} />
+            <DetailItem
+              icon={<Utensils />}
+              label="Étkezések"
+              value={mealSummary || 'Nincs kiválasztva'}
+            />
             <dl className="admin-detail-breakdown">
               <div>
                 <dt>Felnőtt</dt>
@@ -285,65 +320,37 @@ export default function AdminBookingDetail() {
           </section>
 
           <section className="admin-detail-card" aria-labelledby="contact-heading">
-            <h2 id="contact-heading">Kapcsolattartó</h2>
-            <strong className="admin-detail-contact-name">{booking.contact.name}</strong>
-            <div className="admin-detail-contact-links">
-              <a href={`mailto:${booking.contact.email}`}>
-                <Mail aria-hidden="true" size={17} />
-                {booking.contact.email}
-              </a>
-              <a href={`tel:${booking.contact.phone}`}>
-                <Phone aria-hidden="true" size={17} />
-                {booking.contact.phone}
-              </a>
+            <h2 id="contact-heading">Vendég kapcsolata</h2>
+            <div className="admin-detail-contact">
+              <span className="admin-detail-contact-avatar" aria-hidden="true">
+                {booking.contact.name.charAt(0).toUpperCase()}
+              </span>
+              <div>
+                <strong className="admin-detail-contact-name">{booking.contact.name}</strong>
+                <div className="admin-detail-contact-links">
+                  <a href={`mailto:${booking.contact.email}`}>
+                    <Mail aria-hidden="true" size={17} />
+                    {booking.contact.email}
+                  </a>
+                  <a href={`tel:${booking.contact.phone}`}>
+                    <Phone aria-hidden="true" size={17} />
+                    {booking.contact.phone}
+                  </a>
+                </div>
+              </div>
+              <p>
+                <span>Kapcsolattartás nyelve</span>
+                <strong>{languageLabel(booking.contact.preferredLanguage)}</strong>
+              </p>
             </div>
-            <p>
-              Kapcsolattartás nyelve:{' '}
-              <strong>{languageLabel(booking.contact.preferredLanguage)}</strong>
-            </p>
             <div className="admin-detail-guest-note">
               <span>Vendég megjegyzése</span>
               <p>{booking.guestNote || 'Nem adott meg megjegyzést.'}</p>
             </div>
           </section>
 
-          <section className="admin-detail-card" aria-labelledby="history-heading">
-            <h2 id="history-heading">Állapotelőzmények</h2>
-            <ol className="admin-status-history">
-              {booking.statusHistory.map((entry, index) => (
-                <li key={`${entry.changedAt}-${index}`}>
-                  <span aria-hidden="true" />
-                  <div>
-                    <strong>{STATUS_LABELS[entry.status]}</strong>
-                    <small>{actorLabel(entry.changedBy)}</small>
-                  </div>
-                  <time dateTime={entry.changedAt}>
-                    {dateTimeFormatter.format(new Date(entry.changedAt))}
-                  </time>
-                </li>
-              ))}
-            </ol>
-          </section>
-        </div>
-
-        <aside className="admin-booking-detail-sidebar">
-          <section
-            className="admin-detail-card admin-detail-actions"
-            aria-labelledby="actions-heading"
-          >
-            <h2 id="actions-heading">Kérelem kezelése</h2>
-            <StatusActions
-              disabled={saving !== null}
-              status={booking.status}
-              onAction={(status) => {
-                if (status === 'CONFIRMED' || status === 'REJECTED') setPendingStatus(status)
-                else void changeStatus(status)
-              }}
-            />
-          </section>
-
           <section className="admin-detail-card admin-detail-price" aria-labelledby="price-heading">
-            <h2 id="price-heading">Árkalkuláció</h2>
+            <h2 id="price-heading">Árkalkuláció részletei</h2>
             <dl className="admin-price-guests">
               <div>
                 <dt>
@@ -388,6 +395,74 @@ export default function AdminBookingDetail() {
             <PriceRow total label="Összesen" value={price.totalPayable} currency={price.currency} />
           </section>
 
+          <section className="admin-detail-card" aria-labelledby="history-heading">
+            <h2 id="history-heading">Kérelem előzményei</h2>
+            <ol className="admin-status-history">
+              {booking.statusHistory.map((entry, index) => (
+                <li key={`${entry.changedAt}-${index}`}>
+                  <span aria-hidden="true" />
+                  <div>
+                    <strong>{STATUS_LABELS[entry.status]}</strong>
+                    <small>{actorLabel(entry.changedBy)}</small>
+                  </div>
+                  <time dateTime={entry.changedAt}>
+                    {dateTimeFormatter.format(new Date(entry.changedAt))}
+                  </time>
+                </li>
+              ))}
+            </ol>
+          </section>
+        </div>
+
+        <aside className="admin-booking-detail-sidebar">
+          <section className="admin-decision-summary" aria-labelledby="decision-heading">
+            <h2 id="decision-heading">Döntési összegzés</h2>
+            <dl>
+              <div>
+                <dt>Állapot</dt>
+                <dd>
+                  <span
+                    className={`admin-booking-status admin-booking-status-${statusClass(booking.status)}`}
+                  >
+                    {STATUS_LABELS[booking.status]}
+                  </span>
+                </dd>
+              </div>
+              <div>
+                <dt>Beérkezett</dt>
+                <dd>{dateTimeFormatter.format(new Date(booking.createdAt))}</dd>
+              </div>
+              <div>
+                <dt>Frissítve</dt>
+                <dd>{dateTimeFormatter.format(new Date(booking.updatedAt))}</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section className="admin-decision-total" aria-label="Foglalási összeg">
+            <span>
+              <CircleDollarSign aria-hidden="true" size={18} />
+              Foglalási összeg
+            </span>
+            <strong>{formatMoney(price.totalPayable, price.currency)}</strong>
+            <p>A foglalási kérelem mentett végösszege.</p>
+          </section>
+
+          <section
+            className="admin-detail-card admin-detail-actions"
+            aria-labelledby="actions-heading"
+          >
+            <h2 id="actions-heading">Döntés</h2>
+            <StatusActions
+              disabled={saving !== null}
+              status={booking.status}
+              onAction={(status) => {
+                if (status === 'CONFIRMED' || status === 'REJECTED') setPendingStatus(status)
+                else void changeStatus(status)
+              }}
+            />
+          </section>
+
           <section className="admin-detail-card admin-detail-note" aria-labelledby="note-heading">
             <h2 id="note-heading">Belső megjegyzés</h2>
             <p>Csak az adminisztráció számára látható.</p>
@@ -416,8 +491,7 @@ export default function AdminBookingDetail() {
               <MapPin aria-hidden="true" size={15} />
               {booking.guesthouse.name}
             </p>
-            <p>Beérkezett: {dateTimeFormatter.format(new Date(booking.createdAt))}</p>
-            <p>Frissítve: {dateTimeFormatter.format(new Date(booking.updatedAt))}</p>
+            <p>A kérelem döntésig nem számít visszaigazolt foglalásnak.</p>
           </section>
         </aside>
       </div>
@@ -472,16 +546,19 @@ function DetailItem({
   icon,
   label,
   value,
+  detail,
 }: {
   icon: React.ReactNode
   label: string
   value: string
+  detail?: string
 }) {
   return (
     <div className="admin-detail-item">
       {icon}
       <span>{label}</span>
       <strong>{value}</strong>
+      {detail && <small>{detail}</small>}
     </div>
   )
 }
@@ -549,6 +626,9 @@ function operationError(error: unknown) {
 
 function formatDate(value: string) {
   return dateFormatter.format(new Date(`${value}T00:00:00`))
+}
+function formatWeekday(value: string) {
+  return weekdayFormatter.format(new Date(`${value}T00:00:00`))
 }
 function formatMoney(value: number, currency: string) {
   return new Intl.NumberFormat('hu-HU', {
