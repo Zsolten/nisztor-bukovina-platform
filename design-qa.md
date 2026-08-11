@@ -1,37 +1,45 @@
-# Admin booking detail design QA
+# Design QA - Guesthouse detail layout
 
-- Source desktop: `C:\Users\nisto\AppData\Local\Temp\codex-clipboard-415a9d65-5e2e-4730-8ac1-cd5bb7a4ac8d.png`
-- Source mobile: `C:\Users\nisto\AppData\Local\Temp\codex-clipboard-45eb010c-719a-4df3-b670-0c4107d4fc68.png`
-- Implementation desktop: `C:\Users\nisto\AppData\Local\Temp\admin-booking-desktop-viewport-final.png`
-- Implementation mobile: `C:\Users\nisto\AppData\Local\Temp\admin-booking-mobile-viewport-final2.png`
-- Desktop comparison: `C:\Users\nisto\AppData\Local\Temp\admin-booking-desktop-comparison-final.png`
-- Mobile comparison: `C:\Users\nisto\AppData\Local\Temp\admin-booking-mobile-comparison-final.png`
+## Comparison target
 
-## Capture setup
+- Source visual truth: https://www.palkonyha.hu/szallas/
+- Implementation: http://localhost:5173/hu/guesthouses/nisztor-panzio
+- Source screenshot path: in-app browser capture emitted from the source URL in this task.
+- Implementation screenshot path: in-app browser capture emitted from the local URL in this task.
+- State: Hungarian Nisztor guesthouse detail page, editorial accommodation section.
+- Viewport: source and implementation at 1280 x 720 CSS pixels, DPR 1.
+- Pixel dimensions: both captures 1280 x 720; no density normalization required.
 
-- Desktop source: 1488 x 1058 px. Browser viewport override: 1488 x 1058 CSS px. Captured implementation content: 1473 x 1047 px at device scale 1.
-- Mobile source: 852 x 1859 px at approximately 2x density. It was normalized to 426 x 930 px for comparison. Browser viewport override: 426 x 930 CSS px. Captured implementation content: 411 x 897 px at device scale 1.
-- State: received booking request with three guests, one room type, dinner, guest note, adult and child pricing, and available confirm/reject actions.
+## Full-view comparison evidence
 
-## Comparison evidence
+- The reference and implementation were emitted together in one comparison result at the same viewport and equivalent content position.
+- Both use two tall images beside a restrained text column with generous whitespace and a visible booking CTA.
+- The implementation intentionally retains the project's forest, paper, serif typography, header, and backend-provided content.
+- No horizontal overflow was measured at the checked viewport.
 
-- Full-view desktop comparison checked the sidebar proportion, header hierarchy, six-column stay summary, guest contact, price breakdown, and separated decision panel.
-- Full-view mobile comparison checked title wrapping, priority order, two-column stay facts, and horizontal overflow.
-- Focused checks used the original-resolution captures for the booking reference/status, contact links, decision actions, room quantity, meal participant count, and child discount rows. Separate cropped evidence was unnecessary because these areas remained readable in the original captures.
+## Focused region evidence
+
+- Dining: both supplied food images loaded at their natural resolution and use the same two-image editorial rhythm.
+- Services: four categories are visually separated by column and row dividers; individual amenities no longer merge into pill tags.
+- Rooms and pricing: headings, descriptions, room cards, price rows, and the second booking CTA are visibly separated and aligned.
+- Gallery: ten items rendered, the modal dialog opened from a gallery item, and no browser console errors were recorded.
 
 ## Comparison history
 
-1. P2: the closed mobile offcanvas increased the document width from 426 px to 826 px. Added horizontal clipping to the admin shell. Post-fix document width is 426 px at the 426 px viewport and 345 px at the 360 px viewport.
-2. P2: a separate room-and-meal section duplicated the stay summary and pushed pricing too far down. Merged room quantities and meal participant counts into the stay summary and removed the duplicate section.
-3. P2: the mobile app header plus the detail toolbar consumed substantially more space than the reference. Replaced the detail-page mobile brand row with back, NB mark, and menu controls, and hid the redundant toolbar below 768 px.
+- P2: the pricing booking CTA was initially placed after the long price list and was not visible with the section heading.
+- Fix: moved the CTA into the pricing header and added responsive grid placement.
+- Post-fix evidence: one booking CTA is visible when the pricing section is aligned to the viewport; horizontal overflow remains zero.
 
-## Final review
+## Intentional differences
 
-- Typography: serif display hierarchy and compact sans-serif operational labels match the existing product tokens and the reference intent. Long references wrap without overflow.
-- Spacing and layout: desktop uses a stable sidebar/content/decision structure; mobile uses a two-column fact grid with no horizontal overflow.
-- Colors: existing forest, paper, gold, brick, and muted tokens are retained with clear semantic status and action colors.
-- Assets: all visible controls use the existing Lucide icon set; no reference image asset was replaced with a fabricated illustration.
-- Copy: wording reflects a booking request, avoids claiming taxes are included, and keeps all existing operational data visible.
-- Interactions: mobile navigation opens and closes, decision confirmation opens explicitly, cancel closes the dialog, and browser console contains no warnings or errors.
+- The source gallery appears prominently near the start. The implementation keeps the gallery at the bottom at the product owner's request.
+- Historical copy is omitted. The page uses the current guesthouse description and a dedicated homemade-food section.
+- Booking buttons are deliberately marked `aria-disabled` and do not trigger navigation until the booking flow is implemented.
 
-final result: passed
+## Follow-up polish
+
+- P3: repeat the focused visual capture at the existing 620 px breakpoint when a resizable browser viewport is available. Responsive rules, lint, tests, and the production build are currently passing.
+
+## Final result
+
+passed
