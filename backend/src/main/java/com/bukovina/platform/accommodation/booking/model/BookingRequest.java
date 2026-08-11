@@ -81,6 +81,9 @@ public class BookingRequest {
 
   @Column private String note;
 
+  @Column(name = "internal_note")
+  private String internalNote;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 32)
   private BookingStatus status;
@@ -249,6 +252,14 @@ public class BookingRequest {
     return note;
   }
 
+  public String getInternalNote() {
+    return internalNote;
+  }
+
+  public void updateInternalNote(String internalNote) {
+    this.internalNote = internalNote;
+  }
+
   public BookingStatus getStatus() {
     return status;
   }
@@ -265,12 +276,15 @@ public class BookingRequest {
     Objects.requireNonNull(nextStatus);
     boolean allowed =
         (status == BookingStatus.RECEIVED
+                && (nextStatus == BookingStatus.UNDER_REVIEW
+                    || nextStatus == BookingStatus.CANCELLED))
+            || (status == BookingStatus.UNDER_REVIEW
                 && (nextStatus == BookingStatus.CONFIRMED
                     || nextStatus == BookingStatus.REJECTED
                     || nextStatus == BookingStatus.CANCELLED))
             || (status == BookingStatus.CONFIRMED && nextStatus == BookingStatus.CANCELLED);
     if (!allowed) {
-      throw new IllegalStateException("Invalid booking status transition");
+      throw new InvalidBookingStatusTransitionException(status, nextStatus);
     }
     status = nextStatus;
     addStatusHistory(nextStatus, changedAt, changedBy);

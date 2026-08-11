@@ -20,12 +20,17 @@ class AdminBookingOpenApiContractTests {
 
     assertTrue(paths.containsKey("/admin/bookings"));
     assertTrue(paths.containsKey("/admin/bookings/{bookingId}"));
+    assertTrue(paths.containsKey("/admin/bookings/{bookingId}/status"));
+    assertTrue(paths.containsKey("/admin/bookings/{bookingId}/internal-note"));
     assertTrue(contract.contains("name: guesthouseId"));
     assertTrue(contract.contains("name: status"));
     assertTrue(contract.contains("name: createdFrom"));
     assertTrue(contract.contains("name: createdTo"));
     assertTrue(contract.contains("AdminBookingPage"));
     assertTrue(contract.contains("AdminBookingDetail"));
+    assertTrue(contract.contains("UNDER_REVIEW"));
+    assertTrue(contract.contains("INVALID_BOOKING_STATUS_TRANSITION"));
+    assertTrue(contract.contains("INTERNAL_NOTE_TOO_LONG"));
     assertTrue(contract.contains("AdminBearerAuth"));
     assertFalse(contract.contains("managementTokenHash:"));
     assertFalse(contract.contains("idempotencyKeyHash:"));

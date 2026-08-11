@@ -16,15 +16,26 @@ class BookingStatusTransitionTests {
     BookingRequest booking = booking();
     Instant changedAt = Instant.parse("2030-01-01T10:00:00Z");
 
-    booking.transitionTo(BookingStatus.CONFIRMED, changedAt, "ADMIN:test");
-    assertEquals(BookingStatus.CONFIRMED, booking.getStatus());
-    assertEquals(1, booking.getStatusHistory().size());
     assertThrows(
-        IllegalStateException.class,
-        () -> booking.transitionTo(BookingStatus.REJECTED, changedAt, "ADMIN:test"));
+        InvalidBookingStatusTransitionException.class,
+        () -> booking.transitionTo(BookingStatus.CONFIRMED, changedAt, "ADMIN:test"));
+    assertEquals(0, booking.getStatusHistory().size());
 
-    booking.transitionTo(BookingStatus.CANCELLED, changedAt, "ADMIN:test");
+    booking.transitionTo(BookingStatus.UNDER_REVIEW, changedAt, "ADMIN:test");
+    assertEquals(BookingStatus.UNDER_REVIEW, booking.getStatus());
+    assertEquals(1, booking.getStatusHistory().size());
+
+    booking.transitionTo(BookingStatus.CONFIRMED, changedAt.plusSeconds(1), "ADMIN:test");
+    assertEquals(BookingStatus.CONFIRMED, booking.getStatus());
+    assertEquals(2, booking.getStatusHistory().size());
+    assertThrows(
+        InvalidBookingStatusTransitionException.class,
+        () -> booking.transitionTo(BookingStatus.REJECTED, changedAt, "ADMIN:test"));
+    assertEquals(2, booking.getStatusHistory().size());
+
+    booking.transitionTo(BookingStatus.CANCELLED, changedAt.plusSeconds(2), "ADMIN:test");
     assertEquals(BookingStatus.CANCELLED, booking.getStatus());
+    assertEquals(3, booking.getStatusHistory().size());
   }
 
   private BookingRequest booking() {

@@ -43,14 +43,14 @@ class BookingMigrationTests {
   }
 
   @Test
-  void restrictsStatusToBook009ValuesWithoutEmailVerificationState() {
+  void supportsTheAdministratorReviewWorkflowWithoutEmailVerificationState() {
     String constraints =
         constraintsFor("booking_request") + constraintsFor("booking_status_history");
 
-    for (String status : List.of("RECEIVED", "CONFIRMED", "REJECTED", "CANCELLED")) {
+    for (String status :
+        List.of("RECEIVED", "UNDER_REVIEW", "CONFIRMED", "REJECTED", "CANCELLED")) {
       assertTrue(constraints.contains(status));
     }
-    assertFalse(constraints.contains("UNDER_REVIEW"));
     assertFalse(constraints.contains("PENDING_EMAIL_VERIFICATION"));
   }
 
