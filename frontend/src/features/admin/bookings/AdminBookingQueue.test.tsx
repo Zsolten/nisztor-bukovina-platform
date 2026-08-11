@@ -139,6 +139,8 @@ describe('AdminBookingQueue', () => {
 
     expect(String(authorizedFetch.mock.calls[0][0])).toContain('sortBy=checkInDate')
     expect(String(authorizedFetch.mock.calls[0][0])).toContain('sortDirection=asc')
+    expect(String(authorizedFetch.mock.calls[0][0])).toContain('status=RECEIVED')
+    expect(screen.getByLabelText('Állapot')).toHaveValue('RECEIVED')
 
     await user.type(screen.getByLabelText('Keresés'), 'Teszt Vendég')
     await waitFor(() =>

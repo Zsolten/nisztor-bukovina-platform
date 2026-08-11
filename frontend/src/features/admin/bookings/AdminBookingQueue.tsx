@@ -38,7 +38,11 @@ type QueueState =
   | { status: 'error'; data: null }
   | { status: 'success'; data: AdminBookingPage }
 
-const initialFilters: AdminBookingFilters = { guesthouseId: '', search: '', status: '' }
+const initialFilters: AdminBookingFilters = {
+  guesthouseId: '',
+  search: '',
+  status: 'RECEIVED',
+}
 const initialSort: { field: AdminBookingSortField; direction: AdminBookingSortDirection } = {
   field: 'checkInDate',
   direction: 'asc',
