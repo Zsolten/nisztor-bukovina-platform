@@ -178,12 +178,14 @@ img {
 .navbar-toggler {
   width: 48px;
   height: 48px;
-  border-color: var(--line);
-  border-radius: 50%;
+  border: 0;
+  border-radius: 0;
 }
 
 .navbar-toggler:focus {
-  box-shadow: 0 0 0 0.2rem rgba($forest, 0.2);
+  outline: 2px solid rgba($forest, 0.45);
+  outline-offset: 2px;
+  box-shadow: none;
 }
 
 .offcanvas {
@@ -221,7 +223,7 @@ img {
 }
 
 .site-header:not(.site-header-scrolled) .navbar-toggler {
-  border-color: rgba(255, 255, 255, 0.48);
+  border-color: transparent;
 }
 
 .site-header:not(.site-header-scrolled) .navbar-toggler-icon {

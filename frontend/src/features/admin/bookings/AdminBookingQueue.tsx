@@ -288,6 +288,7 @@ export default function AdminBookingQueue() {
               >
                 <span className="admin-booking-primary" data-label="Kérelem">
                   <strong>{booking.publicReference}</strong>
+                  <small className="admin-booking-contact">{booking.contactName}</small>
                   <small>{booking.guesthouseName}</small>
                 </span>
                 <span className="admin-booking-stay" data-label="Tartózkodás">

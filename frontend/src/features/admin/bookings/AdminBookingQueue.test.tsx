@@ -107,6 +107,7 @@ describe('AdminBookingQueue', () => {
 
     const row = await screen.findByRole('link', { name: new RegExp(booking.publicReference) })
     expect(row).toHaveTextContent('Bukovina Panzió')
+    expect(row).toHaveTextContent('Teszt Vendég')
     expect(row).toHaveTextContent('3 fő')
     expect(row).toHaveTextContent('Beérkezett')
     await user.click(row)

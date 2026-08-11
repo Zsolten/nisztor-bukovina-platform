@@ -259,6 +259,10 @@
   color: $forest;
 }
 
+.admin-header .offcanvas-body {
+  gap: clamp(1.5rem, 4vw, 4rem);
+}
+
 .admin-logout-button {
   display: inline-flex;
   align-items: center;
@@ -538,6 +542,11 @@
     color: $muted;
     font-size: 0.73rem;
   }
+}
+
+.admin-booking-primary .admin-booking-contact {
+  color: $ink;
+  font-weight: 700;
 }
 
 .admin-booking-stay {
@@ -821,7 +830,28 @@
   }
 
   .admin-booking-row {
+    align-items: start;
     grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .admin-booking-primary {
+    min-width: 0;
+
+    strong {
+      overflow-wrap: anywhere;
+    }
+  }
+
+  .admin-booking-status {
+    margin-top: 0.2rem;
+  }
+
+  .admin-booking-row time {
+    width: 100%;
+    padding-top: 0.8rem;
+    border-top: 1px solid rgba($ink, 0.1);
   }
 
   .admin-booking-pagination button {
