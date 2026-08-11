@@ -1,0 +1,362 @@
+@use 'tokens' as *;
+
+.admin-login-page,
+.admin-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: $paper-light;
+  color: $ink;
+}
+
+.admin-login-page {
+  display: grid;
+  padding: clamp(1rem, 4vw, 3rem);
+  place-items: center;
+}
+
+.admin-login-container {
+  width: min(100%, 62rem);
+  margin: 0;
+}
+
+.admin-login-card {
+  display: grid;
+  overflow: hidden;
+  grid-template-columns: minmax(18rem, 0.85fr) minmax(24rem, 1.15fr);
+  border: 1px solid $line;
+  border-radius: 1.25rem;
+  background: $paper-light;
+  box-shadow: $shadow;
+
+  h1 {
+    margin-bottom: 0.75rem;
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    letter-spacing: -0.025em;
+  }
+
+  .form-control,
+  .btn {
+    min-height: 3.25rem;
+  }
+
+  h1 {
+    font-family: $serif;
+  }
+}
+
+.admin-login-brand-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(2rem, 5vw, 4rem);
+  background: $forest-dark;
+  color: $paper-light;
+
+  h2 {
+    max-width: 18rem;
+    margin-bottom: 1.25rem;
+    font-family: $serif;
+    font-size: clamp(2rem, 3vw, 2.65rem);
+    letter-spacing: -0.025em;
+    line-height: 1.08;
+  }
+
+  > p:last-child {
+    max-width: 21rem;
+    margin-bottom: 0;
+    color: rgba($paper-light, 0.76);
+    line-height: 1.7;
+  }
+}
+
+.admin-login-brand-icon {
+  display: grid;
+  width: 3.25rem;
+  height: 3.25rem;
+  margin-bottom: 2rem;
+  border: 1px solid rgba($paper-light, 0.22);
+  border-radius: 1rem;
+  background: rgba($paper-light, 0.08);
+  color: $gold;
+  place-items: center;
+}
+
+.admin-login-form-panel {
+  padding: clamp(2rem, 5vw, 4rem);
+}
+
+.admin-eyebrow {
+  margin-bottom: 0.45rem;
+  color: $brick;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.admin-eyebrow-light {
+  color: $gold;
+}
+
+.admin-login-introduction {
+  margin-bottom: 1.75rem;
+  color: $muted;
+  font-size: 1.05rem;
+}
+
+.admin-login-feedback {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding: 0.9rem 1rem;
+  border-width: 0 0 0 3px;
+  border-radius: 0.65rem;
+
+  svg {
+    flex: 0 0 auto;
+    margin-top: 0.1rem;
+  }
+
+  div {
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  strong {
+    font-size: 0.92rem;
+  }
+
+  span {
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+}
+
+.admin-login-form-panel .form-label {
+  margin-bottom: 0.45rem;
+  color: $ink;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.admin-login-form-panel .form-control {
+  padding-inline: 1rem;
+  border-color: rgba($ink, 0.2);
+  border-radius: 0.7rem;
+  background: rgba(#fff, 0.72);
+  box-shadow: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+
+  &:focus {
+    border-color: $forest;
+    background: #fff;
+    box-shadow: 0 0 0 0.22rem rgba($forest, 0.12);
+  }
+
+  &.is-invalid {
+    border-color: $brick;
+    background-image: none;
+    box-shadow: 0 0 0 0.2rem rgba($brick, 0.08);
+  }
+}
+
+.admin-login-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  border-color: $forest;
+  border-radius: 0.7rem;
+  background: $forest;
+  font-weight: 700;
+  box-shadow: 0 0.55rem 1.25rem rgba($forest-dark, 0.16);
+  transition:
+    transform 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+
+  &:hover,
+  &:focus-visible {
+    border-color: $forest-dark;
+    background: $forest-dark;
+    box-shadow: 0 0.7rem 1.5rem rgba($forest-dark, 0.22);
+    transform: translateY(-1px);
+  }
+}
+
+.admin-header {
+  position: sticky;
+  z-index: 1020;
+  top: 0;
+  min-height: 76px;
+  border-bottom: 1px solid $line;
+  background: rgba($paper-light, 0.94);
+  box-shadow: 0 0.4rem 1.5rem rgba($forest-dark, 0.05);
+  backdrop-filter: blur(14px);
+}
+
+.admin-header .navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-right: 2.25rem;
+  color: $forest-dark;
+  text-decoration: none;
+}
+
+.admin-brand-mark {
+  display: grid;
+  width: 2.65rem;
+  height: 2.65rem;
+  border-radius: 0.8rem;
+  background: $forest;
+  color: $paper-light;
+  font-family: $serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  place-items: center;
+}
+
+.admin-brand-copy {
+  display: grid;
+  gap: 0.1rem;
+  line-height: 1.05;
+
+  strong {
+    font-family: $serif;
+    font-size: 1.05rem;
+  }
+
+  small {
+    color: $muted;
+    font-family: $sans-serif;
+    font-size: 0.63rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
+}
+
+.admin-navigation .nav-link {
+  padding: 0.65rem 0.9rem;
+  border-radius: 0.65rem;
+  color: $muted;
+  font-weight: 600;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
+}
+
+.admin-navigation .nav-link.active,
+.admin-navigation .nav-link:hover,
+.admin-navigation .nav-link:focus-visible {
+  background: rgba($forest, 0.09);
+  color: $forest;
+}
+
+.admin-logout-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.7rem;
+  padding-inline: 1rem;
+  border-color: rgba($ink, 0.2);
+  border-radius: 0.65rem;
+  color: $muted;
+  font-weight: 700;
+
+  &:hover,
+  &:focus-visible {
+    border-color: rgba($brick, 0.3);
+    background: rgba($brick, 0.08);
+    color: $brick;
+  }
+}
+
+.admin-main {
+  padding-block: clamp(2rem, 6vw, 4.5rem);
+}
+
+.admin-page-introduction {
+  max-width: 44rem;
+}
+
+.admin-page-introduction h1 {
+  margin-bottom: 1rem;
+  font-family: $serif;
+}
+
+.admin-page-introduction p:last-child {
+  color: $muted;
+  font-size: 1.08rem;
+  line-height: 1.7;
+}
+
+@media (max-width: 767.98px) {
+  .admin-login-card {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-login-brand-panel {
+    padding: 1.75rem;
+
+    h2 {
+      max-width: 24rem;
+      margin-bottom: 0.75rem;
+      font-size: 1.65rem;
+    }
+
+    > p:last-child {
+      line-height: 1.5;
+    }
+  }
+
+  .admin-login-brand-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .admin-login-form-panel {
+    padding: 1.75rem;
+  }
+
+  .admin-header .offcanvas-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .admin-navigation {
+    gap: 0.25rem;
+  }
+
+  .admin-navigation .nav-link {
+    padding-block: 0.75rem;
+  }
+
+  .admin-logout-button {
+    width: 100%;
+    margin-top: auto;
+  }
+}
+
+@media (max-width: 420px) {
+  .admin-login-page {
+    padding: 0;
+    place-items: stretch;
+  }
+
+  .admin-login-card {
+    min-height: 100dvh;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
