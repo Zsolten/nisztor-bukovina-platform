@@ -27,6 +27,7 @@ export interface AdminBookingPage {
 
 export interface AdminBookingFilters {
   guesthouseId: string
+  search: string
   status: AdminBookingStatus | ''
 }
 
@@ -48,6 +49,7 @@ export async function fetchAdminBookings(
     sortDirection,
   })
   if (filters.guesthouseId) parameters.set('guesthouseId', filters.guesthouseId)
+  if (filters.search) parameters.set('search', filters.search)
   if (filters.status) parameters.set('status', filters.status)
 
   const response = await authorizedFetch(`/api/admin/bookings?${parameters}`, {

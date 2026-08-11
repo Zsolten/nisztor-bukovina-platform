@@ -24,6 +24,7 @@ class AdminBookingOpenApiContractTests {
     assertTrue(paths.containsKey("/admin/bookings/{bookingId}/internal-note"));
     assertTrue(contract.contains("name: guesthouseId"));
     assertTrue(contract.contains("name: status"));
+    assertTrue(contract.contains("name: search"));
     assertTrue(contract.contains("name: createdFrom"));
     assertTrue(contract.contains("name: createdTo"));
     assertTrue(contract.contains("name: sortBy"));

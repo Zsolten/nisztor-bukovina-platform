@@ -175,6 +175,12 @@ paths:
           required: false
           schema:
             $ref: '#/components/schemas/BookingStatus'
+        - name: search
+          in: query
+          required: false
+          description: Case-insensitive partial match on booking reference or contact name.
+          schema:
+            type: string
         - name: createdFrom
           in: query
           required: false

@@ -38,13 +38,14 @@ public class AdminBookingQueryDao {
   public List<AdminBookingSummaryView> findPage(
       UUID guesthouseId,
       BookingStatus status,
+      String search,
       LocalDate createdFrom,
       LocalDate createdTo,
       int page,
       int size,
       String sortBy,
       String sortDirection) {
-    Filter filter = filter(guesthouseId, status, createdFrom, createdTo);
+    Filter filter = filter(guesthouseId, status, search, createdFrom, createdTo);
     String sql =
         """
         SELECT booking.id, booking.public_reference, booking.guesthouse_id,
@@ -103,8 +104,12 @@ public class AdminBookingQueryDao {
   }
 
   public long count(
-      UUID guesthouseId, BookingStatus status, LocalDate createdFrom, LocalDate createdTo) {
-    Filter filter = filter(guesthouseId, status, createdFrom, createdTo);
+      UUID guesthouseId,
+      BookingStatus status,
+      String search,
+      LocalDate createdFrom,
+      LocalDate createdTo) {
+    Filter filter = filter(guesthouseId, status, search, createdFrom, createdTo);
     String sql = "SELECT COUNT(*) " + FILTERED_BOOKINGS + filter.where();
     return bind(jdbcClient.sql(sql), filter.parameters()).query(Long.class).single();
   }
@@ -245,7 +250,11 @@ public class AdminBookingQueryDao {
   }
 
   private Filter filter(
-      UUID guesthouseId, BookingStatus status, LocalDate createdFrom, LocalDate createdTo) {
+      UUID guesthouseId,
+      BookingStatus status,
+      String search,
+      LocalDate createdFrom,
+      LocalDate createdTo) {
     List<String> clauses = new ArrayList<>();
     Map<String, Object> parameters = new HashMap<>();
     if (guesthouseId != null) {
@@ -255,6 +264,11 @@ public class AdminBookingQueryDao {
     if (status != null) {
       clauses.add("booking.status = :status");
       parameters.put("status", status.name());
+    }
+    if (search != null && !search.isBlank()) {
+      clauses.add(
+          "(booking.public_reference ILIKE :search ESCAPE '\\' OR booking.contact_name ILIKE :search ESCAPE '\\')");
+      parameters.put("search", "%" + escapeLike(search.trim()) + "%");
     }
     if (createdFrom != null) {
       clauses.add("booking.created_at >= :createdFrom");
@@ -270,6 +284,10 @@ public class AdminBookingQueryDao {
     }
     String where = clauses.isEmpty() ? "" : " AND " + String.join(" AND ", clauses);
     return new Filter(where, parameters);
+  }
+
+  private String escapeLike(String value) {
+    return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
   }
 
   private JdbcClient.StatementSpec bind(

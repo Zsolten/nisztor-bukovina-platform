@@ -25,6 +25,7 @@ public class AdminBookingQueryService {
   public AdminBookingPageResponse list(
       UUID guesthouseId,
       BookingStatus status,
+      String search,
       LocalDate createdFrom,
       LocalDate createdTo,
       int page,
@@ -32,11 +33,19 @@ public class AdminBookingQueryService {
       String sortBy,
       String sortDirection) {
     validateFilters(createdFrom, createdTo, page, size, sortBy, sortDirection);
-    long totalElements = queryDao.count(guesthouseId, status, createdFrom, createdTo);
+    long totalElements = queryDao.count(guesthouseId, status, search, createdFrom, createdTo);
     var content =
         queryDao
             .findPage(
-                guesthouseId, status, createdFrom, createdTo, page, size, sortBy, sortDirection)
+                guesthouseId,
+                status,
+                search,
+                createdFrom,
+                createdTo,
+                page,
+                size,
+                sortBy,
+                sortDirection)
             .stream()
             .map(AdminBookingSummaryResponse::from)
             .toList();

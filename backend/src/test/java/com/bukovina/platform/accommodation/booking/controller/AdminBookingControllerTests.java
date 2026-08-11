@@ -99,6 +99,8 @@ class AdminBookingControllerTests {
     updateBookingSortValues(middle, LocalDate.of(2026, 9, 15), "900.00");
     updateBookingSortValues(oldest, LocalDate.of(2026, 9, 20), "500.00");
     updateBookingSortValues(otherGuesthouse, LocalDate.of(2026, 9, 25), "300.00");
+    jdbcTemplate.update(
+        "UPDATE booking_request SET contact_name = 'Kovács Anna' WHERE id = ?", middle);
 
     mockMvc
         .perform(get("/api/admin/bookings").param("size", "2"))
@@ -135,6 +137,18 @@ class AdminBookingControllerTests {
         .andExpect(jsonPath("$.totalElements").value(2))
         .andExpect(jsonPath("$.content[0].id").value(newest.toString()))
         .andExpect(jsonPath("$.content[1].id").value(middle.toString()));
+
+    mockMvc
+        .perform(get("/api/admin/bookings").param("search", "0000000000000001"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalElements").value(1))
+        .andExpect(jsonPath("$.content[0].id").value(oldest.toString()));
+
+    mockMvc
+        .perform(get("/api/admin/bookings").param("search", "kovács"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalElements").value(1))
+        .andExpect(jsonPath("$.content[0].id").value(middle.toString()));
 
     mockMvc
         .perform(

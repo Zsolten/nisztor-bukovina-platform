@@ -124,6 +124,14 @@ describe('AdminBookingQueue', () => {
     expect(String(authorizedFetch.mock.calls[0][0])).toContain('sortBy=checkInDate')
     expect(String(authorizedFetch.mock.calls[0][0])).toContain('sortDirection=asc')
 
+    await user.type(screen.getByLabelText('Keresés'), 'Teszt Vendég')
+    await waitFor(() =>
+      expect(authorizedFetch).toHaveBeenCalledWith(
+        expect.stringContaining('search=Teszt+Vend%C3%A9g'),
+        expect.anything(),
+      ),
+    )
+
     await user.selectOptions(screen.getByLabelText('Panzió'), booking.guesthouseId)
     await user.selectOptions(screen.getByLabelText('Állapot'), 'UNDER_REVIEW')
 

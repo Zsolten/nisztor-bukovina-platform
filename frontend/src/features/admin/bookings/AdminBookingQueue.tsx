@@ -9,6 +9,7 @@ import {
   Filter,
   Inbox,
   RefreshCw,
+  Search,
   Users,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
@@ -37,7 +38,7 @@ type QueueState =
   | { status: 'error'; data: null }
   | { status: 'success'; data: AdminBookingPage }
 
-const initialFilters: AdminBookingFilters = { guesthouseId: '', status: '' }
+const initialFilters: AdminBookingFilters = { guesthouseId: '', search: '', status: '' }
 const initialSort: { field: AdminBookingSortField; direction: AdminBookingSortDirection } = {
   field: 'checkInDate',
   direction: 'asc',
@@ -58,6 +59,7 @@ const dateTimeFormatter = new Intl.DateTimeFormat('hu-HU', {
 export default function AdminBookingQueue() {
   const { authorizedFetch } = useAdminAuth()
   const [filters, setFilters] = useState(initialFilters)
+  const [searchInput, setSearchInput] = useState('')
   const [guesthouses, setGuesthouses] = useState<GuesthouseSummary[]>([])
   const [page, setPage] = useState(0)
   const [sort, setSort] = useState(initialSort)
@@ -73,6 +75,18 @@ export default function AdminBookingQueue() {
       })
     return () => controller.abort()
   }, [])
+
+  useEffect(() => {
+    const search = searchInput.trim()
+    if (search === filters.search) return undefined
+
+    const timeout = window.setTimeout(() => {
+      setQueue({ status: 'loading', data: null })
+      setFilters((current) => ({ ...current, search }))
+      setPage(0)
+    }, 350)
+    return () => window.clearTimeout(timeout)
+  }, [filters.search, searchInput])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -165,6 +179,18 @@ export default function AdminBookingQueue() {
 
       <div className="admin-booking-filters" aria-label="Foglalási kérelmek szűrése">
         <Filter aria-hidden="true" size={18} />
+        <label className="admin-booking-search">
+          <span>Keresés</span>
+          <span className="admin-booking-search-control">
+            <Search aria-hidden="true" size={17} />
+            <input
+              type="search"
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              placeholder="Foglalási szám vagy név"
+            />
+          </span>
+        </label>
         <label>
           <span>Panzió</span>
           <select
