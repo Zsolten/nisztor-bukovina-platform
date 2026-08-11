@@ -97,29 +97,37 @@ describe('AdminBookingDetail', () => {
     expect(screen.getByText('Háromágyas szoba')).toBeVisible()
     expect(screen.getByText('Csendes szobát kérünk.')).toBeVisible()
     expect(screen.getByDisplayValue('Visszahívást kér.')).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Ellenőrzés megkezdése' })).toBeVisible()
-    expect(screen.queryByRole('button', { name: 'Visszaigazolás' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Visszaigazolás' })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Elutasítás' })).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Ellenőrzés megkezdése' })).not.toBeInTheDocument()
   })
 
-  it('updates a valid status and refreshes the detail immediately', async () => {
+  it('handles the intermediate review status without an extra administrator action', async () => {
     const user = userEvent.setup()
     const authorizedFetch = vi
       .fn()
       .mockResolvedValueOnce(jsonResponse(200, detail()))
       .mockResolvedValueOnce(jsonResponse(204))
-      .mockResolvedValueOnce(jsonResponse(200, detail('UNDER_REVIEW')))
+      .mockResolvedValueOnce(jsonResponse(204))
+      .mockResolvedValueOnce(jsonResponse(200, detail('CONFIRMED')))
     renderDetail(authorizedFetch)
 
-    await user.click(await screen.findByRole('button', { name: 'Ellenőrzés megkezdése' }))
+    await user.click(await screen.findByRole('button', { name: 'Visszaigazolás' }))
+    await user.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Visszaigazolás' }),
+    )
 
-    await waitFor(() => expect(authorizedFetch).toHaveBeenCalledTimes(3))
+    await waitFor(() => expect(authorizedFetch).toHaveBeenCalledTimes(4))
     expect(authorizedFetch.mock.calls[1][0]).toBe(`/api/admin/bookings/${bookingId}/status`)
     expect(authorizedFetch.mock.calls[1][1]).toMatchObject({
       method: 'PATCH',
       body: JSON.stringify({ status: 'UNDER_REVIEW' }),
     })
-    expect(await screen.findByText('Az állapot frissült: Ellenőrzés alatt.')).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Visszaigazolás' })).toBeVisible()
+    expect(authorizedFetch.mock.calls[2][1]).toMatchObject({
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'CONFIRMED' }),
+    })
+    expect(await screen.findByText('Az állapot frissült: Visszaigazolt.')).toBeVisible()
   })
 
   it('requires explicit confirmation before confirm and reject actions', async () => {

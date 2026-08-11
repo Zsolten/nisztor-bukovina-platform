@@ -122,6 +122,13 @@ export default function AdminBookingDetail() {
     setError(null)
     setFeedback(null)
     try {
+      if (
+        detail.status === 'success' &&
+        detail.data.status === 'RECEIVED' &&
+        (status === 'CONFIRMED' || status === 'REJECTED')
+      ) {
+        await updateAdminBookingStatus(authorizedFetch, bookingId, 'UNDER_REVIEW')
+      }
       await updateAdminBookingStatus(authorizedFetch, bookingId, status)
       await loadDetail()
       setFeedback(`Az állapot frissült: ${STATUS_LABELS[status]}.`)
@@ -480,18 +487,7 @@ function StatusActions({
   disabled: boolean
   onAction: (status: AdminBookingStatus) => void
 }) {
-  if (status === 'RECEIVED')
-    return (
-      <button
-        className="admin-action-review"
-        type="button"
-        disabled={disabled}
-        onClick={() => onAction('UNDER_REVIEW')}
-      >
-        Ellenőrzés megkezdése
-      </button>
-    )
-  if (status === 'UNDER_REVIEW')
+  if (status === 'RECEIVED' || status === 'UNDER_REVIEW')
     return (
       <div>
         <button
