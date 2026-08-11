@@ -37,6 +37,8 @@ function detail(status: AdminBookingDetailData['status'] = 'RECEIVED'): AdminBoo
     ],
     priceSnapshot: {
       accommodationTotal: 600,
+      adultAccommodationTotal: 480,
+      childAccommodationTotal: 120,
       singleRoomSurcharge: 0,
       breakfastTotal: 90,
       dinnerTotal: 180,
@@ -96,8 +98,9 @@ describe('AdminBookingDetail', () => {
     expect(screen.getByText('Teszt Vendég')).toBeVisible()
     expect(screen.getByText('Háromágyas szoba')).toBeVisible()
     expect(screen.getByText('Csendes szobát kérünk.')).toBeVisible()
-    expect(screen.getByText('1 fő × 2 éj · 25% kedvezmény')).toBeVisible()
-    expect(screen.getByText('0 fő · ingyenes')).toBeVisible()
+    const childPrice = screen.getByText('Gyermekek 3–10 év').closest('div')
+    expect(childPrice).toHaveTextContent('1 fő × 2 éj · 25% kedvezmény')
+    expect(childPrice).toHaveTextContent('120 RON')
     expect(screen.getByDisplayValue('Visszahívást kér.')).toBeVisible()
     expect(screen.getByRole('button', { name: 'Visszaigazolás' })).toBeVisible()
     expect(screen.getByRole('button', { name: 'Elutasítás' })).toBeVisible()

@@ -52,6 +52,8 @@ const quote = {
   lines: [],
   priceBreakdown: {
     accommodationTotal: 520,
+    adultAccommodationTotal: 520,
+    childAccommodationTotal: 0,
     singleRoomSurcharge: 0,
     breakfastTotal: 0,
     dinnerTotal: 0,

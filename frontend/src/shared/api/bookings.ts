@@ -31,6 +31,8 @@ export interface BookingQuote {
   }>
   priceBreakdown: {
     accommodationTotal: number
+    adultAccommodationTotal: number
+    childAccommodationTotal: number
     singleRoomSurcharge: number
     breakfastTotal: number
     dinnerTotal: number

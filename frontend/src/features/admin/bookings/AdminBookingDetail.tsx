@@ -346,20 +346,29 @@ export default function AdminBookingDetail() {
             <h2 id="price-heading">Árkalkuláció</h2>
             <dl className="admin-price-guests">
               <div>
-                <dt>Felnőttek</dt>
-                <dd>
-                  {booking.stay.adults} fő × {booking.stay.nights} éj
-                </dd>
+                <dt>
+                  Felnőttek
+                  <small>
+                    {booking.stay.adults} fő × {booking.stay.nights} éj
+                  </small>
+                </dt>
+                <dd>{formatMoney(price.adultAccommodationTotal, price.currency)}</dd>
               </div>
               <div>
-                <dt>Gyermekek 3–10 év</dt>
-                <dd>
-                  {booking.stay.childrenAge3to10} fő × {booking.stay.nights} éj · 25% kedvezmény
-                </dd>
+                <dt>
+                  Gyermekek 3–10 év
+                  <small>
+                    {booking.stay.childrenAge3to10} fő × {booking.stay.nights} éj · 25% kedvezmény
+                  </small>
+                </dt>
+                <dd>{formatMoney(price.childAccommodationTotal, price.currency)}</dd>
               </div>
               <div>
-                <dt>Gyermekek 0–3 év</dt>
-                <dd>{booking.stay.childrenAge0to3} fő · ingyenes</dd>
+                <dt>
+                  Gyermekek 0–3 év
+                  <small>{booking.stay.childrenAge0to3} fő · ingyenes</small>
+                </dt>
+                <dd>{formatMoney(0, price.currency)}</dd>
               </div>
             </dl>
             <PriceRow

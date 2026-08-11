@@ -42,6 +42,8 @@ export interface AdminBookingDetail {
   rooms: Array<{ roomTypeId: string; roomTypeName: string; quantity: number }>
   priceSnapshot: {
     accommodationTotal: number
+    adultAccommodationTotal: number
+    childAccommodationTotal: number
     singleRoomSurcharge: number
     breakfastTotal: number
     dinnerTotal: number

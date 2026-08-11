@@ -1000,8 +1000,15 @@
     }
 
     dt {
+      display: grid;
+      gap: 0.1rem;
       color: $muted;
       font-weight: 600;
+
+      small {
+        font-size: 0.65rem;
+        font-weight: 500;
+      }
     }
 
     dd {
