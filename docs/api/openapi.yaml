@@ -252,6 +252,84 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AdminBookingError'
+  /admin/bookings/{bookingId}/status:
+    patch:
+      operationId: changeAdminBookingStatus
+      summary: Move a booking request through the administrator review workflow
+      tags: [Administration]
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminBookingStatusUpdateRequest'
+      responses:
+        '204':
+          description: Status changed and one administrator history entry was recorded.
+        '400':
+          description: The request is malformed or the requested status transition is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminBookingWorkflowError'
+        '401':
+          description: Administrator authentication is missing or invalid.
+        '403':
+          description: The authenticated account is not an administrator.
+        '404':
+          description: No booking request exists with the supplied internal identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminBookingError'
+  /admin/bookings/{bookingId}/internal-note:
+    patch:
+      operationId: updateAdminBookingInternalNote
+      summary: Replace or clear the administrator-only internal note
+      tags: [Administration]
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminBookingInternalNoteUpdateRequest'
+      responses:
+        '204':
+          description: Internal note replaced or cleared. Blank text is stored as no note.
+        '400':
+          description: The request is malformed or the note exceeds the maximum length.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminBookingWorkflowError'
+        '401':
+          description: Administrator authentication is missing or invalid.
+        '403':
+          description: The authenticated account is not an administrator.
+        '404':
+          description: No booking request exists with the supplied internal identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminBookingError'
 components:
   securitySchemes:
     AdminBearerAuth:
@@ -749,7 +827,7 @@ components:
           enum: [INVALID_ADMIN_CREDENTIALS, ADMIN_LOGIN_RATE_LIMITED]
     BookingStatus:
       type: string
-      enum: [RECEIVED, CONFIRMED, REJECTED, CANCELLED]
+      enum: [RECEIVED, UNDER_REVIEW, CONFIRMED, REJECTED, CANCELLED]
     AdminBookingSummary:
       type: object
       required:
@@ -878,3 +956,41 @@ components:
         code:
           type: string
           enum: [ADMIN_BOOKING_NOT_FOUND, INVALID_ADMIN_BOOKING_QUERY]
+    AdminBookingStatusUpdateRequest:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [UNDER_REVIEW, CONFIRMED, REJECTED]
+    AdminBookingInternalNoteUpdateRequest:
+      type: object
+      additionalProperties: false
+      required: [internalNote]
+      properties:
+        internalNote:
+          type: string
+          maxLength: 4000
+          description: Blank text clears the internal note.
+    AdminBookingWorkflowError:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          enum:
+            - INVALID_BOOKING_STATUS_TRANSITION
+            - BOOKING_STATUS_REQUIRED
+            - UNSUPPORTED_ADMIN_BOOKING_STATUS
+            - INTERNAL_NOTE_REQUIRED
+            - INTERNAL_NOTE_TOO_LONG
+            - INVALID_ADMIN_BOOKING_REQUEST
+        currentStatus:
+          oneOf:
+            - $ref: '#/components/schemas/BookingStatus'
+            - type: 'null'
+        requestedStatus:
+          oneOf:
+            - $ref: '#/components/schemas/BookingStatus'
+            - type: 'null'

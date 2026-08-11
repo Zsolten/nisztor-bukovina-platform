@@ -1,7 +1,9 @@
 package com.bukovina.platform.accommodation.booking.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -44,6 +47,34 @@ class AdminBookingControllerTests {
   @WithMockUser(roles = "USER")
   void rejectsAuthenticatedUsersWithoutTheAdministratorRole() throws Exception {
     mockMvc.perform(get("/api/admin/bookings")).andExpect(status().isForbidden());
+  }
+
+  @Test
+  void rejectsAnonymousWorkflowActions() throws Exception {
+    UUID bookingId = UUID.randomUUID();
+    mockMvc
+        .perform(
+            patch("/api/admin/bookings/{bookingId}/status", bookingId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"status\":\"UNDER_REVIEW\"}"))
+        .andExpect(status().isUnauthorized());
+    mockMvc
+        .perform(
+            patch("/api/admin/bookings/{bookingId}/internal-note", bookingId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"internalNote\":\"Titkos jegyzet\"}"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @WithMockUser(roles = "USER")
+  void rejectsWorkflowActionsWithoutTheAdministratorRole() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/admin/bookings/{bookingId}/status", UUID.randomUUID())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"status\":\"UNDER_REVIEW\"}"))
+        .andExpect(status().isForbidden());
   }
 
   @Test
@@ -227,6 +258,126 @@ class AdminBookingControllerTests {
     assertInvalidQuery("page", "not-a-number");
   }
 
+  @Test
+  @WithMockUser(username = "admin-123", roles = "ADMIN")
+  void movesBookingsThroughReviewAndRecordsTheAuthenticatedAdministrator() throws Exception {
+    UUID bookingId =
+        insertBooking(
+            guesthouseId("bukovina-panzio"),
+            "NB-0000000000000020",
+            "RECEIVED",
+            Instant.parse("2026-08-11T08:00:00Z"));
+
+    changeStatus(bookingId, "UNDER_REVIEW").andExpect(status().isNoContent());
+    assertBookingStatus(bookingId, "UNDER_REVIEW");
+    assertHistory(bookingId, 1, "UNDER_REVIEW", "ADMIN:admin-123");
+
+    changeStatus(bookingId, "CONFIRMED").andExpect(status().isNoContent());
+    assertBookingStatus(bookingId, "CONFIRMED");
+    assertHistory(bookingId, 2, "CONFIRMED", "ADMIN:admin-123");
+  }
+
+  @Test
+  @WithMockUser(username = "rejecting-admin", roles = "ADMIN")
+  void rejectsBookingsAfterTheyEnterReview() throws Exception {
+    UUID bookingId =
+        insertBooking(
+            guesthouseId("bukovina-panzio"),
+            "NB-0000000000000021",
+            "RECEIVED",
+            Instant.parse("2026-08-11T08:00:00Z"));
+
+    changeStatus(bookingId, "UNDER_REVIEW").andExpect(status().isNoContent());
+    changeStatus(bookingId, "REJECTED").andExpect(status().isNoContent());
+
+    assertBookingStatus(bookingId, "REJECTED");
+    assertHistory(bookingId, 2, "REJECTED", "ADMIN:rejecting-admin");
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN")
+  void rejectsInvalidTransitionsWithoutChangingStatusOrHistory() throws Exception {
+    UUID bookingId =
+        insertBooking(
+            guesthouseId("bukovina-panzio"),
+            "NB-0000000000000022",
+            "RECEIVED",
+            Instant.parse("2026-08-11T08:00:00Z"));
+
+    changeStatus(bookingId, "CONFIRMED")
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_BOOKING_STATUS_TRANSITION"))
+        .andExpect(jsonPath("$.currentStatus").value("RECEIVED"))
+        .andExpect(jsonPath("$.requestedStatus").value("CONFIRMED"));
+
+    assertBookingStatus(bookingId, "RECEIVED");
+    assertEquals(0, historyCount(bookingId));
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN")
+  void persistsNormalizesClearsAndProtectsInternalNotes() throws Exception {
+    UUID bookingId =
+        insertBooking(
+            guesthouseId("bukovina-panzio"),
+            "NB-0000000000000023",
+            "RECEIVED",
+            Instant.parse("2026-08-11T08:00:00Z"));
+
+    updateInternalNote(bookingId, "  A vendéget vissza kell hívni.  ")
+        .andExpect(status().isNoContent());
+    mockMvc
+        .perform(get("/api/admin/bookings/{bookingId}", bookingId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.internalNote").value("A vendéget vissza kell hívni."));
+    mockMvc
+        .perform(get("/api/admin/bookings"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].internalNote").doesNotExist());
+
+    updateInternalNote(bookingId, "   ").andExpect(status().isNoContent());
+    mockMvc
+        .perform(get("/api/admin/bookings/{bookingId}", bookingId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.internalNote").isEmpty());
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN")
+  void returnsMachineReadableWorkflowValidationAndMissingBookingErrors() throws Exception {
+    UUID missingBooking = UUID.randomUUID();
+    changeStatus(missingBooking, "UNDER_REVIEW")
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("ADMIN_BOOKING_NOT_FOUND"));
+    mockMvc
+        .perform(
+            patch("/api/admin/bookings/{bookingId}/status", missingBooking)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"status\":\"UNKNOWN\"}"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_ADMIN_BOOKING_REQUEST"));
+
+    UUID bookingId =
+        insertBooking(
+            guesthouseId("bukovina-panzio"),
+            "NB-0000000000000024",
+            "RECEIVED",
+            Instant.parse("2026-08-11T08:00:00Z"));
+    updateInternalNote(bookingId, "x".repeat(4001))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INTERNAL_NOTE_TOO_LONG"));
+    mockMvc
+        .perform(
+            patch("/api/admin/bookings/{bookingId}/internal-note", bookingId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INTERNAL_NOTE_REQUIRED"));
+    changeStatus(bookingId, "CANCELLED")
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("UNSUPPORTED_ADMIN_BOOKING_STATUS"));
+  }
+
   private UUID insertBooking(
       UUID guesthouseId, String publicReference, String status, Instant createdAt) {
     UUID id = UUID.randomUUID();
@@ -272,6 +423,60 @@ class AdminBookingControllerTests {
         .perform(get("/api/admin/bookings").param(parameter, value))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("INVALID_ADMIN_BOOKING_QUERY"));
+  }
+
+  private org.springframework.test.web.servlet.ResultActions changeStatus(
+      UUID bookingId, String requestedStatus) throws Exception {
+    return mockMvc.perform(
+        patch("/api/admin/bookings/{bookingId}/status", bookingId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"status\":\"%s\"}".formatted(requestedStatus)));
+  }
+
+  private org.springframework.test.web.servlet.ResultActions updateInternalNote(
+      UUID bookingId, String note) throws Exception {
+    String escapedNote = note.replace("\\", "\\\\").replace("\"", "\\\"");
+    return mockMvc.perform(
+        patch("/api/admin/bookings/{bookingId}/internal-note", bookingId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"internalNote\":\"%s\"}".formatted(escapedNote)));
+  }
+
+  private void assertBookingStatus(UUID bookingId, String expectedStatus) {
+    assertEquals(
+        expectedStatus,
+        jdbcTemplate.queryForObject(
+            "SELECT status FROM booking_request WHERE id = ?", String.class, bookingId));
+  }
+
+  private void assertHistory(
+      UUID bookingId, int expectedCount, String expectedLatestStatus, String expectedActor) {
+    assertEquals(expectedCount, historyCount(bookingId));
+    assertEquals(
+        expectedLatestStatus,
+        jdbcTemplate.queryForObject(
+            """
+            SELECT status FROM booking_status_history
+            WHERE booking_request_id = ? ORDER BY changed_at DESC, id DESC LIMIT 1
+            """,
+            String.class,
+            bookingId));
+    assertEquals(
+        expectedActor,
+        jdbcTemplate.queryForObject(
+            """
+            SELECT changed_by FROM booking_status_history
+            WHERE booking_request_id = ? ORDER BY changed_at DESC, id DESC LIMIT 1
+            """,
+            String.class,
+            bookingId));
+  }
+
+  private int historyCount(UUID bookingId) {
+    return jdbcTemplate.queryForObject(
+        "SELECT COUNT(*) FROM booking_status_history WHERE booking_request_id = ?",
+        Integer.class,
+        bookingId);
   }
 
   private UUID guesthouseId(String slug) {
