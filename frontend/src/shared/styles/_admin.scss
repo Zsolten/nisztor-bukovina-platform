@@ -1141,6 +1141,14 @@
     grid-template-columns: 1fr;
   }
 
+  .admin-booking-detail-sidebar {
+    display: contents;
+  }
+
+  .admin-detail-actions {
+    order: -1;
+  }
+
   .admin-detail-note,
   .admin-detail-metadata {
     grid-column: auto;
