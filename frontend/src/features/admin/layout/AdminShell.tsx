@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import { Button, Container, Nav, Navbar, Offcanvas } from 'react-bootstrap'
-import { CalendarDays, LogOut } from 'lucide-react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { ArrowLeft, CalendarDays, LogOut } from 'lucide-react'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAdminAuth } from '../auth/adminAuthContext'
 
 export default function AdminShell() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { logout } = useAdminAuth()
   const [navigationOpen, setNavigationOpen] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
+  const isBookingDetail = /^\/admin\/bookings\/[^/]+$/.test(location.pathname)
 
   async function handleLogout() {
     setLoggingOut(true)
@@ -54,15 +56,32 @@ export default function AdminShell() {
         onToggle={setNavigationOpen}
       >
         <Container>
-          <Navbar.Brand as={NavLink} to="/admin/bookings">
-            <span className="admin-brand-mark" aria-hidden="true">
-              NB
-            </span>
-            <span className="admin-brand-copy">
-              <strong>Nisztor–Bukovina</strong>
-              <small>Adminisztráció</small>
-            </span>
-          </Navbar.Brand>
+          {isBookingDetail ? (
+            <div className="admin-mobile-detail-navigation">
+              <button
+                aria-label="Vissza a foglalásokhoz"
+                onClick={() => navigate('/admin/bookings')}
+                type="button"
+              >
+                <ArrowLeft aria-hidden="true" />
+              </button>
+              <NavLink aria-label="Foglalások" to="/admin/bookings">
+                <span className="admin-brand-mark" aria-hidden="true">
+                  NB
+                </span>
+              </NavLink>
+            </div>
+          ) : (
+            <Navbar.Brand as={NavLink} to="/admin/bookings">
+              <span className="admin-brand-mark" aria-hidden="true">
+                NB
+              </span>
+              <span className="admin-brand-copy">
+                <strong>Nisztor–Bukovina</strong>
+                <small>Adminisztráció</small>
+              </span>
+            </Navbar.Brand>
+          )}
           <Navbar.Toggle aria-controls="admin-navigation" aria-label="Admin menü megnyitása" />
           <Navbar.Offcanvas
             aria-label="Admin navigáció"
@@ -85,6 +104,7 @@ export default function AdminShell() {
                 </Nav.Link>
               </Nav>
               <Button
+                aria-label="Kijelentkezés a mobil menüből"
                 className="admin-logout-button"
                 disabled={loggingOut}
                 onClick={() => void handleLogout()}

@@ -191,19 +191,22 @@ export default function AdminBookingDetail() {
   const booking = detail.data
   const price = booking.priceSnapshot
   const noteChanged = internalNote.trim() !== (booking.internalNote ?? '')
-  const roomSummary = booking.rooms
-    .map((room) => `${room.quantity} × ${room.roomTypeName}`)
-    .join(', ')
-  const mealSummary = [
+  const roomSummary = booking.rooms.map((room) => room.roomTypeName).join(', ')
+  const roomQuantities = booking.rooms
+    .map((room) => `${room.quantity} db ${room.roomTypeName}`)
+    .join(' · ')
+  const selectedMeals = [
     booking.services.breakfastParticipants > 0
-      ? `Reggeli: ${booking.services.breakfastParticipants} fő`
+      ? { label: 'Reggeli', participants: booking.services.breakfastParticipants }
       : null,
     booking.services.dinnerParticipants > 0
-      ? `Vacsora: ${booking.services.dinnerParticipants} fő`
+      ? { label: 'Vacsora', participants: booking.services.dinnerParticipants }
       : null,
-  ]
-    .filter(Boolean)
-    .join(', ')
+  ].filter((meal): meal is { label: string; participants: number } => meal !== null)
+  const mealSummary = selectedMeals.map((meal) => meal.label).join(' és ')
+  const mealParticipants = selectedMeals
+    .map((meal) => `${meal.participants} fő ${meal.label.toLowerCase()}`)
+    .join(' · ')
 
   return (
     <section className="admin-booking-detail" aria-labelledby="admin-booking-detail-title">
@@ -273,11 +276,17 @@ export default function AdminBookingDetail() {
               value={`${booking.stay.nights} éjszaka`}
             />
             <DetailItem icon={<Users />} label="Vendégek" value={`${totalGuests} fő`} />
-            <DetailItem icon={<BedDouble />} label="Szobák" value={roomSummary} />
+            <DetailItem
+              icon={<BedDouble />}
+              label="Szobák"
+              value={roomSummary}
+              detail={roomQuantities}
+            />
             <DetailItem
               icon={<Utensils />}
               label="Étkezések"
               value={mealSummary || 'Nincs kiválasztva'}
+              detail={mealParticipants || undefined}
             />
             <dl className="admin-detail-breakdown">
               <div>
@@ -293,30 +302,6 @@ export default function AdminBookingDetail() {
                 <dd>{booking.stay.childrenAge0to3} fő</dd>
               </div>
             </dl>
-          </section>
-
-          <section className="admin-detail-card" aria-labelledby="rooms-heading">
-            <h2 id="rooms-heading">Szobák és étkezések</h2>
-            <div className="admin-detail-room-list">
-              {booking.rooms.map((room) => (
-                <div key={room.roomTypeId}>
-                  <strong>{room.roomTypeName}</strong>
-                  <span>{room.quantity} db</span>
-                </div>
-              ))}
-            </div>
-            <div className="admin-detail-services">
-              <DetailItem
-                icon={<Utensils />}
-                label="Reggeli"
-                value={`${booking.services.breakfastParticipants} fő`}
-              />
-              <DetailItem
-                icon={<Utensils />}
-                label="Vacsora"
-                value={`${booking.services.dinnerParticipants} fő`}
-              />
-            </div>
           </section>
 
           <section className="admin-detail-card" aria-labelledby="contact-heading">

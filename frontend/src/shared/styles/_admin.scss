@@ -191,6 +191,7 @@
 .admin-shell {
   min-height: 100dvh;
   padding-left: 10.5rem;
+  overflow-x: clip;
 }
 
 .admin-sidebar {
@@ -959,36 +960,6 @@
   }
 }
 
-.admin-detail-room-list {
-  display: grid;
-  gap: 0.6rem;
-
-  div {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    padding-bottom: 0.6rem;
-    border-bottom: 1px solid rgba($ink, 0.1);
-  }
-
-  strong,
-  span {
-    font-size: 0.85rem;
-  }
-
-  span {
-    color: $muted;
-    white-space: nowrap;
-  }
-}
-
-.admin-detail-services {
-  display: grid;
-  margin-top: 1rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
-}
-
 .admin-detail-contact-name {
   display: block;
   margin-bottom: 0.65rem;
@@ -1460,6 +1431,30 @@
     }
   }
 
+  .admin-mobile-detail-navigation {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    button {
+      display: grid;
+      width: 2.5rem;
+      height: 2.5rem;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: $ink;
+      place-items: center;
+    }
+
+    .admin-brand-mark {
+      border: 1px solid $line;
+      border-radius: 50%;
+      background: transparent;
+      color: $forest-dark;
+    }
+  }
+
   .admin-booking-detail-content,
   .admin-booking-detail-sidebar {
     grid-template-columns: 1fr;
@@ -1491,7 +1486,7 @@
     grid-column: auto;
   }
 
-  .admin-booking-toolbar > div > span {
+  .admin-booking-toolbar {
     display: none;
   }
 
