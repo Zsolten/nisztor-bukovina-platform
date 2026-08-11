@@ -159,7 +159,7 @@ paths:
     get:
       operationId: listAdminBookings
       summary: List booking requests for the administrator work queue
-      description: Returns booking requests newest-first by default. Creation dates are interpreted as inclusive UTC calendar dates.
+      description: Returns booking requests ordered by check-in date ascending by default. Creation dates are interpreted as inclusive UTC calendar dates.
       tags: [Administration]
       security:
         - AdminBearerAuth: []
@@ -175,6 +175,12 @@ paths:
           required: false
           schema:
             $ref: '#/components/schemas/BookingStatus'
+        - name: search
+          in: query
+          required: false
+          description: Case-insensitive partial match on booking reference or contact name.
+          schema:
+            type: string
         - name: createdFrom
           in: query
           required: false
@@ -204,9 +210,23 @@ paths:
             minimum: 1
             maximum: 100
             default: 20
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [checkInDate, totalPayable, createdAt]
+            default: checkInDate
+        - name: sortDirection
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
       responses:
         '200':
-          description: One page of booking requests, sorted newest-first.
+          description: One page of booking requests in the requested order.
           content:
             application/json:
               schema:

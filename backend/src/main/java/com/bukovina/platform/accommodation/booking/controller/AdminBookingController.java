@@ -39,13 +39,17 @@ public class AdminBookingController {
   public AdminBookingPageResponse list(
       @RequestParam(required = false) UUID guesthouseId,
       @RequestParam(required = false) BookingStatus status,
+      @RequestParam(required = false) String search,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
           LocalDate createdFrom,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
           LocalDate createdTo,
       @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "20") int size) {
-    return queryService.list(guesthouseId, status, createdFrom, createdTo, page, size);
+      @RequestParam(defaultValue = "20") int size,
+      @RequestParam(defaultValue = "checkInDate") String sortBy,
+      @RequestParam(defaultValue = "asc") String sortDirection) {
+    return queryService.list(
+        guesthouseId, status, search, createdFrom, createdTo, page, size, sortBy, sortDirection);
   }
 
   @GetMapping("/{bookingId}")

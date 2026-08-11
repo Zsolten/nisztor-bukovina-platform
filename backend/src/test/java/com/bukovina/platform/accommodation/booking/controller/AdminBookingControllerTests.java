@@ -79,7 +79,7 @@ class AdminBookingControllerTests {
 
   @Test
   @WithMockUser(roles = "ADMIN")
-  void filtersPaginatesAndSortsBookingsNewestFirst() throws Exception {
+  void filtersPaginatesAndSortsBookings() throws Exception {
     UUID bukovinaId = guesthouseId("bukovina-panzio");
     UUID nisztorId = guesthouseId("nisztor-panzio");
     UUID oldest =
@@ -94,6 +94,13 @@ class AdminBookingControllerTests {
     UUID otherGuesthouse =
         insertBooking(
             nisztorId, "NB-0000000000000004", "RECEIVED", Instant.parse("2026-08-08T08:00:00Z"));
+
+    updateBookingSortValues(newest, LocalDate.of(2026, 9, 10), "100.00");
+    updateBookingSortValues(middle, LocalDate.of(2026, 9, 15), "900.00");
+    updateBookingSortValues(oldest, LocalDate.of(2026, 9, 20), "500.00");
+    updateBookingSortValues(otherGuesthouse, LocalDate.of(2026, 9, 25), "300.00");
+    jdbcTemplate.update(
+        "UPDATE booking_request SET contact_name = 'Kovács Anna' WHERE id = ?", middle);
 
     mockMvc
         .perform(get("/api/admin/bookings").param("size", "2"))
@@ -128,6 +135,34 @@ class AdminBookingControllerTests {
                 .param("createdTo", "2026-08-11"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalElements").value(2))
+        .andExpect(jsonPath("$.content[0].id").value(newest.toString()))
+        .andExpect(jsonPath("$.content[1].id").value(middle.toString()));
+
+    mockMvc
+        .perform(get("/api/admin/bookings").param("search", "0000000000000001"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalElements").value(1))
+        .andExpect(jsonPath("$.content[0].id").value(oldest.toString()));
+
+    mockMvc
+        .perform(get("/api/admin/bookings").param("search", "kovács"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalElements").value(1))
+        .andExpect(jsonPath("$.content[0].id").value(middle.toString()));
+
+    mockMvc
+        .perform(
+            get("/api/admin/bookings")
+                .param("sortBy", "totalPayable")
+                .param("sortDirection", "desc"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].id").value(middle.toString()))
+        .andExpect(jsonPath("$.content[1].id").value(oldest.toString()));
+
+    mockMvc
+        .perform(
+            get("/api/admin/bookings").param("sortBy", "createdAt").param("sortDirection", "desc"))
+        .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[0].id").value(newest.toString()))
         .andExpect(jsonPath("$.content[1].id").value(middle.toString()));
   }
@@ -234,6 +269,10 @@ class AdminBookingControllerTests {
         .andExpect(jsonPath("$.code").value("ADMIN_BOOKING_NOT_FOUND"));
     mockMvc
         .perform(get("/api/admin/bookings").param("page", "-1"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_ADMIN_BOOKING_QUERY"));
+    mockMvc
+        .perform(get("/api/admin/bookings").param("sortBy", "contactName"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("INVALID_ADMIN_BOOKING_QUERY"));
     mockMvc
@@ -416,6 +455,15 @@ class AdminBookingControllerTests {
         Timestamp.from(createdAt),
         Timestamp.from(createdAt));
     return id;
+  }
+
+  private void updateBookingSortValues(UUID bookingId, LocalDate checkInDate, String totalPayable) {
+    jdbcTemplate.update(
+        "UPDATE booking_request SET check_in_date = ?, check_out_date = ?, total_payable = ? WHERE id = ?",
+        checkInDate,
+        checkInDate.plusDays(2),
+        new BigDecimal(totalPayable),
+        bookingId);
   }
 
   private void assertInvalidQuery(String parameter, String value) throws Exception {

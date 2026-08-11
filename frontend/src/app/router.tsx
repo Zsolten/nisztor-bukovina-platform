@@ -1,7 +1,8 @@
 import { Navigate, redirect, type RouteObject } from 'react-router-dom'
 import GuesthouseDetailPage from '../features/accommodation/GuesthouseDetailPage'
 import GuesthouseListPage from '../features/accommodation/GuesthouseListPage'
-import AdminBookingQueuePlaceholder from '../features/admin/bookings/AdminBookingQueuePlaceholder'
+import AdminBookingDetailPlaceholder from '../features/admin/bookings/AdminBookingDetailPlaceholder'
+import AdminBookingQueue from '../features/admin/bookings/AdminBookingQueue'
 import AdminLoginPage from '../features/admin/auth/AdminLoginPage'
 import ProtectedAdminRoute from '../features/admin/auth/ProtectedAdminRoute'
 import AdminShell from '../features/admin/layout/AdminShell'
@@ -32,7 +33,11 @@ export const appRoutes: RouteObject[] = [
           },
           {
             path: 'bookings',
-            element: <AdminBookingQueuePlaceholder />,
+            element: <AdminBookingQueue />,
+          },
+          {
+            path: 'bookings/:bookingId',
+            element: <AdminBookingDetailPlaceholder />,
           },
         ],
       },
