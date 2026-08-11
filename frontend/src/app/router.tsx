@@ -1,7 +1,7 @@
 import { Navigate, redirect, type RouteObject } from 'react-router-dom'
 import GuesthouseDetailPage from '../features/accommodation/GuesthouseDetailPage'
 import GuesthouseListPage from '../features/accommodation/GuesthouseListPage'
-import AdminBookingDetailPlaceholder from '../features/admin/bookings/AdminBookingDetailPlaceholder'
+import AdminBookingDetail from '../features/admin/bookings/AdminBookingDetail'
 import AdminBookingQueue from '../features/admin/bookings/AdminBookingQueue'
 import AdminLoginPage from '../features/admin/auth/AdminLoginPage'
 import ProtectedAdminRoute from '../features/admin/auth/ProtectedAdminRoute'
@@ -37,7 +37,7 @@ export const appRoutes: RouteObject[] = [
           },
           {
             path: 'bookings/:bookingId',
-            element: <AdminBookingDetailPlaceholder />,
+            element: <AdminBookingDetail />,
           },
         ],
       },
