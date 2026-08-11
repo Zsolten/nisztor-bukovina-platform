@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 
 public record BookingPriceBreakdownResponse(
     BigDecimal accommodationTotal,
+    BigDecimal adultAccommodationTotal,
+    BigDecimal childAccommodationTotal,
     BigDecimal singleRoomSurcharge,
     BigDecimal breakfastTotal,
     BigDecimal dinnerTotal,

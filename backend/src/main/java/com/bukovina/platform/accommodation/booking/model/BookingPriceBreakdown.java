@@ -11,6 +11,12 @@ public class BookingPriceBreakdown {
   @Column(name = "accommodation_total", nullable = false, precision = 12, scale = 2)
   private BigDecimal accommodationTotal;
 
+  @Column(name = "adult_accommodation_total", nullable = false, precision = 12, scale = 2)
+  private BigDecimal adultAccommodationTotal;
+
+  @Column(name = "child_accommodation_total", nullable = false, precision = 12, scale = 2)
+  private BigDecimal childAccommodationTotal;
+
   @Column(name = "single_room_surcharge", nullable = false, precision = 12, scale = 2)
   private BigDecimal singleRoomSurcharge;
 
@@ -27,11 +33,15 @@ public class BookingPriceBreakdown {
 
   public BookingPriceBreakdown(
       BigDecimal accommodationTotal,
+      BigDecimal adultAccommodationTotal,
+      BigDecimal childAccommodationTotal,
       BigDecimal singleRoomSurcharge,
       BigDecimal breakfastTotal,
       BigDecimal dinnerTotal,
       BigDecimal totalPayable) {
     this.accommodationTotal = Objects.requireNonNull(accommodationTotal);
+    this.adultAccommodationTotal = Objects.requireNonNull(adultAccommodationTotal);
+    this.childAccommodationTotal = Objects.requireNonNull(childAccommodationTotal);
     this.singleRoomSurcharge = Objects.requireNonNull(singleRoomSurcharge);
     this.breakfastTotal = Objects.requireNonNull(breakfastTotal);
     this.dinnerTotal = Objects.requireNonNull(dinnerTotal);
@@ -44,6 +54,14 @@ public class BookingPriceBreakdown {
 
   public BigDecimal getSingleRoomSurcharge() {
     return singleRoomSurcharge;
+  }
+
+  public BigDecimal getAdultAccommodationTotal() {
+    return adultAccommodationTotal;
+  }
+
+  public BigDecimal getChildAccommodationTotal() {
+    return childAccommodationTotal;
   }
 
   public BigDecimal getBreakfastTotal() {

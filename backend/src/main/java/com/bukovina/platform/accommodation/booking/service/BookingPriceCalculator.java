@@ -37,11 +37,11 @@ public class BookingPriceCalculator {
     long adultAccommodationUnits = (long) booking.adults() * booking.nights();
     long childAccommodationUnits = (long) booking.childrenAge3to10() * booking.nights();
     long freeChildAccommodationUnits = (long) booking.childrenAge0to3() * booking.nights();
-    BigDecimal accommodationTotal =
-        money(
-            accommodationRate
-                .multiply(BigDecimal.valueOf(adultAccommodationUnits))
-                .add(childAccommodationRate.multiply(BigDecimal.valueOf(childAccommodationUnits))));
+    BigDecimal adultAccommodationTotal =
+        money(accommodationRate.multiply(BigDecimal.valueOf(adultAccommodationUnits)));
+    BigDecimal childAccommodationTotal =
+        money(childAccommodationRate.multiply(BigDecimal.valueOf(childAccommodationUnits)));
+    BigDecimal accommodationTotal = money(adultAccommodationTotal.add(childAccommodationTotal));
     BigDecimal singleRoomSurcharge = money(BigDecimal.ZERO);
     BigDecimal breakfastTotal =
         serviceTotal(items, "breakfast", booking.breakfastParticipants(), booking.nights());
@@ -91,7 +91,13 @@ public class BookingPriceCalculator {
         booking.selectedCapacity(),
         List.copyOf(lines),
         new BookingPriceBreakdownResponse(
-            accommodationTotal, singleRoomSurcharge, breakfastTotal, dinnerTotal, totalPayable),
+            accommodationTotal,
+            adultAccommodationTotal,
+            childAccommodationTotal,
+            singleRoomSurcharge,
+            breakfastTotal,
+            dinnerTotal,
+            totalPayable),
         true);
   }
 
