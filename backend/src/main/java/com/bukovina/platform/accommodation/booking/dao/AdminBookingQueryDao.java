@@ -41,7 +41,9 @@ public class AdminBookingQueryDao {
       LocalDate createdFrom,
       LocalDate createdTo,
       int page,
-      int size) {
+      int size,
+      String sortBy,
+      String sortDirection) {
     Filter filter = filter(guesthouseId, status, createdFrom, createdTo);
     String sql =
         """
@@ -54,7 +56,9 @@ public class AdminBookingQueryDao {
         """
             + FILTERED_BOOKINGS
             + filter.where()
-            + " ORDER BY booking.created_at DESC, booking.id DESC LIMIT :limit OFFSET :offset";
+            + " ORDER BY "
+            + orderBy(sortBy, sortDirection)
+            + ", booking.id DESC LIMIT :limit OFFSET :offset";
     Map<String, Object> parameters = new HashMap<>(filter.parameters());
     parameters.put("limit", size);
     parameters.put("offset", (long) page * size);
@@ -78,6 +82,24 @@ public class AdminBookingQueryDao {
                     resultSet.getString("currency"),
                     resultSet.getTimestamp("created_at").toInstant()))
         .list();
+  }
+
+  public static boolean supportsSort(String sortBy, String sortDirection) {
+    return ("checkInDate".equals(sortBy)
+            || "totalPayable".equals(sortBy)
+            || "createdAt".equals(sortBy))
+        && ("asc".equals(sortDirection) || "desc".equals(sortDirection));
+  }
+
+  private String orderBy(String sortBy, String sortDirection) {
+    String column =
+        switch (sortBy) {
+          case "checkInDate" -> "booking.check_in_date";
+          case "totalPayable" -> "booking.total_payable";
+          case "createdAt" -> "booking.created_at";
+          default -> throw new IllegalArgumentException("Unsupported booking sort");
+        };
+    return column + ("desc".equals(sortDirection) ? " DESC" : " ASC");
   }
 
   public long count(

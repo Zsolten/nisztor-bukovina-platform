@@ -28,11 +28,16 @@ public class AdminBookingQueryService {
       LocalDate createdFrom,
       LocalDate createdTo,
       int page,
-      int size) {
-    validateFilters(createdFrom, createdTo, page, size);
+      int size,
+      String sortBy,
+      String sortDirection) {
+    validateFilters(createdFrom, createdTo, page, size, sortBy, sortDirection);
     long totalElements = queryDao.count(guesthouseId, status, createdFrom, createdTo);
     var content =
-        queryDao.findPage(guesthouseId, status, createdFrom, createdTo, page, size).stream()
+        queryDao
+            .findPage(
+                guesthouseId, status, createdFrom, createdTo, page, size, sortBy, sortDirection)
+            .stream()
             .map(AdminBookingSummaryResponse::from)
             .toList();
     int totalPages = totalElements == 0 ? 0 : (int) ((totalElements + size - 1) / size);
@@ -46,7 +51,13 @@ public class AdminBookingQueryService {
         .orElseThrow(() -> new AdminBookingNotFoundException(bookingId));
   }
 
-  private void validateFilters(LocalDate createdFrom, LocalDate createdTo, int page, int size) {
+  private void validateFilters(
+      LocalDate createdFrom,
+      LocalDate createdTo,
+      int page,
+      int size,
+      String sortBy,
+      String sortDirection) {
     if (page < 0) {
       throw new AdminBookingQueryValidationException("page must be zero or greater");
     }
@@ -56,6 +67,9 @@ public class AdminBookingQueryService {
     if (createdFrom != null && createdTo != null && createdFrom.isAfter(createdTo)) {
       throw new AdminBookingQueryValidationException(
           "createdFrom must be before or equal to createdTo");
+    }
+    if (!AdminBookingQueryDao.supportsSort(sortBy, sortDirection)) {
+      throw new AdminBookingQueryValidationException("unsupported booking sort");
     }
   }
 }

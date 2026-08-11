@@ -30,13 +30,23 @@ export interface AdminBookingFilters {
   status: AdminBookingStatus | ''
 }
 
+export type AdminBookingSortField = 'checkInDate' | 'totalPayable' | 'createdAt'
+export type AdminBookingSortDirection = 'asc' | 'desc'
+
 export async function fetchAdminBookings(
   authorizedFetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>,
   filters: AdminBookingFilters,
   page: number,
+  sortBy: AdminBookingSortField,
+  sortDirection: AdminBookingSortDirection,
   signal?: AbortSignal,
 ) {
-  const parameters = new URLSearchParams({ page: String(page), size: '20' })
+  const parameters = new URLSearchParams({
+    page: String(page),
+    size: '20',
+    sortBy,
+    sortDirection,
+  })
   if (filters.guesthouseId) parameters.set('guesthouseId', filters.guesthouseId)
   if (filters.status) parameters.set('status', filters.status)
 

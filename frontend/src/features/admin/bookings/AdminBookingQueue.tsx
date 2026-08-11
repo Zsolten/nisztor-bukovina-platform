@@ -1,5 +1,8 @@
 import {
   AlertTriangle,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   CalendarDays,
   ChevronLeft,
   ChevronRight,
@@ -16,6 +19,8 @@ import {
   fetchAdminBookings,
   type AdminBookingFilters,
   type AdminBookingPage,
+  type AdminBookingSortDirection,
+  type AdminBookingSortField,
   type AdminBookingStatus,
 } from '../api/adminBookings'
 
@@ -33,6 +38,10 @@ type QueueState =
   | { status: 'success'; data: AdminBookingPage }
 
 const initialFilters: AdminBookingFilters = { guesthouseId: '', status: '' }
+const initialSort: { field: AdminBookingSortField; direction: AdminBookingSortDirection } = {
+  field: 'checkInDate',
+  direction: 'asc',
+}
 const dateFormatter = new Intl.DateTimeFormat('hu-HU', {
   year: 'numeric',
   month: 'short',
@@ -51,6 +60,7 @@ export default function AdminBookingQueue() {
   const [filters, setFilters] = useState(initialFilters)
   const [guesthouses, setGuesthouses] = useState<GuesthouseSummary[]>([])
   const [page, setPage] = useState(0)
+  const [sort, setSort] = useState(initialSort)
   const [retryKey, setRetryKey] = useState(0)
   const [queue, setQueue] = useState<QueueState>({ status: 'loading', data: null })
 
@@ -66,7 +76,14 @@ export default function AdminBookingQueue() {
 
   useEffect(() => {
     const controller = new AbortController()
-    void fetchAdminBookings(authorizedFetch, filters, page, controller.signal)
+    void fetchAdminBookings(
+      authorizedFetch,
+      filters,
+      page,
+      sort.field,
+      sort.direction,
+      controller.signal,
+    )
       .then((data) => setQueue({ status: 'success', data }))
       .catch((error: unknown) => {
         if (!(error instanceof DOMException && error.name === 'AbortError')) {
@@ -74,7 +91,7 @@ export default function AdminBookingQueue() {
         }
       })
     return () => controller.abort()
-  }, [authorizedFetch, filters, page, retryKey])
+  }, [authorizedFetch, filters, page, retryKey, sort])
 
   const visibleGuesthouses = useMemo(() => {
     if (guesthouses.length > 0) {
@@ -105,13 +122,38 @@ export default function AdminBookingQueue() {
     setRetryKey((current) => current + 1)
   }
 
+  function updateSort(field: AdminBookingSortField) {
+    setQueue({ status: 'loading', data: null })
+    setSort((current) => ({
+      field,
+      direction:
+        current.field === field
+          ? current.direction === 'asc'
+            ? 'desc'
+            : 'asc'
+          : field === 'createdAt'
+            ? 'desc'
+            : 'asc',
+    }))
+    setPage(0)
+  }
+
+  function sortIcon(field: AdminBookingSortField) {
+    if (sort.field !== field) return <ArrowUpDown aria-hidden="true" size={14} />
+    return sort.direction === 'asc' ? (
+      <ArrowUp aria-hidden="true" size={14} />
+    ) : (
+      <ArrowDown aria-hidden="true" size={14} />
+    )
+  }
+
   return (
     <section className="admin-booking-queue" aria-labelledby="booking-queue-title">
       <header className="admin-booking-heading">
         <div>
           <p className="admin-eyebrow">Napi munkalista</p>
           <h1 id="booking-queue-title">Foglalási kérelmek</h1>
-          <p>A legújabb megkeresések felül jelennek meg.</p>
+          <p>Alapértelmezetten a legközelebbi érkezések jelennek meg felül.</p>
         </div>
         {queue.status === 'success' && (
           <p className="admin-booking-count">
@@ -183,13 +225,19 @@ export default function AdminBookingQueue() {
       {queue.status === 'success' && queue.data.content.length > 0 && (
         <>
           <div className="admin-booking-list" aria-label="Foglalási kérelmek">
-            <div className="admin-booking-list-header" aria-hidden="true">
+            <div className="admin-booking-list-header">
               <span>Kérelem</span>
-              <span>Tartózkodás</span>
+              <button type="button" onClick={() => updateSort('checkInDate')}>
+                Tartózkodás {sortIcon('checkInDate')}
+              </button>
               <span>Vendégek</span>
-              <span>Összeg</span>
+              <button type="button" onClick={() => updateSort('totalPayable')}>
+                Összeg {sortIcon('totalPayable')}
+              </button>
               <span>Állapot</span>
-              <span>Beérkezett</span>
+              <button type="button" onClick={() => updateSort('createdAt')}>
+                Beérkezett {sortIcon('createdAt')}
+              </button>
             </div>
             {queue.data.content.map((booking) => (
               <Link
@@ -238,9 +286,21 @@ export default function AdminBookingQueue() {
               <ChevronLeft aria-hidden="true" size={17} />
               Előző
             </button>
-            <span>
-              {queue.data.page + 1} / {queue.data.totalPages} oldal
-            </span>
+            <div className="admin-booking-page-numbers">
+              {Array.from({ length: queue.data.totalPages }, (_, index) => index).map(
+                (pageNumber) => (
+                  <button
+                    aria-current={pageNumber === page ? 'page' : undefined}
+                    className={pageNumber === page ? 'active' : undefined}
+                    key={pageNumber}
+                    type="button"
+                    onClick={() => changePage(pageNumber)}
+                  >
+                    {pageNumber + 1}
+                  </button>
+                ),
+              )}
+            </div>
             <button
               type="button"
               disabled={page + 1 >= queue.data.totalPages}

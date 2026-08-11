@@ -115,11 +115,14 @@ describe('AdminBookingQueue', () => {
     expect(screen.getByText(booking.id)).toBeVisible()
   })
 
-  it('updates guesthouse and status filters and supports pagination', async () => {
+  it('updates filters, sorting and numbered pagination', async () => {
     const user = userEvent.setup()
     const authorizedFetch = vi.fn().mockResolvedValue(jsonResponse(200, bookingPage()))
     renderQueue(authorizedFetch)
     await screen.findByText(booking.publicReference)
+
+    expect(String(authorizedFetch.mock.calls[0][0])).toContain('sortBy=checkInDate')
+    expect(String(authorizedFetch.mock.calls[0][0])).toContain('sortDirection=asc')
 
     await user.selectOptions(screen.getByLabelText('Panzió'), booking.guesthouseId)
     await user.selectOptions(screen.getByLabelText('Állapot'), 'UNDER_REVIEW')
@@ -137,14 +140,21 @@ describe('AdminBookingQueue', () => {
       ),
     )
 
-    await user.click(screen.getByRole('button', { name: 'Következő' }))
+    await user.click(screen.getByRole('button', { name: /Összeg/ }))
+    await waitFor(() =>
+      expect(authorizedFetch).toHaveBeenCalledWith(
+        expect.stringContaining('sortBy=totalPayable'),
+        expect.anything(),
+      ),
+    )
+
+    await user.click(screen.getByRole('button', { name: '2' }))
     await waitFor(() =>
       expect(authorizedFetch).toHaveBeenCalledWith(
         expect.stringContaining('page=1'),
         expect.anything(),
       ),
     )
-    expect(String(authorizedFetch.mock.calls[0][0])).not.toContain('sort=')
   })
 
   it('shows a dedicated empty state', async () => {

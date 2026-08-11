@@ -456,6 +456,24 @@
   font-size: 0.68rem;
   font-weight: 750;
   text-transform: uppercase;
+
+  button {
+    display: inline-flex;
+    width: fit-content;
+    padding: 0;
+    align-items: center;
+    gap: 0.3rem;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-transform: inherit;
+
+    &:hover,
+    &:focus-visible {
+      color: $forest;
+    }
+  }
 }
 
 .admin-booking-row {
@@ -568,11 +586,6 @@
   justify-content: flex-end;
   gap: 1rem;
 
-  span {
-    color: $muted;
-    font-size: 0.78rem;
-  }
-
   button {
     display: inline-flex;
     min-height: 2.6rem;
@@ -588,6 +601,23 @@
     &:disabled {
       opacity: 0.42;
     }
+  }
+}
+
+.admin-booking-page-numbers {
+  display: flex;
+  gap: 0.35rem;
+
+  button {
+    min-width: 2.6rem;
+    padding-inline: 0.5rem;
+    justify-content: center;
+  }
+
+  button.active {
+    border-color: $forest;
+    background: $forest;
+    color: #fff;
   }
 }
 
@@ -731,7 +761,14 @@
   }
 
   .admin-booking-pagination {
+    flex-wrap: wrap;
     justify-content: space-between;
+  }
+
+  .admin-booking-page-numbers {
+    order: 3;
+    width: 100%;
+    justify-content: center;
   }
 }
 

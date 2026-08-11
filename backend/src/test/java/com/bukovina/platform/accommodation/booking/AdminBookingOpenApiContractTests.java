@@ -26,6 +26,8 @@ class AdminBookingOpenApiContractTests {
     assertTrue(contract.contains("name: status"));
     assertTrue(contract.contains("name: createdFrom"));
     assertTrue(contract.contains("name: createdTo"));
+    assertTrue(contract.contains("name: sortBy"));
+    assertTrue(contract.contains("name: sortDirection"));
     assertTrue(contract.contains("AdminBookingPage"));
     assertTrue(contract.contains("AdminBookingDetail"));
     assertTrue(contract.contains("UNDER_REVIEW"));
