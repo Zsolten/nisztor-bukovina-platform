@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button, Container, Nav, Navbar, Offcanvas } from 'react-bootstrap'
-import { LogOut } from 'lucide-react'
+import { CalendarDays, LogOut } from 'lucide-react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAdminAuth } from '../auth/adminAuthContext'
 
@@ -18,9 +18,38 @@ export default function AdminShell() {
 
   return (
     <div className="admin-shell">
+      <aside className="admin-sidebar" aria-label="Admin navigáció">
+        <NavLink className="admin-sidebar-brand" to="/admin/bookings">
+          <span className="admin-brand-mark" aria-hidden="true">
+            NB
+          </span>
+          <span className="admin-brand-copy">
+            <strong>Nisztor–Bukovina</strong>
+            <small>Adminisztráció</small>
+          </span>
+        </NavLink>
+
+        <nav className="admin-sidebar-navigation">
+          <NavLink to="/admin/bookings">
+            <CalendarDays aria-hidden="true" size={19} />
+            <span>Foglalások</span>
+          </NavLink>
+        </nav>
+
+        <button
+          className="admin-sidebar-logout"
+          disabled={loggingOut}
+          onClick={() => void handleLogout()}
+          type="button"
+        >
+          <LogOut aria-hidden="true" size={18} />
+          <span>{loggingOut ? 'Kijelentkezés…' : 'Kijelentkezés'}</span>
+        </button>
+      </aside>
+
       <Navbar
-        className="admin-header"
-        expand="md"
+        className="admin-header admin-mobile-header"
+        expand={false}
         expanded={navigationOpen}
         onToggle={setNavigationOpen}
       >
@@ -40,7 +69,6 @@ export default function AdminShell() {
             id="admin-navigation"
             onHide={() => setNavigationOpen(false)}
             placement="end"
-            responsive="md"
           >
             <Offcanvas.Header closeButton closeLabel="Menü bezárása">
               <Offcanvas.Title>Admin menü</Offcanvas.Title>
@@ -52,7 +80,8 @@ export default function AdminShell() {
                   onClick={() => setNavigationOpen(false)}
                   to="/admin/bookings"
                 >
-                  Foglalási kérelmek
+                  <CalendarDays aria-hidden="true" size={18} />
+                  Foglalások
                 </Nav.Link>
               </Nav>
               <Button
@@ -70,7 +99,7 @@ export default function AdminShell() {
       </Navbar>
 
       <main className="admin-main">
-        <Container>
+        <Container fluid>
           <Outlet />
         </Container>
       </main>

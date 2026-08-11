@@ -188,15 +188,100 @@
   }
 }
 
+.admin-shell {
+  min-height: 100dvh;
+  padding-left: 10.5rem;
+}
+
+.admin-sidebar {
+  display: flex;
+  position: fixed;
+  z-index: 1030;
+  inset: 0 auto 0 0;
+  width: 10.5rem;
+  padding: 1.5rem 0 1.25rem;
+  flex-direction: column;
+  background: $forest-dark;
+  color: $paper-light;
+}
+
+.admin-sidebar-brand {
+  display: grid;
+  justify-items: center;
+  gap: 0.7rem;
+  padding: 0 1rem 1.5rem;
+  color: $paper-light;
+  text-align: center;
+  text-decoration: none;
+
+  .admin-brand-mark {
+    border: 1px solid rgba($paper-light, 0.45);
+    border-radius: 50%;
+    background: $paper-light;
+    color: $forest-dark;
+  }
+
+  .admin-brand-copy small {
+    color: rgba($paper-light, 0.68);
+  }
+}
+
+.admin-sidebar-navigation {
+  display: grid;
+  gap: 0.25rem;
+
+  a {
+    display: flex;
+    min-height: 3.55rem;
+    padding: 0.75rem 1.25rem;
+    align-items: center;
+    gap: 0.7rem;
+    border-left: 3px solid transparent;
+    color: rgba($paper-light, 0.76);
+    font-size: 0.85rem;
+    font-weight: 650;
+    text-decoration: none;
+  }
+
+  a.active,
+  a:hover,
+  a:focus-visible {
+    border-left-color: $gold;
+    background: rgba($paper-light, 0.1);
+    color: $paper-light;
+  }
+}
+
+.admin-sidebar-logout {
+  display: flex;
+  margin: auto 1.15rem 0;
+  padding: 0.65rem 0;
+  align-items: center;
+  gap: 0.55rem;
+  border: 0;
+  background: transparent;
+  color: rgba($paper-light, 0.72);
+  font-size: 0.76rem;
+  font-weight: 650;
+
+  &:hover,
+  &:focus-visible {
+    color: $paper-light;
+  }
+}
+
 .admin-header {
   position: sticky;
   z-index: 1020;
   top: 0;
   min-height: 76px;
   border-bottom: 1px solid $line;
-  background: rgba($paper-light, 0.94);
-  box-shadow: 0 0.4rem 1.5rem rgba($forest-dark, 0.05);
+  background: rgba($paper-light, 0.96);
   backdrop-filter: blur(14px);
+}
+
+.admin-mobile-header {
+  display: none;
 }
 
 .admin-header .navbar-brand {
@@ -243,6 +328,9 @@
 }
 
 .admin-navigation .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
   padding: 0.65rem 0.9rem;
   border-radius: 0.65rem;
   color: $muted;
@@ -285,6 +373,11 @@
 
 .admin-main {
   padding-block: clamp(2rem, 6vw, 4.5rem);
+
+  > .container-fluid {
+    width: min(100%, 96rem);
+    padding-inline: clamp(1.25rem, 3vw, 3.5rem);
+  }
 }
 
 .admin-page-introduction {
@@ -1177,6 +1270,25 @@
 }
 
 @media (max-width: 767.98px) {
+  .admin-shell {
+    padding-left: 0;
+  }
+
+  .admin-sidebar {
+    display: none;
+  }
+
+  .admin-mobile-header {
+    display: flex;
+
+    .navbar-toggler {
+      padding: 0.35rem;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+  }
+
   .admin-booking-detail-content,
   .admin-booking-detail-sidebar {
     grid-template-columns: 1fr;
