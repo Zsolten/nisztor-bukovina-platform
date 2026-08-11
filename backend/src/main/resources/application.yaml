@@ -35,3 +35,9 @@ admin:
     bootstrap:
       email: ${ADMIN_BOOTSTRAP_EMAIL:}
       password: ${ADMIN_BOOTSTRAP_PASSWORD:}
+    login-rate-limit:
+      enabled: ${ADMIN_LOGIN_RATE_LIMIT_ENABLED:true}
+      capacity: ${ADMIN_LOGIN_RATE_LIMIT_CAPACITY:5}
+      refill-period: ${ADMIN_LOGIN_RATE_LIMIT_REFILL_PERIOD:PT1M}
+      cache-ttl: ${ADMIN_LOGIN_RATE_LIMIT_CACHE_TTL:PT10M}
+      max-entries: ${ADMIN_LOGIN_RATE_LIMIT_MAX_ENTRIES:10000}

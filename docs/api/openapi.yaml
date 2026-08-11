@@ -131,6 +131,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AdminAuthenticationError'
+        '429':
+          description: Too many login attempts from the same IP address for the same email address.
+          headers:
+            Retry-After:
+              description: Seconds until another login attempt can be made.
+              schema:
+                type: integer
+                minimum: 1
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminAuthenticationError'
   /admin/auth/logout:
     post:
       operationId: logoutAdministrator
@@ -637,4 +649,4 @@ components:
       properties:
         code:
           type: string
-          const: INVALID_ADMIN_CREDENTIALS
+          enum: [INVALID_ADMIN_CREDENTIALS, ADMIN_LOGIN_RATE_LIMITED]

@@ -1,6 +1,0 @@
-admin:
-  authentication:
-    jwt:
-      issuer: nisztor-bukovina-platform-test
-      secret: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
-      access-token-ttl: PT30M

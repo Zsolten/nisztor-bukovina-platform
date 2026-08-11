@@ -21,6 +21,9 @@ public class RevokedAdminTokenValidator implements OAuth2TokenValidator<Jwt> {
 
   @Override
   public OAuth2TokenValidatorResult validate(Jwt token) {
+    if (token.getId() == null) {
+      return OAuth2TokenValidatorResult.failure(REVOKED_TOKEN);
+    }
     try {
       UUID jti = UUID.fromString(token.getId());
       return tokenRevocationService.isRevoked(jti)

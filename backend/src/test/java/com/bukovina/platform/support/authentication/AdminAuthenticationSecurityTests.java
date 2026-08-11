@@ -2,6 +2,7 @@ package com.bukovina.platform.support.authentication;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -54,6 +55,28 @@ class AdminAuthenticationSecurityTests {
                 .content("{\"email\":\"missing@example.com\",\"password\":\"wrong-password\"}"))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.code").value("INVALID_ADMIN_CREDENTIALS"));
+  }
+
+  @Test
+  void limitsRepeatedLoginAttemptsFromTheSameClientForTheSameEmail() throws Exception {
+    String request = "{\"email\":\"limited@example.com\",\"password\":\"wrong-password\"}";
+    for (int attempt = 0; attempt < 5; attempt++) {
+      mockMvc
+          .perform(
+              post("/api/admin/auth/login")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(request))
+          .andExpect(status().isUnauthorized())
+          .andExpect(jsonPath("$.code").value("INVALID_ADMIN_CREDENTIALS"));
+    }
+
+    mockMvc
+        .perform(
+            post("/api/admin/auth/login").contentType(MediaType.APPLICATION_JSON).content(request))
+        .andExpect(status().isTooManyRequests())
+        .andExpect(header().exists("Retry-After"))
+        .andExpect(jsonPath("$.code").value("ADMIN_LOGIN_RATE_LIMITED"))
+        .andExpect(jsonPath("$.retryAfter").doesNotExist());
   }
 
   @Test
@@ -111,6 +134,28 @@ class AdminAuthenticationSecurityTests {
                 .header(
                     "Authorization",
                     "Bearer " + tokenForRole("ADMIN", Instant.now().minus(2, ChronoUnit.MINUTES))))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void rejectsTokensWithoutATokenIdentifier() throws Exception {
+    Instant now = Instant.now();
+    String token =
+        jwtEncoder
+            .encode(
+                JwtEncoderParameters.from(
+                    JwsHeader.with(MacAlgorithm.HS256).build(),
+                    JwtClaimsSet.builder()
+                        .issuer("nisztor-bukovina-platform-test")
+                        .subject("test-admin")
+                        .issuedAt(now)
+                        .expiresAt(now.plus(10, ChronoUnit.MINUTES))
+                        .claim("role", "ADMIN")
+                        .build()))
+            .getTokenValue();
+
+    mockMvc
+        .perform(get("/api/admin/test/secured").header("Authorization", "Bearer " + token))
         .andExpect(status().isUnauthorized());
   }
 

@@ -1,9 +1,11 @@
 package com.bukovina.platform.support.authentication.controller;
 
 import com.bukovina.platform.support.authentication.AdminJwtService;
+import com.bukovina.platform.support.authentication.AdminLoginRateLimiter;
 import com.bukovina.platform.support.authentication.AdminTokenRevocationService;
 import com.bukovina.platform.support.authentication.dto.AdminLoginRequest;
 import com.bukovina.platform.support.authentication.dto.AdminLoginResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,17 +21,26 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminAuthController {
 
   private final AdminJwtService jwtService;
+  private final AdminLoginRateLimiter loginRateLimiter;
   private final AdminTokenRevocationService tokenRevocationService;
 
   public AdminAuthController(
-      AdminJwtService jwtService, AdminTokenRevocationService tokenRevocationService) {
+      AdminJwtService jwtService,
+      AdminLoginRateLimiter loginRateLimiter,
+      AdminTokenRevocationService tokenRevocationService) {
     this.jwtService = jwtService;
+    this.loginRateLimiter = loginRateLimiter;
     this.tokenRevocationService = tokenRevocationService;
   }
 
   @PostMapping("/login")
-  public AdminLoginResponse login(@RequestBody(required = false) AdminLoginRequest request) {
-    return jwtService.login(request);
+  public AdminLoginResponse login(
+      @RequestBody(required = false) AdminLoginRequest request, HttpServletRequest httpRequest) {
+    String clientIp = httpRequest.getRemoteAddr();
+    loginRateLimiter.consume(clientIp, request);
+    AdminLoginResponse response = jwtService.login(request);
+    loginRateLimiter.reset(clientIp, request);
+    return response;
   }
 
   @PostMapping("/logout")

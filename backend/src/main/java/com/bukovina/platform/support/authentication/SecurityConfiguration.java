@@ -1,9 +1,5 @@
-package com.bukovina.platform.shared.configuration;
+package com.bukovina.platform.support.authentication;
 
-import com.bukovina.platform.support.authentication.AdminBootstrapProperties;
-import com.bukovina.platform.support.authentication.AdminJwtAuthenticationConverter;
-import com.bukovina.platform.support.authentication.AdminJwtProperties;
-import com.bukovina.platform.support.authentication.RevokedAdminTokenValidator;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.proc.SecurityContext;
 import java.util.Base64;
@@ -28,7 +24,11 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableConfigurationProperties({AdminJwtProperties.class, AdminBootstrapProperties.class})
+@EnableConfigurationProperties({
+  AdminJwtProperties.class,
+  AdminBootstrapProperties.class,
+  AdminLoginRateLimitProperties.class
+})
 public class SecurityConfiguration {
 
   @Bean
