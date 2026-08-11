@@ -344,6 +344,24 @@ export default function AdminBookingDetail() {
 
           <section className="admin-detail-card admin-detail-price" aria-labelledby="price-heading">
             <h2 id="price-heading">Árkalkuláció</h2>
+            <dl className="admin-price-guests">
+              <div>
+                <dt>Felnőttek</dt>
+                <dd>
+                  {booking.stay.adults} fő × {booking.stay.nights} éj
+                </dd>
+              </div>
+              <div>
+                <dt>Gyermekek 3–10 év</dt>
+                <dd>
+                  {booking.stay.childrenAge3to10} fő × {booking.stay.nights} éj · 25% kedvezmény
+                </dd>
+              </div>
+              <div>
+                <dt>Gyermekek 0–3 év</dt>
+                <dd>{booking.stay.childrenAge0to3} fő · ingyenes</dd>
+              </div>
+            </dl>
             <PriceRow
               label="Szállásdíj"
               value={price.accommodationTotal}

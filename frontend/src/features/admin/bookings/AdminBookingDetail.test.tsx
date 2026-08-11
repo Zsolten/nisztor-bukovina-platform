@@ -96,6 +96,8 @@ describe('AdminBookingDetail', () => {
     expect(screen.getByText('Teszt Vendég')).toBeVisible()
     expect(screen.getByText('Háromágyas szoba')).toBeVisible()
     expect(screen.getByText('Csendes szobát kérünk.')).toBeVisible()
+    expect(screen.getByText('1 fő × 2 éj · 25% kedvezmény')).toBeVisible()
+    expect(screen.getByText('0 fő · ingyenes')).toBeVisible()
     expect(screen.getByDisplayValue('Visszahívást kér.')).toBeVisible()
     expect(screen.getByRole('button', { name: 'Visszaigazolás' })).toBeVisible()
     expect(screen.getByRole('button', { name: 'Elutasítás' })).toBeVisible()
