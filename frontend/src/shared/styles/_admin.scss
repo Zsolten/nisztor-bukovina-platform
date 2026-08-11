@@ -545,7 +545,7 @@
 }
 
 .admin-booking-primary .admin-booking-contact {
-  color: $ink;
+  color: $gold;
   font-weight: 700;
 }
 
@@ -837,15 +837,32 @@
   }
 
   .admin-booking-primary {
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 0.5rem;
     min-width: 0;
 
+    &::before {
+      grid-row: 1;
+      grid-column: 1;
+    }
+
     strong {
+      grid-row: 1;
+      grid-column: 2;
       overflow-wrap: anywhere;
+    }
+
+    small {
+      grid-column: 2;
     }
   }
 
   .admin-booking-status {
     margin-top: 0.2rem;
+
+    &::before {
+      display: none;
+    }
   }
 
   .admin-booking-row time {
