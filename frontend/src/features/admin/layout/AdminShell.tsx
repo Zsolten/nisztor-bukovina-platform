@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button, Container, Nav, Navbar, Offcanvas } from 'react-bootstrap'
+import { LogOut } from 'lucide-react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAdminAuth } from '../auth/adminAuthContext'
 
@@ -25,8 +26,13 @@ export default function AdminShell() {
       >
         <Container>
           <Navbar.Brand as={NavLink} to="/admin/bookings">
-            <strong>Nisztor–Bukovina</strong>
-            <span>Admin</span>
+            <span className="admin-brand-mark" aria-hidden="true">
+              NB
+            </span>
+            <span className="admin-brand-copy">
+              <strong>Nisztor–Bukovina</strong>
+              <small>Adminisztráció</small>
+            </span>
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="admin-navigation" aria-label="Admin menü megnyitása" />
           <Navbar.Offcanvas
@@ -50,11 +56,13 @@ export default function AdminShell() {
                 </Nav.Link>
               </Nav>
               <Button
+                className="admin-logout-button"
                 disabled={loggingOut}
                 onClick={() => void handleLogout()}
                 variant="outline-secondary"
               >
-                {loggingOut ? 'Kijelentkezés…' : 'Kijelentkezés'}
+                <LogOut aria-hidden="true" size={17} />
+                <span>{loggingOut ? 'Kijelentkezés…' : 'Kijelentkezés'}</span>
               </Button>
             </Offcanvas.Body>
           </Navbar.Offcanvas>

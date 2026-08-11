@@ -38,7 +38,7 @@ describe('administrator routing and authentication', () => {
   it('redirects unauthenticated visitors from protected admin routes to login', async () => {
     const router = renderRoute('/admin/bookings')
 
-    expect(await screen.findByRole('heading', { name: 'Admin belépés' })).toBeVisible()
+    expect(await screen.findByRole('heading', { name: 'Üdvözöljük újra!' })).toBeVisible()
     expect(router.state.location.pathname).toBe('/admin/login')
   })
 
@@ -104,7 +104,7 @@ describe('administrator routing and authentication', () => {
     expect(await screen.findByRole('heading', { name: 'Foglalási kérelmek' })).toBeVisible()
     await user.click(screen.getByRole('button', { name: 'Kijelentkezés' }))
 
-    expect(await screen.findByRole('heading', { name: 'Admin belépés' })).toBeVisible()
+    expect(await screen.findByRole('heading', { name: 'Üdvözöljük újra!' })).toBeVisible()
     expect(router.state.location.pathname).toBe('/admin/login')
     expect(fetchMock).toHaveBeenLastCalledWith(
       '/api/admin/auth/logout',
