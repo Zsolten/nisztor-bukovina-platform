@@ -1,0 +1,126 @@
+@use 'tokens' as *;
+
+.admin-login-page,
+.admin-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: $paper-light;
+  color: $ink;
+}
+
+.admin-login-page {
+  display: grid;
+  padding: 1.5rem;
+  place-items: center;
+}
+
+.admin-login-container {
+  width: min(100%, 34rem);
+  margin: 0;
+}
+
+.admin-login-card {
+  padding: clamp(1.75rem, 5vw, 3.25rem);
+  border: 1px solid $line;
+  border-top: 4px solid $forest;
+  box-shadow: $shadow;
+
+  h1 {
+    margin-bottom: 0.75rem;
+    font-size: clamp(2rem, 4vw, 2.6rem);
+  }
+
+  .form-control,
+  .btn {
+    min-height: 3rem;
+  }
+
+  h1,
+  .offcanvas-title {
+    font-family: $serif;
+  }
+}
+
+.admin-eyebrow {
+  margin-bottom: 0.45rem;
+  color: $brick;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.admin-login-introduction {
+  margin-bottom: 2rem;
+  color: $muted;
+  font-size: 1.05rem;
+}
+
+.admin-header {
+  min-height: 72px;
+  border-bottom: 1px solid $line;
+  background: $paper;
+}
+
+.admin-header .navbar-brand {
+  display: grid;
+  color: $forest-dark;
+  font-family: $serif;
+  line-height: 1.05;
+  text-decoration: none;
+}
+
+.admin-header .navbar-brand span {
+  margin-top: 0.2rem;
+  color: $muted;
+  font-family: $sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.admin-navigation .nav-link {
+  color: $muted;
+  font-weight: 600;
+}
+
+.admin-navigation .nav-link.active,
+.admin-navigation .nav-link:hover,
+.admin-navigation .nav-link:focus-visible {
+  color: $forest;
+}
+
+.admin-main {
+  padding-block: clamp(2rem, 6vw, 4.5rem);
+}
+
+.admin-page-introduction {
+  max-width: 44rem;
+}
+
+.admin-page-introduction h1 {
+  margin-bottom: 1rem;
+  font-family: $serif;
+}
+
+.admin-page-introduction p:last-child {
+  color: $muted;
+  font-size: 1.08rem;
+  line-height: 1.7;
+}
+
+@media (max-width: 767.98px) {
+  .admin-header .offcanvas-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .admin-navigation {
+    gap: 0.25rem;
+  }
+
+  .admin-navigation .nav-link {
+    padding-block: 0.75rem;
+  }
+}
