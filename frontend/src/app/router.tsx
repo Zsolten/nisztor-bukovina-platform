@@ -40,6 +40,7 @@ export const appRoutes: RouteObject[] = [
   },
   {
     path: '/',
+    element: <></>,
     loader: () => redirect(`/${readPreferredLanguage()}`),
   },
   {
