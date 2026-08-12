@@ -2,7 +2,6 @@ package com.bukovina.platform.support.notification;
 
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -15,6 +14,7 @@ public class BookingNotificationEmailFactory {
   private static final String FONT_STACK = "'Avenir Next',Avenir,'Segoe UI',Arial,sans-serif";
   private static final String SERIF_STACK =
       "Iowan Old Style,Baskerville,'Palatino Linotype',Georgia,serif";
+  private static final DateTimeFormatter COMPACT_DATE = DateTimeFormatter.ofPattern("yyyy.MM.dd");
 
   private final NotificationProperties properties;
 
@@ -141,9 +141,7 @@ public class BookingNotificationEmailFactory {
     rows.add(
         new SummaryRow(
             labels.stay(),
-            formatDate(booking.checkInDate(), labels.locale())
-                + " – "
-                + formatDate(booking.checkOutDate(), labels.locale()),
+            formatDate(booking.checkInDate()) + " – " + formatDate(booking.checkOutDate()),
             false));
     rows.add(new SummaryRow(labels.nights(), Long.toString(booking.nights()), false));
     addCount(rows, labels.adults(), booking.adults());
@@ -170,9 +168,7 @@ public class BookingNotificationEmailFactory {
         new SummaryRow(labels.reference(), booking.publicReference(), false),
         new SummaryRow(
             labels.stay(),
-            formatDate(booking.checkInDate(), labels.locale())
-                + " – "
-                + formatDate(booking.checkOutDate(), labels.locale()),
+            formatDate(booking.checkInDate()) + " – " + formatDate(booking.checkOutDate()),
             false));
   }
 
@@ -235,12 +231,12 @@ public class BookingNotificationEmailFactory {
             <style>
               @media only screen and (max-width:620px) {
                 .email-shell { padding: 8px 4px !important; }
-                .email-card { box-sizing: border-box !important; padding: 26px 16px !important; }
+                .email-card { box-sizing: border-box !important; width: 100%% !important; max-width: 100%% !important; padding: 26px 12px !important; }
                 .email-title { font-size: 28px !important; }
-                .summary-cell { box-sizing: border-box !important; display: block !important; width: auto !important; text-align: left !important; }
-                .summary-label { padding: 12px 14px 2px !important; }
-                .summary-value { padding: 0 14px 12px !important; overflow-wrap: anywhere !important; word-break: break-word !important; }
-                .summary-total-value { border-top: 0 !important; padding-top: 0 !important; }
+                .summary-table { box-sizing: border-box !important; width: 100%% !important; max-width: 100%% !important; table-layout: fixed !important; }
+                .summary-cell { box-sizing: border-box !important; display: table-cell !important; }
+                .summary-label { width: 42%% !important; padding: 9px 5px 9px 10px !important; text-align: left !important; }
+                .summary-value { width: 58%% !important; padding: 9px 10px 9px 5px !important; font-size: 12px !important; line-height: 1.35 !important; text-align: right !important; overflow-wrap: anywhere !important; word-break: normal !important; }
                 .action-button { box-sizing: border-box !important; display: block !important; width: 100%% !important; padding-right: 12px !important; padding-left: 12px !important; text-align: center !important; }
                 .reference-value { overflow-wrap: anywhere !important; word-break: break-word !important; }
               }
@@ -261,7 +257,7 @@ public class BookingNotificationEmailFactory {
                         <span style="display:block;color:#6e665b;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">%s</span>
                         <strong class="reference-value" style="display:block;margin-top:5px;font-family:%s;font-size:20px;font-weight:500;letter-spacing:.6px;">%s</strong>
                       </div>
-                      <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" border="0" style="width:100%%;table-layout:fixed;border:1px solid #d8d0c3;">
+                      <table class="summary-table" role="presentation" width="100%%" cellspacing="0" cellpadding="0" border="0" style="box-sizing:border-box;width:100%%;max-width:100%%;table-layout:fixed;border:1px solid #d8d0c3;">
                         <tr><td colspan="2" style="padding:16px 18px 10px;color:#29493a;font-size:13px;font-weight:700;">%s</td></tr>
                         %s
                       </table>
@@ -322,7 +318,7 @@ public class BookingNotificationEmailFactory {
                   valueClass,
                   border,
                   valueStyle,
-                  escape(row.value())));
+                  htmlValue(row.value())));
     }
     return result.toString();
   }
@@ -349,12 +345,16 @@ public class BookingNotificationEmailFactory {
     return booking.rooms().stream()
         .filter(room -> room.quantity() > 0)
         .map(room -> room.quantity() + " × " + room.name())
-        .reduce((left, right) -> left + ", " + right)
+        .reduce((left, right) -> left + "\n" + right)
         .orElse("-");
   }
 
-  private String formatDate(java.time.LocalDate date, Locale locale) {
-    return date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).withLocale(locale));
+  private String formatDate(java.time.LocalDate date) {
+    return date.format(COMPACT_DATE);
+  }
+
+  private String htmlValue(String value) {
+    return escape(value).replace("\n", "<br>");
   }
 
   private GuestCopy guestCopy(String language) {

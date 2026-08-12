@@ -29,7 +29,22 @@ class BookingNotificationEmailFactoryTests {
     assertTrue(content.htmlBody().contains("nisztorpanzio@gmail.com"));
     assertTrue(content.plainTextBody().contains("Kedves Teszt Vendég!"));
     assertTrue(content.htmlBody().contains("@media only screen and (max-width:620px)"));
+    assertTrue(
+        content
+            .htmlBody()
+            .contains(
+                ".summary-cell { box-sizing: border-box !important; display: table-cell !important;"));
+    assertTrue(content.htmlBody().contains(".summary-label { width: 42% !important;"));
+    assertTrue(content.htmlBody().contains(".summary-value { width: 58% !important;"));
     assertTrue(content.htmlBody().contains("700 RON"));
+    assertTrue(content.plainTextBody().contains("Időszak: 2026.09.01 – 2026.09.03"));
+    assertFalse(content.plainTextBody().contains("szeptember"));
+    assertTrue(
+        content
+            .plainTextBody()
+            .contains("Szobák: 1 × <script>szoba</script>\n2 × Háromágyas szoba"));
+    assertTrue(content.htmlBody().contains("&lt;script&gt;szoba&lt;/script&gt;"));
+    assertTrue(content.htmlBody().contains("<br>"));
     assertFalse(content.htmlBody().contains("Gyermekek (3–10 év)"));
     assertFalse(content.htmlBody().contains("Gyermekek (0–3 év)"));
     assertFalse(content.htmlBody().contains("Vacsora résztvevők"));
@@ -133,7 +148,9 @@ class BookingNotificationEmailFactoryTests {
         BigDecimal.ZERO,
         new BigDecimal("700.00"),
         "RON",
-        List.of(new NotificationRoomView("<script>szoba</script>", 1)));
+        List.of(
+            new NotificationRoomView("<script>szoba</script>", 1),
+            new NotificationRoomView("Háromágyas szoba", 2)));
   }
 
   private NotificationProperties properties() {

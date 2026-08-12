@@ -13,6 +13,9 @@ MAIL_FROM_ADDRESS=
 MAIL_FROM_NAME=Nisztor-Bukovina Platform
 MAIL_SMTP_AUTH=true
 MAIL_STARTTLS_ENABLE=true
+MAIL_SMTP_CONNECTION_TIMEOUT=5000
+MAIL_SMTP_READ_TIMEOUT=10000
+MAIL_SMTP_WRITE_TIMEOUT=10000
 
 NOTIFICATIONS_ENABLED=true
 BOOKING_NOTIFICATION_MAX_ATTEMPTS=5
@@ -22,6 +25,8 @@ BOOKING_NOTIFICATION_TOKEN_ENCRYPTION_KEY=
 APP_PUBLIC_BASE_URL=https://example.com
 APP_ADMIN_BASE_URL=https://example.com
 ```
+
+Az SMTP-időkorlátok ezredmásodpercben értendők. Az alapérték kapcsolódáskor 5 másodperc, olvasáskor és íráskor 10 másodperc; időtúllépés esetén az outbox a beállított újrapróbálkozási szabály szerint később ismét megkísérli a kézbesítést.
 
 A `BOOKING_NOTIFICATION_TOKEN_ENCRYPTION_KEY` egy véletlen, pontosan 32 bájtos AES-kulcs Base64 alakban. Helyben például az `openssl rand -base64 32` paranccsal készíthető. A kulcsot és az SMTP-jelszót csak a futtatási környezet titokkezelőjében vagy a gitből kizárt helyi `.env` fájlban szabad tárolni.
 
