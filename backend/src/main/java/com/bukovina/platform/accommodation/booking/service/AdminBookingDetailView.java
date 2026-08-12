@@ -27,6 +27,8 @@ public record AdminBookingDetailView(
     String internalNote,
     BookingStatus status,
     BigDecimal accommodationTotal,
+    BigDecimal adultAccommodationTotal,
+    BigDecimal childAccommodationTotal,
     BigDecimal singleRoomSurcharge,
     BigDecimal breakfastTotal,
     BigDecimal dinnerTotal,

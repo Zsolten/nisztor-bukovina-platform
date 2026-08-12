@@ -99,6 +99,8 @@ describe('BookingStayStep', () => {
             lines: [],
             priceBreakdown: {
               accommodationTotal: 780,
+              adultAccommodationTotal: 780,
+              childAccommodationTotal: 0,
               singleRoomSurcharge: 0,
               breakfastTotal: 0,
               dinnerTotal: 0,

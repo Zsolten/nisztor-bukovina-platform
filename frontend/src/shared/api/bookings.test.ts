@@ -60,6 +60,8 @@ describe('booking request API', () => {
             currency: 'RON',
             priceBreakdown: {
               accommodationTotal: 650,
+              adultAccommodationTotal: 650,
+              childAccommodationTotal: 0,
               singleRoomSurcharge: 0,
               breakfastTotal: 0,
               dinnerTotal: 0,

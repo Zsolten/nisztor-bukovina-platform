@@ -208,6 +208,8 @@ class AdminBookingControllerTests {
             .andExpect(jsonPath("$.services.breakfastParticipants").value(2))
             .andExpect(jsonPath("$.rooms[0].roomTypeId").value(roomTypeId.toString()))
             .andExpect(jsonPath("$.rooms[0].roomTypeName").value("Kétágyas szoba"))
+            .andExpect(jsonPath("$.priceSnapshot.adultAccommodationTotal").value(400.00))
+            .andExpect(jsonPath("$.priceSnapshot.childAccommodationTotal").value(100.00))
             .andExpect(jsonPath("$.priceSnapshot.totalPayable").value(700.00))
             .andExpect(jsonPath("$.statusHistory[0].status").value("RECEIVED"))
             .andExpect(jsonPath("$.guestNote").value("Csendes szobát kérünk"))
@@ -427,11 +429,12 @@ class AdminBookingControllerTests {
             check_in_date, check_out_date, adults, children_age_3_to_10,
             children_age_0_to_3, breakfast_participants, dinner_participants,
             contact_name, contact_email, contact_phone, preferred_language, note, status,
-            accommodation_total, single_room_surcharge, breakfast_total, dinner_total,
-            total_payable, currency, management_token_hash, management_token_expires_at,
+            accommodation_total, adult_accommodation_total, child_accommodation_total,
+            single_room_surcharge, breakfast_total, dinner_total, total_payable, currency,
+            management_token_hash, management_token_expires_at,
             created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, 2, 1, 0, 2, 0, ?, ?, ?, 'hu', ?, ?,
-                  ?, ?, ?, ?, ?, 'RON', ?, ?, ?, ?)
+                  ?, ?, ?, ?, ?, ?, ?, 'RON', ?, ?, ?, ?)
         """,
         id,
         guesthouseId,
@@ -446,6 +449,8 @@ class AdminBookingControllerTests {
         "Csendes szobát kérünk",
         status,
         new BigDecimal("500.00"),
+        new BigDecimal("400.00"),
+        new BigDecimal("100.00"),
         new BigDecimal("20.00"),
         new BigDecimal("180.00"),
         BigDecimal.ZERO,

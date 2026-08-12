@@ -48,6 +48,8 @@ public record AdminBookingDetailResponse(
             .toList(),
         new PriceSnapshot(
             booking.accommodationTotal(),
+            booking.adultAccommodationTotal(),
+            booking.childAccommodationTotal(),
             booking.singleRoomSurcharge(),
             booking.breakfastTotal(),
             booking.dinnerTotal(),
@@ -83,6 +85,8 @@ public record AdminBookingDetailResponse(
 
   public record PriceSnapshot(
       BigDecimal accommodationTotal,
+      BigDecimal adultAccommodationTotal,
+      BigDecimal childAccommodationTotal,
       BigDecimal singleRoomSurcharge,
       BigDecimal breakfastTotal,
       BigDecimal dinnerTotal,

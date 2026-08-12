@@ -187,6 +187,8 @@ public class BookingRequestService {
   private BookingPriceBreakdown toEntityBreakdown(BookingPriceBreakdownResponse breakdown) {
     return new BookingPriceBreakdown(
         breakdown.accommodationTotal(),
+        breakdown.adultAccommodationTotal(),
+        breakdown.childAccommodationTotal(),
         breakdown.singleRoomSurcharge(),
         breakdown.breakfastTotal(),
         breakdown.dinnerTotal(),

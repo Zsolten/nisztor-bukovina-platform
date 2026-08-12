@@ -718,12 +718,16 @@ components:
       description: Stored booking price snapshot without VAT or city tax calculation.
       required:
         - accommodationTotal
+        - adultAccommodationTotal
+        - childAccommodationTotal
         - singleRoomSurcharge
         - breakfastTotal
         - dinnerTotal
         - totalPayable
       properties:
         accommodationTotal: { type: number, minimum: 0 }
+        adultAccommodationTotal: { type: number, minimum: 0 }
+        childAccommodationTotal: { type: number, minimum: 0 }
         singleRoomSurcharge: { type: number, minimum: 0 }
         breakfastTotal: { type: number, minimum: 0 }
         dinnerTotal: { type: number, minimum: 0 }

@@ -77,6 +77,8 @@ class BookingMigrationTests {
   @Test
   void storesPriceSnapshotWithoutTaxInformation() {
     assertTrue(columnExists("booking_request", "accommodation_total"));
+    assertTrue(columnExists("booking_request", "adult_accommodation_total"));
+    assertTrue(columnExists("booking_request", "child_accommodation_total"));
     for (String columnName :
         List.of(
             "accommodation_tax_rate",

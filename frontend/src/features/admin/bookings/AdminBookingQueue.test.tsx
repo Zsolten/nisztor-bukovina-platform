@@ -4,7 +4,6 @@ import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AdminAuthContext } from '../auth/adminAuthContext'
 import type { AdminBookingPage, AdminBookingSummary } from '../api/adminBookings'
-import AdminBookingDetailPlaceholder from './AdminBookingDetailPlaceholder'
 import AdminBookingQueue from './AdminBookingQueue'
 
 function jsonResponse(status: number, body: unknown) {
@@ -63,7 +62,7 @@ function renderQueue(
   const router = createMemoryRouter(
     [
       { path: '/admin/bookings', element: <AdminBookingQueue /> },
-      { path: '/admin/bookings/:bookingId', element: <AdminBookingDetailPlaceholder /> },
+      { path: '/admin/bookings/:bookingId', element: <div>{booking.id}</div> },
     ],
     { initialEntries: ['/admin/bookings'] },
   )
