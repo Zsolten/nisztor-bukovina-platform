@@ -102,7 +102,8 @@ describe('administrator routing and authentication', () => {
 
     await signIn(user)
     expect(await screen.findByRole('heading', { name: 'Foglalási kérelmek' })).toBeVisible()
-    await user.click(screen.getByRole('button', { name: 'Kijelentkezés' }))
+    const [logoutButton] = screen.getAllByRole('button', { name: 'Kijelentkezés' })
+    await user.click(logoutButton)
 
     expect(await screen.findByRole('heading', { name: 'Üdvözöljük újra!' })).toBeVisible()
     expect(router.state.location.pathname).toBe('/admin/login')
