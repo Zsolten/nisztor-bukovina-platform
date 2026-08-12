@@ -33,15 +33,27 @@ public class BookingNotificationEmailFactory {
             + rawManagementToken;
     List<SummaryRow> rows = summaryRows(booking, copy.labels());
     String contactText = copy.contactText().formatted(replyTo);
+    String greeting = copy.greeting().formatted(booking.contactName());
     return new NotificationEmailContent(
         copy.subject().formatted(booking.publicReference()),
-        plainText(copy.title(), copy.intro(), rows, copy.button(), managementUrl, contactText),
+        plainText(
+            copy.title(),
+            greeting,
+            copy.intro(),
+            copy.labels().summaryTitle(),
+            rows,
+            copy.button(),
+            managementUrl,
+            contactText),
         html(
             language,
             copy.eyebrow(),
             copy.title(),
+            greeting,
             copy.intro(),
             booking.publicReference(),
+            copy.labels().reference(),
+            copy.labels().summaryTitle(),
             rows,
             copy.button(),
             managementUrl,
@@ -58,13 +70,17 @@ public class BookingNotificationEmailFactory {
         "A kérelem ellenőrzésre vár. A link megnyitása önmagában nem módosítja a foglalás állapotát.";
     return new NotificationEmailContent(
         "Új foglalási kérelem – " + booking.publicReference(),
-        plainText(title, intro, rows, "Foglalás kezelése", adminUrl, null),
+        plainText(
+            title, null, intro, labels.summaryTitle(), rows, "Foglalás kezelése", adminUrl, null),
         html(
             "hu",
             "Új foglalási kérelem",
             title,
+            null,
             intro,
             booking.publicReference(),
+            labels.reference(),
+            labels.summaryTitle(),
             rows,
             "Foglalás kezelése",
             adminUrl,
@@ -118,8 +134,19 @@ public class BookingNotificationEmailFactory {
   }
 
   private String plainText(
-      String title, String intro, List<SummaryRow> rows, String button, String url, String footer) {
-    StringBuilder body = new StringBuilder(title).append("\n\n").append(intro).append("\n\n");
+      String title,
+      String greeting,
+      String intro,
+      String summaryTitle,
+      List<SummaryRow> rows,
+      String button,
+      String url,
+      String footer) {
+    StringBuilder body = new StringBuilder(title).append("\n\n");
+    if (greeting != null) {
+      body.append(greeting).append("\n\n");
+    }
+    body.append(intro).append("\n\n").append(summaryTitle).append("\n");
     rows.forEach(row -> body.append(row.label()).append(": ").append(row.value()).append('\n'));
     body.append("\n").append(button).append(":\n").append(url);
     if (footer != null) {
@@ -132,8 +159,11 @@ public class BookingNotificationEmailFactory {
       String language,
       String eyebrow,
       String title,
+      String greeting,
       String intro,
       String reference,
+      String referenceLabel,
+      String summaryTitle,
       List<SummaryRow> rows,
       String button,
       String url,
@@ -146,30 +176,35 @@ public class BookingNotificationEmailFactory {
             <meta name="viewport" content="width=device-width,initial-scale=1">
             <style>
               @media only screen and (max-width:620px) {
-                .email-shell { padding: 16px 8px !important; }
-                .email-card { padding: 28px 20px !important; }
-                .summary-cell { display: block !important; width: 100%% !important; text-align: left !important; }
-                .summary-value { padding-top: 2px !important; padding-bottom: 12px !important; }
-                .action-button { display: block !important; }
+                .email-shell { padding: 8px 4px !important; }
+                .email-card { box-sizing: border-box !important; padding: 26px 16px !important; }
+                .email-title { font-size: 28px !important; }
+                .summary-cell { box-sizing: border-box !important; display: block !important; width: auto !important; text-align: left !important; }
+                .summary-label { padding: 12px 14px 2px !important; }
+                .summary-value { padding: 0 14px 12px !important; overflow-wrap: anywhere !important; word-break: break-word !important; }
+                .summary-total-value { border-top: 0 !important; padding-top: 0 !important; }
+                .action-button { box-sizing: border-box !important; display: block !important; width: 100%% !important; padding-right: 12px !important; padding-left: 12px !important; text-align: center !important; }
+                .reference-value { overflow-wrap: anywhere !important; word-break: break-word !important; }
               }
             </style>
           </head>
-          <body style="margin:0;background:#f4efe4;color:#27241f;font-family:%s;">
+          <body style="width:100%%;margin:0;background:#f4efe4;color:#27241f;font-family:%s;-webkit-text-size-adjust:100%%;">
             <div class="email-shell" style="padding:32px 12px;background:#f4efe4;">
-              <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" border="0">
+              <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" border="0" style="width:100%%;table-layout:fixed;">
                 <tr><td align="center">
-                  <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" border="0" style="max-width:620px;background:#fbf8f1;border:1px solid #d8d0c3;">
+                  <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" border="0" style="width:100%%;max-width:620px;background:#fbf8f1;border:1px solid #d8d0c3;">
                     <tr><td style="height:7px;background:#29493a;font-size:0;line-height:0;">&nbsp;</td></tr>
-                    <tr><td class="email-card" style="padding:42px 46px;">
+                    <tr><td class="email-card" style="box-sizing:border-box;padding:42px 46px;">
                       <p style="margin:0 0 10px;color:#c8984c;font-size:12px;font-weight:700;letter-spacing:1.3px;text-align:center;text-transform:uppercase;">%s</p>
-                      <h1 style="margin:0;color:#27241f;font-family:%s;font-size:34px;font-weight:500;line-height:1.18;text-align:center;">%s</h1>
+                      <h1 class="email-title" style="margin:0;color:#27241f;font-family:%s;font-size:34px;font-weight:500;line-height:1.18;text-align:center;">%s</h1>
+                      %s
                       <p style="margin:16px auto 0;max-width:500px;color:#6e665b;font-size:15px;line-height:1.65;text-align:center;">%s</p>
                       <div style="margin:26px 0;padding:15px;border-top:1px solid #d8d0c3;border-bottom:1px solid #d8d0c3;text-align:center;">
-                        <span style="display:block;color:#6e665b;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Referencia</span>
-                        <strong style="display:block;margin-top:5px;font-family:%s;font-size:20px;font-weight:500;letter-spacing:.6px;">%s</strong>
+                        <span style="display:block;color:#6e665b;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">%s</span>
+                        <strong class="reference-value" style="display:block;margin-top:5px;font-family:%s;font-size:20px;font-weight:500;letter-spacing:.6px;">%s</strong>
                       </div>
-                      <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #d8d0c3;">
-                        <tr><td colspan="2" style="padding:16px 18px 10px;color:#29493a;font-size:13px;font-weight:700;">Foglalási összefoglaló</td></tr>
+                      <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" border="0" style="width:100%%;table-layout:fixed;border:1px solid #d8d0c3;">
+                        <tr><td colspan="2" style="padding:16px 18px 10px;color:#29493a;font-size:13px;font-weight:700;">%s</td></tr>
                         %s
                       </table>
                       <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" border="0">
@@ -193,9 +228,12 @@ public class BookingNotificationEmailFactory {
             escape(eyebrow),
             SERIF_STACK,
             escape(title),
+            greetingHtml(greeting),
             escape(intro),
+            escape(referenceLabel),
             SERIF_STACK,
             escape(reference),
+            escape(summaryTitle),
             htmlRows(rows),
             escape(url),
             escape(button),
@@ -206,6 +244,8 @@ public class BookingNotificationEmailFactory {
     StringBuilder result = new StringBuilder();
     for (SummaryRow row : rows) {
       String border = row.emphasized() ? "border-top:1px solid #c8984c;" : "";
+      String labelClass = row.emphasized() ? " summary-total-label" : "";
+      String valueClass = row.emphasized() ? " summary-total-value" : "";
       String valueStyle =
           row.emphasized()
               ? "font-family:" + SERIF_STACK + ";font-size:19px;font-weight:600;"
@@ -213,11 +253,18 @@ public class BookingNotificationEmailFactory {
       result.append(
           """
           <tr>
-            <td class="summary-cell" style="%s;padding:8px 9px 8px 18px;color:#6e665b;font-size:13px;">%s</td>
-            <td class="summary-cell summary-value" style="%s;padding:8px 18px 8px 9px;color:#27241f;%s;text-align:right;">%s</td>
+            <td class="summary-cell summary-label%s" width="42%%" style="box-sizing:border-box;%s;padding:8px 9px 8px 18px;color:#6e665b;font-size:13px;overflow-wrap:anywhere;">%s</td>
+            <td class="summary-cell summary-value%s" width="58%%" style="box-sizing:border-box;%s;padding:8px 18px 8px 9px;color:#27241f;%s;text-align:right;overflow-wrap:anywhere;word-break:break-word;">%s</td>
           </tr>
           """
-              .formatted(border, escape(row.label()), border, valueStyle, escape(row.value())));
+              .formatted(
+                  labelClass,
+                  border,
+                  escape(row.label()),
+                  valueClass,
+                  border,
+                  valueStyle,
+                  escape(row.value())));
     }
     return result.toString();
   }
@@ -228,6 +275,15 @@ public class BookingNotificationEmailFactory {
     }
     return "<p style=\"margin:16px 0 0;color:#6e665b;font-size:13px;line-height:1.55;text-align:center;\">"
         + escape(footer)
+        + "</p>";
+  }
+
+  private String greetingHtml(String greeting) {
+    if (greeting == null) {
+      return "";
+    }
+    return "<p style=\"margin:20px 0 0;color:#29493a;font-size:16px;font-weight:700;line-height:1.5;text-align:center;\">"
+        + escape(greeting)
         + "</p>";
   }
 
@@ -250,6 +306,7 @@ public class BookingNotificationEmailFactory {
               "Am primit cererea de rezervare %s",
               "Cerere primită",
               "Am primit cererea dumneavoastră",
+              "Bună, %s!",
               "Aceasta nu este încă o rezervare confirmată; așteaptă aprobarea pensiunii.",
               "Gestionați rezervarea",
               "Dacă doriți să ne scrieți, răspundeți la acest e-mail. Mesajul va fi trimis la %s.",
@@ -259,6 +316,7 @@ public class BookingNotificationEmailFactory {
               "We received booking request %s",
               "Request received",
               "We received your booking request",
+              "Dear %s,",
               "This is not yet a confirmed reservation; it is awaiting guesthouse approval.",
               "Manage booking",
               "To contact us, reply to this email. Your message will be sent to %s.",
@@ -268,6 +326,7 @@ public class BookingNotificationEmailFactory {
               "Megkaptuk foglalási kérelmét – %s",
               "Kérelem megérkezett",
               "Megkaptuk foglalási kérelmét",
+              "Kedves %s!",
               "Ez még nem visszaigazolt foglalás; a panzió jóváhagyására vár.",
               "Foglalás kezelése",
               "Ha üzenetet küldene nekünk, válaszoljon erre a levélre. A válasz a(z) %s címre érkezik.",
@@ -278,6 +337,7 @@ public class BookingNotificationEmailFactory {
   private Labels labelsHu() {
     return new Labels(
         Locale.forLanguageTag("hu-HU"),
+        "Foglalási összefoglaló",
         "Azonosító",
         "Panzió",
         "Időszak",
@@ -298,6 +358,7 @@ public class BookingNotificationEmailFactory {
   private Labels labelsRo() {
     return new Labels(
         Locale.forLanguageTag("ro-RO"),
+        "Sumarul rezervării",
         "Referință",
         "Pensiune",
         "Perioadă",
@@ -318,6 +379,7 @@ public class BookingNotificationEmailFactory {
   private Labels labelsEn() {
     return new Labels(
         Locale.forLanguageTag("en-GB"),
+        "Booking summary",
         "Reference",
         "Guesthouse",
         "Stay",
@@ -360,6 +422,7 @@ public class BookingNotificationEmailFactory {
       String subject,
       String eyebrow,
       String title,
+      String greeting,
       String intro,
       String button,
       String contactText,
@@ -367,6 +430,7 @@ public class BookingNotificationEmailFactory {
 
   private record Labels(
       Locale locale,
+      String summaryTitle,
       String reference,
       String guesthouse,
       String stay,

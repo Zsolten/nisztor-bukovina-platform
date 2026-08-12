@@ -9,6 +9,7 @@ public record NotificationBookingView(
     UUID id,
     String publicReference,
     String guesthouseName,
+    String contactName,
     LocalDate checkInDate,
     LocalDate checkOutDate,
     long nights,

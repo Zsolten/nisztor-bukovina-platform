@@ -113,6 +113,7 @@ class NotificationDeliveryServiceTests {
         bookingId,
         "NB-1234567890ABCDEF",
         "Bukovina Panzió",
+        "Teszt Vendég",
         LocalDate.of(2026, 9, 1),
         LocalDate.of(2026, 9, 3),
         2,

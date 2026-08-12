@@ -23,6 +23,7 @@ public class NotificationBookingQueryDao {
             """
             SELECT booking.id, booking.public_reference,
                    COALESCE(requested.name, fallback.name, guesthouse.slug) AS guesthouse_name,
+                   booking.contact_name,
                    booking.check_in_date, booking.check_out_date,
                    booking.adults, booking.children_age_3_to_10, booking.children_age_0_to_3,
                    booking.breakfast_participants, booking.dinner_participants,
@@ -49,6 +50,7 @@ public class NotificationBookingQueryDao {
                   resultSet.getObject("id", UUID.class),
                   resultSet.getString("public_reference"),
                   resultSet.getString("guesthouse_name"),
+                  resultSet.getString("contact_name"),
                   checkIn,
                   checkOut,
                   ChronoUnit.DAYS.between(checkIn, checkOut),

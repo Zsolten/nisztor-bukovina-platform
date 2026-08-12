@@ -27,6 +27,7 @@ class BookingNotificationEmailFactoryTests {
             .htmlBody()
             .contains("href=\"https://example.com/hu/booking-management/raw-token\""));
     assertTrue(content.htmlBody().contains("nisztorpanzio@gmail.com"));
+    assertTrue(content.plainTextBody().contains("Kedves Teszt Vendég!"));
     assertTrue(content.htmlBody().contains("@media only screen and (max-width:620px)"));
     assertTrue(content.htmlBody().contains("700 RON"));
     assertFalse(content.htmlBody().contains("Gyermekek (3–10 év)"));
@@ -52,11 +53,33 @@ class BookingNotificationEmailFactoryTests {
     assertFalse(content.plainTextBody().contains("Vacsora:"));
   }
 
+  @Test
+  void usesTheSameLocalizedTemplateForRomanianAndEnglishGuests() {
+    NotificationEmailContent romanian =
+        factory.guest(booking(), "ro", "raw-token", "nisztorpanzio@gmail.com");
+    NotificationEmailContent english =
+        factory.guest(booking(), "en", "raw-token", "nisztorpanzio@gmail.com");
+
+    assertTrue(romanian.htmlBody().contains("<html lang=\"ro\">"));
+    assertTrue(romanian.plainTextBody().contains("Sumarul rezervării"));
+    assertTrue(romanian.plainTextBody().contains("Bună, Teszt Vendég!"));
+    assertTrue(romanian.plainTextBody().contains("Gestionați rezervarea"));
+    assertTrue(english.htmlBody().contains("<html lang=\"en\">"));
+    assertTrue(english.plainTextBody().contains("Booking summary"));
+    assertTrue(english.plainTextBody().contains("Dear Teszt Vendég,"));
+    assertTrue(english.plainTextBody().contains("Manage booking"));
+    assertTrue(romanian.htmlBody().contains("class=\"summary-cell summary-label"));
+    assertTrue(english.htmlBody().contains("class=\"summary-cell summary-label"));
+    assertFalse(romanian.plainTextBody().contains("Foglalási összefoglaló"));
+    assertFalse(english.plainTextBody().contains("Foglalási összefoglaló"));
+  }
+
   private NotificationBookingView booking() {
     return new NotificationBookingView(
         UUID.fromString("27a9a011-e917-44b9-bf75-9e9a476273f7"),
         "NB-1234567890ABCDEF",
         "Nisztor Panzió",
+        "Teszt Vendég",
         LocalDate.of(2026, 9, 1),
         LocalDate.of(2026, 9, 3),
         2,
