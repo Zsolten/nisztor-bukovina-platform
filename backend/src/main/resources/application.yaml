@@ -13,6 +13,17 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+  mail:
+    host: ${MAIL_HOST:${SPRING_MAIL_HOST:}}
+    port: ${MAIL_PORT:${SPRING_MAIL_PORT:587}}
+    username: ${MAIL_USERNAME:${SPRING_MAIL_USERNAME:}}
+    password: ${MAIL_PASSWORD:${SPRING_MAIL_PASSWORD:}}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:${SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH:true}}
+          starttls:
+            enable: ${MAIL_STARTTLS_ENABLE:${SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE:true}}
 server:
   port: ${SERVER_PORT:8080}
 
@@ -25,6 +36,16 @@ management:
 booking:
   public:
     large-group-threshold: ${BOOKING_LARGE_GROUP_THRESHOLD:20}
+  notification:
+    enabled: ${NOTIFICATIONS_ENABLED:false}
+    max-attempts: ${BOOKING_NOTIFICATION_MAX_ATTEMPTS:5}
+    retry-initial-delay-seconds: ${BOOKING_NOTIFICATION_RETRY_INITIAL_DELAY_SECONDS:60}
+    worker-delay: ${BOOKING_NOTIFICATION_WORKER_DELAY:PT10S}
+    token-encryption-key: ${BOOKING_NOTIFICATION_TOKEN_ENCRYPTION_KEY:}
+    public-base-url: ${APP_PUBLIC_BASE_URL:http://localhost:5173}
+    admin-base-url: ${APP_ADMIN_BASE_URL:http://localhost:5173}
+    from-address: ${MAIL_FROM_ADDRESS:${MAIL_FROM:}}
+    from-name: ${MAIL_FROM_NAME:Nisztor-Bukovina Platform}
 
 admin:
   authentication:
