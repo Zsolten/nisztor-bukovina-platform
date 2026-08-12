@@ -59,7 +59,8 @@ class NotificationDeliveryServiceTests {
         ArgumentCaptor.forClass(NotificationEmailContent.class);
     verify(mailSender)
         .send(eq("guest@example.com"), eq("guesthouse@example.com"), content.capture());
-    assertTrue(content.getValue().body().contains("/hu/booking-management/raw-management-token"));
+    assertTrue(
+        content.getValue().htmlBody().contains("/hu/booking-management/raw-management-token"));
     assertEquals(NotificationStatus.DELIVERED, job.getStatus());
     assertNull(job.getEncryptedManagementToken());
   }

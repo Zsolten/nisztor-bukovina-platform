@@ -58,3 +58,4 @@ WHERE guesthouse_id = (SELECT id FROM guesthouse WHERE slug = 'bukovina-panzio')
 - A kézbesítésig az outbox AES-GCM titkosítva tartja a tokent; sikeres kézbesítés vagy a próbálkozások kimerülése után törli a titkosított értéket is.
 - A worker csak biztonságos hibakódot tárol, címet, tokent és teljes üzenettörzset nem naplóz.
 - A vendégnek küldött `GET` link önmagában nem módosíthat foglalási állapotot.
+- A levél feladója a rendszer `MAIL_FROM_ADDRESS` címe lehet, de a `Reply-To` fejléc mindig az érintett panzió aktív publikus e-mail-címe. A levelezőprogram Válasz funkciója ezért például a `nisztorpanzio@gmail.com` címre, nem a rendszerfeladónak küldi az üzenetet; ezt a HTML- és szöveges levél is egyértelműen jelzi.

@@ -72,7 +72,7 @@ public class NotificationDeliveryService {
     }
     try {
       String rawToken = tokenCipher.decrypt(encryptedToken, job.getBookingRequestId().toString());
-      return emailFactory.guest(booking, job.getLanguageCode(), rawToken);
+      return emailFactory.guest(booking, job.getLanguageCode(), rawToken, job.getReplyTo());
     } catch (IllegalStateException exception) {
       throw new TokenDecryptionException();
     }

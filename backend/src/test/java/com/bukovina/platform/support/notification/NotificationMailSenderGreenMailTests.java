@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.icegreen.greenmail.util.GreenMail;
 import com.icegreen.greenmail.util.ServerSetup;
+import jakarta.mail.BodyPart;
+import jakarta.mail.Multipart;
+import jakarta.mail.Part;
 import jakarta.mail.internet.MimeMessage;
 import java.time.Duration;
 import org.junit.jupiter.api.AfterEach;
@@ -33,18 +36,38 @@ class NotificationMailSenderGreenMailTests {
   }
 
   @Test
-  void sendsUtf8PlainTextWithConfiguredSenderAndGuesthouseReplyTo() throws Exception {
+  void sendsHtmlAndPlainTextAlternativesWithConfiguredGuesthouseReplyTo() throws Exception {
     sender.send(
         "guest@example.com",
         "guesthouse@example.com",
-        new NotificationEmailContent("Foglalási kérelem", "Árvíztűrő tükörfúrógép"));
+        new NotificationEmailContent(
+            "Foglalási kérelem",
+            "Árvíztűrő tükörfúrógép",
+            "<html><body><strong>Árvíztűrő tükörfúrógép</strong></body></html>"));
 
     assertTrue(greenMail.waitForIncomingEmail(1));
     MimeMessage message = greenMail.getReceivedMessages()[0];
     assertEquals("Foglalási kérelem", message.getSubject());
-    assertTrue(message.getContent().toString().contains("Árvíztűrő tükörfúrógép"));
+    assertTrue(findContent(message, "text/plain").contains("Árvíztűrő tükörfúrógép"));
+    assertTrue(findContent(message, "text/html").contains("<strong>"));
     assertEquals("guest@example.com", message.getAllRecipients()[0].toString());
     assertEquals("guesthouse@example.com", message.getReplyTo()[0].toString());
+  }
+
+  private String findContent(Part part, String mimeType) throws Exception {
+    if (part.isMimeType(mimeType)) {
+      return part.getContent().toString();
+    }
+    if (part.getContent() instanceof Multipart multipart) {
+      for (int index = 0; index < multipart.getCount(); index++) {
+        BodyPart bodyPart = multipart.getBodyPart(index);
+        String content = findContent(bodyPart, mimeType);
+        if (!content.isEmpty()) {
+          return content;
+        }
+      }
+    }
+    return "";
   }
 
   private NotificationProperties properties() {

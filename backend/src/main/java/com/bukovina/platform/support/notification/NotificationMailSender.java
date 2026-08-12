@@ -22,7 +22,7 @@ public class NotificationMailSender {
   public void send(String recipient, String replyTo, NotificationEmailContent content)
       throws MessagingException {
     MimeMessage message = mailSender.createMimeMessage();
-    MimeMessageHelper helper = new MimeMessageHelper(message, false, StandardCharsets.UTF_8.name());
+    MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
     try {
       helper.setFrom(
           required(properties.fromAddress(), "MAIL_FROM_ADDRESS"),
@@ -35,7 +35,7 @@ public class NotificationMailSender {
       helper.setReplyTo(replyTo);
     }
     helper.setSubject(content.subject());
-    helper.setText(content.body(), false);
+    helper.setText(content.plainTextBody(), content.htmlBody());
     mailSender.send(message);
   }
 
