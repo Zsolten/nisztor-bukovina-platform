@@ -64,6 +64,75 @@ describe('administrator routing and authentication', () => {
     )
   })
 
+  it('returns an email deep link to the selected booking after login', async () => {
+    const user = userEvent.setup()
+    const bookingId = '30000000-0000-0000-0000-000000000025'
+    const fetchMock = vi.mocked(fetch)
+    fetchMock
+      .mockResolvedValueOnce(
+        jsonResponse(200, {
+          accessToken: 'signed-admin-token',
+          expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+          tokenType: 'Bearer',
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse(200, {
+          id: bookingId,
+          publicReference: 'NB-0000000000000025',
+          guesthouse: {
+            id: '10000000-0000-0000-0000-000000000001',
+            name: 'Bukovina Panzió',
+          },
+          stay: {
+            checkInDate: '2026-09-10',
+            checkOutDate: '2026-09-12',
+            nights: 2,
+            adults: 2,
+            childrenAge3to10: 0,
+            childrenAge0to3: 0,
+          },
+          contact: {
+            name: 'Teszt Vendég',
+            email: 'vendeg@example.com',
+            phone: '+40 700 000 000',
+            preferredLanguage: 'hu',
+          },
+          services: { breakfastParticipants: 0, dinnerParticipants: 0 },
+          rooms: [],
+          priceSnapshot: {
+            accommodationTotal: 520,
+            adultAccommodationTotal: 520,
+            childAccommodationTotal: 0,
+            singleRoomSurcharge: 0,
+            breakfastTotal: 0,
+            dinnerTotal: 0,
+            totalPayable: 520,
+            currency: 'RON',
+          },
+          status: 'RECEIVED',
+          statusHistory: [],
+          guestNote: null,
+          internalNote: null,
+          createdAt: '2026-08-12T12:00:00Z',
+          updatedAt: '2026-08-12T12:00:00Z',
+        }),
+      )
+    const router = renderRoute(`/admin/bookings/${bookingId}`)
+
+    expect(await screen.findByRole('heading', { name: 'Üdvözöljük újra!' })).toBeVisible()
+    await signIn(user)
+
+    expect(await screen.findByRole('heading', { name: 'NB-0000000000000025' })).toBeVisible()
+    expect(router.state.location.pathname).toBe(`/admin/bookings/${bookingId}`)
+    const detailRequest = fetchMock.mock.calls.at(-1)
+    expect(detailRequest?.[0]).toBe(`/api/admin/bookings/${bookingId}`)
+    expect(new Headers(detailRequest?.[1]?.headers).get('Accept')).toBe('application/json')
+    expect(new Headers(detailRequest?.[1]?.headers).get('Authorization')).toBe(
+      'Bearer signed-admin-token',
+    )
+  })
+
   it('shows generic feedback for invalid credentials', async () => {
     const user = userEvent.setup()
     vi.mocked(fetch).mockResolvedValue(jsonResponse(401, { code: 'INVALID_ADMIN_CREDENTIALS' }))
@@ -133,6 +202,6 @@ describe('administrator routing and authentication', () => {
     await signIn(user)
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/admin/login'))
-    expect(screen.getByRole('alert')).toHaveTextContent('A munkamenet lejárt.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('A munkamenet lejárt.')
   })
 })

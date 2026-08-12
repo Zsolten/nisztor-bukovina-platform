@@ -1,6 +1,7 @@
 package com.bukovina.platform.support.notification;
 
 import com.bukovina.platform.accommodation.booking.model.BookingRequest;
+import com.bukovina.platform.accommodation.booking.model.BookingStatus;
 import com.bukovina.platform.accommodation.booking.service.BookingNotificationOutbox;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -49,6 +50,29 @@ public class DatabaseBookingNotificationOutbox implements BookingNotificationOut
         .forEach(recipient -> jobs.add(NotificationOutbox.admin(booking.getId(), recipient, now)));
     outboxRepository.saveAll(jobs);
     outboxRepository.flush();
+  }
+
+  @Override
+  public void enqueueBookingDecision(
+      BookingRequest booking, BookingStatus decision, String guestMessage) {
+    if (!properties.enabled()) {
+      return;
+    }
+    NotificationType type =
+        switch (decision) {
+          case CONFIRMED -> NotificationType.BOOKING_CONFIRMED_GUEST;
+          case REJECTED -> NotificationType.BOOKING_REJECTED_GUEST;
+          default -> throw new IllegalArgumentException("Unsupported booking decision");
+        };
+    outboxRepository.saveAndFlush(
+        NotificationOutbox.guestDecision(
+            booking.getId(),
+            type,
+            normalizeEmail(booking.getContactEmail()),
+            configurationDao.findPublicReplyTo(booking.getGuesthouseId()),
+            booking.getPreferredLanguage(),
+            guestMessage,
+            Instant.now()));
   }
 
   private String normalizeEmail(String email) {

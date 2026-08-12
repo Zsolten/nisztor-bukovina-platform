@@ -54,6 +54,45 @@ class BookingNotificationEmailFactoryTests {
   }
 
   @Test
+  void createsLocalizedDecisionTemplatesWithTheOptionalGuestMessage() {
+    NotificationEmailContent confirmed =
+        factory.decision(
+            booking(),
+            NotificationType.BOOKING_CONFIRMED_GUEST,
+            "hu",
+            "A szobát előkészítjük.",
+            "nisztorpanzio@gmail.com");
+    NotificationEmailContent rejected =
+        factory.decision(
+            booking(),
+            NotificationType.BOOKING_REJECTED_GUEST,
+            "en",
+            null,
+            "nisztorpanzio@gmail.com");
+    NotificationEmailContent romanianConfirmed =
+        factory.decision(
+            booking(),
+            NotificationType.BOOKING_CONFIRMED_GUEST,
+            "ro",
+            null,
+            "nisztorpanzio@gmail.com");
+
+    assertTrue(confirmed.plainTextBody().contains("Foglalási kérelmét visszaigazoltuk"));
+    assertTrue(confirmed.plainTextBody().contains("Szeretettel várjuk!"));
+    assertTrue(confirmed.plainTextBody().contains("A panzió üzenete: „A szobát előkészítjük.”"));
+    assertTrue(confirmed.plainTextBody().contains("Azonosító: NB-1234567890ABCDEF"));
+    assertTrue(confirmed.plainTextBody().contains("Időszak:"));
+    assertFalse(confirmed.plainTextBody().contains("Panzió:"));
+    assertFalse(confirmed.plainTextBody().contains("Szobák:"));
+    assertFalse(confirmed.plainTextBody().contains("Végösszeg:"));
+    assertTrue(confirmed.htmlBody().contains("href=\"mailto:nisztorpanzio@gmail.com\""));
+    assertTrue(rejected.plainTextBody().contains("could not be confirmed"));
+    assertFalse(rejected.plainTextBody().contains("Message from the guesthouse:"));
+    assertTrue(romanianConfirmed.plainTextBody().contains("Vă așteptăm cu drag!"));
+    assertFalse(romanianConfirmed.plainTextBody().contains("Total:"));
+  }
+
+  @Test
   void usesTheSameLocalizedTemplateForRomanianAndEnglishGuests() {
     NotificationEmailContent romanian =
         factory.guest(booking(), "ro", "raw-token", "nisztorpanzio@gmail.com");

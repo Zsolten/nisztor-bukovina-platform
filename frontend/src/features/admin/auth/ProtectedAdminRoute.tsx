@@ -6,9 +6,8 @@ export default function ProtectedAdminRoute() {
   const { isAuthenticated, sessionEndReason } = useAdminAuth()
 
   if (!isAuthenticated) {
-    return (
-      <Navigate replace to="/admin/login" state={{ from: location.pathname, sessionEndReason }} />
-    )
+    const returnPath = `${location.pathname}${location.search}${location.hash}`
+    return <Navigate replace to="/admin/login" state={{ from: returnPath, sessionEndReason }} />
   }
 
   return <Outlet />

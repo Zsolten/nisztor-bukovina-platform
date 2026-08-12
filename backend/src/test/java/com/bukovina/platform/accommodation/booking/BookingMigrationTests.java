@@ -35,6 +35,14 @@ class BookingMigrationTests {
   }
 
   @Test
+  void supportsGuestDecisionNotificationsAndTheirOptionalMessage() {
+    assertTrue(columnExists("notification_outbox", "guest_message"));
+    String constraints = constraintsFor("notification_outbox");
+    assertTrue(constraints.contains("BOOKING_CONFIRMED_GUEST"));
+    assertTrue(constraints.contains("BOOKING_REJECTED_GUEST"));
+  }
+
+  @Test
   void createsAdminFilteringIndexes() {
     List<String> indexDefinitions =
         jdbcTemplate.queryForList(

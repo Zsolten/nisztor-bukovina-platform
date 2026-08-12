@@ -57,6 +57,9 @@ public class NotificationOutbox {
   @Column(name = "token_initialization_vector", length = 64)
   private String tokenInitializationVector;
 
+  @Column(name = "guest_message")
+  private String guestMessage;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -117,6 +120,25 @@ public class NotificationOutbox {
         now);
   }
 
+  public static NotificationOutbox guestDecision(
+      UUID bookingRequestId,
+      NotificationType notificationType,
+      String recipient,
+      String replyTo,
+      String languageCode,
+      String guestMessage,
+      Instant now) {
+    if (notificationType != NotificationType.BOOKING_CONFIRMED_GUEST
+        && notificationType != NotificationType.BOOKING_REJECTED_GUEST) {
+      throw new IllegalArgumentException("Unsupported guest decision notification type");
+    }
+    NotificationOutbox notification =
+        new NotificationOutbox(
+            bookingRequestId, notificationType, recipient, replyTo, languageCode, null, now);
+    notification.guestMessage = guestMessage;
+    return notification;
+  }
+
   public void markProcessing(Instant now) {
     status = NotificationStatus.PROCESSING;
     attemptCount++;
@@ -132,6 +154,7 @@ public class NotificationOutbox {
     lastErrorCode = null;
     encryptedManagementToken = null;
     tokenInitializationVector = null;
+    guestMessage = null;
   }
 
   public void markFailed(Instant now, int maxAttempts, long initialDelaySeconds, String errorCode) {
@@ -141,6 +164,7 @@ public class NotificationOutbox {
       status = NotificationStatus.EXHAUSTED;
       encryptedManagementToken = null;
       tokenInitializationVector = null;
+      guestMessage = null;
       return;
     }
     status = NotificationStatus.RETRY;
@@ -182,6 +206,10 @@ public class NotificationOutbox {
 
   public String getLastErrorCode() {
     return lastErrorCode;
+  }
+
+  public String getGuestMessage() {
+    return guestMessage;
   }
 
   public EncryptedManagementToken getEncryptedManagementToken() {

@@ -63,9 +63,21 @@ public class NotificationDeliveryService {
 
   private NotificationEmailContent content(
       NotificationOutbox job, NotificationBookingView booking) {
-    if (job.getNotificationType() == NotificationType.BOOKING_RECEIVED_ADMIN) {
-      return emailFactory.admin(booking);
-    }
+    return switch (job.getNotificationType()) {
+      case BOOKING_RECEIVED_ADMIN -> emailFactory.admin(booking);
+      case BOOKING_CONFIRMED_GUEST, BOOKING_REJECTED_GUEST ->
+          emailFactory.decision(
+              booking,
+              job.getNotificationType(),
+              job.getLanguageCode(),
+              job.getGuestMessage(),
+              job.getReplyTo());
+      case BOOKING_RECEIVED_GUEST -> receivedGuestContent(job, booking);
+    };
+  }
+
+  private NotificationEmailContent receivedGuestContent(
+      NotificationOutbox job, NotificationBookingView booking) {
     EncryptedManagementToken encryptedToken = job.getEncryptedManagementToken();
     if (encryptedToken == null) {
       throw new TokenDecryptionException();

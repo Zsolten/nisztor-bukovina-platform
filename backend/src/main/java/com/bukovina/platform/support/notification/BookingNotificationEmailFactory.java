@@ -87,6 +87,53 @@ public class BookingNotificationEmailFactory {
             null));
   }
 
+  public NotificationEmailContent decision(
+      NotificationBookingView booking,
+      NotificationType notificationType,
+      String language,
+      String guestMessage,
+      String replyTo) {
+    boolean confirmed = notificationType == NotificationType.BOOKING_CONFIRMED_GUEST;
+    if (!confirmed && notificationType != NotificationType.BOOKING_REJECTED_GUEST) {
+      throw new IllegalArgumentException("Unsupported guest decision notification type");
+    }
+    DecisionCopy copy = decisionCopy(language, confirmed);
+    String intro = copy.intro();
+    if (guestMessage != null) {
+      intro += " " + copy.messageLabel() + ": „" + guestMessage + "”";
+    }
+    List<SummaryRow> rows =
+        confirmed
+            ? confirmationSummaryRows(booking, copy.labels())
+            : summaryRows(booking, copy.labels());
+    String contactUrl = "mailto:" + replyTo;
+    String contactText = copy.contactText().formatted(replyTo);
+    return new NotificationEmailContent(
+        copy.subject().formatted(booking.publicReference()),
+        plainText(
+            copy.title(),
+            copy.greeting().formatted(booking.contactName()),
+            intro,
+            copy.labels().summaryTitle(),
+            rows,
+            copy.button(),
+            contactUrl,
+            contactText),
+        html(
+            language,
+            copy.eyebrow(),
+            copy.title(),
+            copy.greeting().formatted(booking.contactName()),
+            intro,
+            booking.publicReference(),
+            copy.labels().reference(),
+            copy.labels().summaryTitle(),
+            rows,
+            copy.button(),
+            contactUrl,
+            contactText));
+  }
+
   private List<SummaryRow> summaryRows(NotificationBookingView booking, Labels labels) {
     List<SummaryRow> rows = new ArrayList<>();
     rows.add(new SummaryRow(labels.reference(), booking.publicReference(), false));
@@ -116,6 +163,17 @@ public class BookingNotificationEmailFactory {
     addMoney(rows, labels.dinner(), booking.dinnerTotal(), booking.currency(), false);
     addMoney(rows, labels.total(), booking.totalPayable(), booking.currency(), true);
     return rows;
+  }
+
+  private List<SummaryRow> confirmationSummaryRows(NotificationBookingView booking, Labels labels) {
+    return List.of(
+        new SummaryRow(labels.reference(), booking.publicReference(), false),
+        new SummaryRow(
+            labels.stay(),
+            formatDate(booking.checkInDate(), labels.locale())
+                + " – "
+                + formatDate(booking.checkOutDate(), labels.locale()),
+            false));
   }
 
   private void addCount(List<SummaryRow> rows, String label, int value) {
@@ -334,6 +392,77 @@ public class BookingNotificationEmailFactory {
     };
   }
 
+  private DecisionCopy decisionCopy(String language, boolean confirmed) {
+    return switch (language) {
+      case "ro" ->
+          confirmed
+              ? new DecisionCopy(
+                  "Cererea de rezervare %s a fost confirmată",
+                  "Rezervare confirmată",
+                  "Cererea dumneavoastră a fost confirmată",
+                  "Bună, %s!",
+                  "Pensiunea a confirmat cererea dumneavoastră de rezervare. Vă așteptăm cu drag!",
+                  "Mesajul pensiunii",
+                  "Scrieți pensiunii",
+                  "Dacă aveți întrebări, răspundeți la acest e-mail. Mesajul va fi trimis la %s.",
+                  labelsRo())
+              : new DecisionCopy(
+                  "Cererea de rezervare %s a fost respinsă",
+                  "Cerere respinsă",
+                  "Cererea dumneavoastră nu a putut fi confirmată",
+                  "Bună, %s!",
+                  "Pensiunea a respins cererea dumneavoastră de rezervare.",
+                  "Mesajul pensiunii",
+                  "Scrieți pensiunii",
+                  "Dacă aveți întrebări, răspundeți la acest e-mail. Mesajul va fi trimis la %s.",
+                  labelsRo());
+      case "en" ->
+          confirmed
+              ? new DecisionCopy(
+                  "Booking request %s confirmed",
+                  "Booking confirmed",
+                  "Your booking request has been confirmed",
+                  "Dear %s,",
+                  "The guesthouse has confirmed your booking request. We look forward to welcoming you!",
+                  "Message from the guesthouse",
+                  "Contact guesthouse",
+                  "If you have any questions, reply to this email. Your message will be sent to %s.",
+                  labelsEn())
+              : new DecisionCopy(
+                  "Booking request %s declined",
+                  "Request declined",
+                  "Your booking request could not be confirmed",
+                  "Dear %s,",
+                  "The guesthouse has declined your booking request.",
+                  "Message from the guesthouse",
+                  "Contact guesthouse",
+                  "If you have any questions, reply to this email. Your message will be sent to %s.",
+                  labelsEn());
+      default ->
+          confirmed
+              ? new DecisionCopy(
+                  "Foglalási kérelme visszaigazolva – %s",
+                  "Foglalás visszaigazolva",
+                  "Foglalási kérelmét visszaigazoltuk",
+                  "Kedves %s!",
+                  "A panzió visszaigazolta foglalási kérelmét. Szeretettel várjuk!",
+                  "A panzió üzenete",
+                  "Üzenet a panziónak",
+                  "Ha kérdése van, válaszoljon erre a levélre. A válasz a(z) %s címre érkezik.",
+                  labelsHu())
+              : new DecisionCopy(
+                  "Foglalási kérelme elutasítva – %s",
+                  "Kérelem elutasítva",
+                  "Foglalási kérelmét nem tudtuk visszaigazolni",
+                  "Kedves %s!",
+                  "A panzió elutasította foglalási kérelmét.",
+                  "A panzió üzenete",
+                  "Üzenet a panziónak",
+                  "Ha kérdése van, válaszoljon erre a levélre. A válasz a(z) %s címre érkezik.",
+                  labelsHu());
+    };
+  }
+
   private Labels labelsHu() {
     return new Labels(
         Locale.forLanguageTag("hu-HU"),
@@ -424,6 +553,17 @@ public class BookingNotificationEmailFactory {
       String title,
       String greeting,
       String intro,
+      String button,
+      String contactText,
+      Labels labels) {}
+
+  private record DecisionCopy(
+      String subject,
+      String eyebrow,
+      String title,
+      String greeting,
+      String intro,
+      String messageLabel,
       String button,
       String contactText,
       Labels labels) {}
