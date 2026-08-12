@@ -43,6 +43,11 @@ class BookingMigrationTests {
   }
 
   @Test
+  void storesExplicitManagementTokenRevocation() {
+    assertTrue(columnExists("booking_request", "management_token_revoked_at"));
+  }
+
+  @Test
   void createsAdminFilteringIndexes() {
     List<String> indexDefinitions =
         jdbcTemplate.queryForList(
