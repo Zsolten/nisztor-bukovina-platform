@@ -64,7 +64,10 @@ public class AdminBookingController {
       @RequestBody AdminBookingStatusUpdateRequest request,
       Authentication authentication) {
     workflowService.changeStatus(
-        bookingId, request == null ? null : request.status(), adminActor(authentication));
+        bookingId,
+        request == null ? null : request.status(),
+        request == null ? null : request.guestMessage(),
+        adminActor(authentication));
   }
 
   @PatchMapping("/{bookingId}/internal-note")

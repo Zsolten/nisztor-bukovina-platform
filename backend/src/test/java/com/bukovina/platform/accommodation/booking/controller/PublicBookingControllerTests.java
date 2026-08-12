@@ -26,7 +26,14 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-@SpringBootTest(properties = "DB_PASSWORD=test-password")
+@SpringBootTest(
+    properties = {
+      "DB_PASSWORD=test-password",
+      "booking.notification.enabled=true",
+      "booking.notification.token-encryption-key=MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=",
+      "booking.notification.from-address=sender@example.com",
+      "booking.notification.worker-delay=PT1H"
+    })
 @AutoConfigureMockMvc
 @Import(PostgreSqlTestContainerConfiguration.class)
 @Transactional
@@ -354,6 +361,7 @@ class PublicBookingControllerTests {
   void anonymouslyPersistsCompleteReceivedRequestAndLiteralNoteAtomically() throws Exception {
     UUID guesthouseId = guesthouseId("bukovina-panzio");
     UUID roomTypeId = roomTypeId("bukovina-panzio", "double");
+    addNotificationRecipient(guesthouseId, "ADMIN@EXAMPLE.COM");
 
     mockMvc
         .perform(
@@ -376,6 +384,17 @@ class PublicBookingControllerTests {
     assertEquals(1, count("booking_request"));
     assertEquals(1, count("booking_room_selection"));
     assertEquals(1, count("booking_status_history"));
+    assertEquals(2, count("notification_outbox"));
+    assertEquals(
+        1,
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM notification_outbox WHERE notification_type = 'BOOKING_RECEIVED_GUEST' AND recipient = 'guest@example.com' AND encrypted_management_token IS NOT NULL",
+            Integer.class));
+    assertEquals(
+        1,
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM notification_outbox WHERE notification_type = 'BOOKING_RECEIVED_ADMIN' AND recipient = 'admin@example.com'",
+            Integer.class));
     assertEquals(
         "RECEIVED",
         jdbcTemplate.queryForObject("SELECT status FROM booking_request", String.class));
@@ -402,6 +421,7 @@ class PublicBookingControllerTests {
     assertEquals(
         first.getResponse().getContentAsString(), second.getResponse().getContentAsString());
     assertEquals(1, count("booking_request"));
+    assertEquals(1, count("notification_outbox"));
 
     String changedBody = body.replace("  Teszt   Vendeg  ", "Masik Vendeg");
     mockMvc
@@ -413,6 +433,39 @@ class PublicBookingControllerTests {
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.code").value("IDEMPOTENCY_KEY_REUSED"));
     assertEquals(1, count("booking_request"));
+    assertEquals(1, count("notification_outbox"));
+  }
+
+  @Test
+  void snapshotsGuesthouseRecipientsForNewBookingsAndAllowsSharedAddresses() throws Exception {
+    UUID bukovinaId = guesthouseId("bukovina-panzio");
+    UUID nisztorId = guesthouseId("nisztor-panzio");
+    UUID roomTypeId = roomTypeId("bukovina-panzio", "double");
+    addNotificationRecipient(bukovinaId, "shared@example.com");
+    addNotificationRecipient(nisztorId, "shared@example.com");
+
+    submit(validSubmitJson(bukovinaId, roomTypeId, "700.00"), "recipient-snapshot-one");
+    jdbcTemplate.update(
+        "UPDATE guesthouse_notification_recipient SET active = FALSE WHERE guesthouse_id = ?",
+        bukovinaId);
+    addNotificationRecipient(bukovinaId, "new-admin@example.com");
+    submit(validSubmitJson(bukovinaId, roomTypeId, "700.00"), "recipient-snapshot-two");
+
+    assertEquals(
+        1,
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM notification_outbox WHERE notification_type = 'BOOKING_RECEIVED_ADMIN' AND recipient = 'shared@example.com'",
+            Integer.class));
+    assertEquals(
+        1,
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM notification_outbox WHERE notification_type = 'BOOKING_RECEIVED_ADMIN' AND recipient = 'new-admin@example.com'",
+            Integer.class));
+    assertEquals(
+        2,
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM guesthouse_notification_recipient WHERE email = 'shared@example.com'",
+            Integer.class));
   }
 
   @Test
@@ -635,6 +688,14 @@ class PublicBookingControllerTests {
         active,
         guesthouseSlug,
         code);
+  }
+
+  private void addNotificationRecipient(UUID guesthouseId, String email) {
+    jdbcTemplate.update(
+        "INSERT INTO guesthouse_notification_recipient (id, guesthouse_id, email) VALUES (?, ?, LOWER(?))",
+        UUID.randomUUID(),
+        guesthouseId,
+        email);
   }
 
   private int count(String table) {

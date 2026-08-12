@@ -294,7 +294,7 @@ paths:
               $ref: '#/components/schemas/AdminBookingStatusUpdateRequest'
       responses:
         '204':
-          description: Status changed and one administrator history entry was recorded.
+          description: Status changed and one administrator history entry was recorded. A confirmed or rejected decision also queues a localized guest notification.
         '400':
           description: The request is malformed or the requested status transition is invalid.
           content:
@@ -988,6 +988,10 @@ components:
         status:
           type: string
           enum: [UNDER_REVIEW, CONFIRMED, REJECTED]
+        guestMessage:
+          type: [string, 'null']
+          maxLength: 2000
+          description: Optional message included in the localized guest decision e-mail. Blank text is treated as no message.
     AdminBookingInternalNoteUpdateRequest:
       type: object
       additionalProperties: false
@@ -1007,6 +1011,7 @@ components:
             - INVALID_BOOKING_STATUS_TRANSITION
             - BOOKING_STATUS_REQUIRED
             - UNSUPPORTED_ADMIN_BOOKING_STATUS
+            - GUEST_MESSAGE_TOO_LONG
             - INTERNAL_NOTE_REQUIRED
             - INTERNAL_NOTE_TOO_LONG
             - INVALID_ADMIN_BOOKING_REQUEST

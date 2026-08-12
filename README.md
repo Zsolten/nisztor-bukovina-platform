@@ -26,6 +26,8 @@ Ez a repository a Nisztor-Bukovina Platform alkalmazását tartalmazza. A techni
 
 3. Az admin API futtatásához adj meg egy legalább 32 bájtos, Base64-kódolt `ADMIN_JWT_SECRET` értéket. Fejlesztői admin fiókhoz töltsd ki az `ADMIN_BOOTSTRAP_EMAIL` és `ADMIN_BOOTSTRAP_PASSWORD` mezőket, majd indítsd a backendet `SPRING_PROFILES_ACTIVE=dev` profillal. Ez a bootstrap csak új e-mail-címhez hoz létre admin fiókot.
 
+4. A foglalási e-mailek beállítását és a panziónkénti belső címzettek rögzítését a [foglalási értesítések útmutatója](docs/operations/booking-notifications.md) írja le.
+
 ## Adatbázis
 
 ```powershell

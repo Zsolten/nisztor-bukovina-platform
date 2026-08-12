@@ -131,8 +131,12 @@ export async function updateAdminBookingStatus(
   authorizedFetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>,
   bookingId: string,
   status: AdminBookingStatus,
+  guestMessage?: string,
 ) {
-  await patchAdminBooking(authorizedFetch, `/api/admin/bookings/${bookingId}/status`, { status })
+  await patchAdminBooking(authorizedFetch, `/api/admin/bookings/${bookingId}/status`, {
+    status,
+    ...(guestMessage === undefined ? {} : { guestMessage }),
+  })
 }
 
 export async function updateAdminBookingInternalNote(

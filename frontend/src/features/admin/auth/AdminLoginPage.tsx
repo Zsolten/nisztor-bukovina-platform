@@ -44,9 +44,10 @@ export default function AdminLoginPage() {
   const [feedback, setFeedback] = useState<LoginFeedback | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const state = location.state as LoginLocationState | null
+  const destination = state?.from?.startsWith('/admin/') ? state.from : '/admin/bookings'
 
   if (isAuthenticated) {
-    return <Navigate replace to="/admin/bookings" />
+    return <Navigate replace to={destination} />
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -56,7 +57,6 @@ export default function AdminLoginPage() {
 
     try {
       await login(email, password)
-      const destination = state?.from?.startsWith('/admin/') ? state.from : '/admin/bookings'
       navigate(destination, { replace: true })
     } catch (nextError) {
       setFeedback(loginErrorFeedback(nextError))

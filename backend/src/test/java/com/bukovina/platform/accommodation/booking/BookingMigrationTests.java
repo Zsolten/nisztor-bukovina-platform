@@ -23,11 +23,23 @@ class BookingMigrationTests {
     assertTrue(tableExists("booking_request"));
     assertTrue(tableExists("booking_room_selection"));
     assertTrue(tableExists("booking_status_history"));
+    assertTrue(tableExists("guesthouse_notification_recipient"));
+    assertTrue(tableExists("notification_outbox"));
 
     assertTrue(foreignKeyExists("booking_request", "guesthouse"));
     assertTrue(foreignKeyExists("booking_room_selection", "booking_request"));
     assertTrue(foreignKeyExists("booking_room_selection", "room_type"));
     assertTrue(foreignKeyExists("booking_status_history", "booking_request"));
+    assertTrue(foreignKeyExists("guesthouse_notification_recipient", "guesthouse"));
+    assertTrue(foreignKeyExists("notification_outbox", "booking_request"));
+  }
+
+  @Test
+  void supportsGuestDecisionNotificationsAndTheirOptionalMessage() {
+    assertTrue(columnExists("notification_outbox", "guest_message"));
+    String constraints = constraintsFor("notification_outbox");
+    assertTrue(constraints.contains("BOOKING_CONFIRMED_GUEST"));
+    assertTrue(constraints.contains("BOOKING_REJECTED_GUEST"));
   }
 
   @Test
