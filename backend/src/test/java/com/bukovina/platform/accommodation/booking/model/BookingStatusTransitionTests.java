@@ -57,7 +57,13 @@ class BookingStatusTransitionTests {
         "en",
         null,
         new BookingPriceBreakdown(
-            amount("520"), amount("0"), amount("0"), amount("0"), amount("520")),
+            amount("520"),
+            amount("520"),
+            amount("0"),
+            amount("0"),
+            amount("0"),
+            amount("0"),
+            amount("520")),
         "c".repeat(64),
         Instant.parse("2030-02-01T00:00:00Z"));
   }

@@ -48,6 +48,8 @@ class BookingPriceCalculatorTests {
     BookingQuoteResponse quote = calculator.calculate(booking(2, 1, 1, 0, 0, 0), "hu");
 
     assertEquals(new BigDecimal("1072.50"), quote.priceBreakdown().accommodationTotal());
+    assertEquals(new BigDecimal("780.00"), quote.priceBreakdown().adultAccommodationTotal());
+    assertEquals(new BigDecimal("292.50"), quote.priceBreakdown().childAccommodationTotal());
     assertEquals(new BigDecimal("1072.50"), quote.priceBreakdown().totalPayable());
     assertEquals("children_under_10_accommodation", quote.lines().get(1).code());
     assertEquals(new BigDecimal("97.50"), quote.lines().get(1).unitAmount());

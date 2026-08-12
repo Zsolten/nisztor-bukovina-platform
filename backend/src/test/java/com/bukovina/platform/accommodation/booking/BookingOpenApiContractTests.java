@@ -24,6 +24,8 @@ class BookingOpenApiContractTests {
     assertTrue(contract.contains("BookingValidationError"));
     assertTrue(contract.contains("acceptedTotal:"));
     assertTrue(contract.contains("accommodationTotal:"));
+    assertTrue(contract.contains("adultAccommodationTotal:"));
+    assertTrue(contract.contains("childAccommodationTotal:"));
     assertFalse(contract.contains("accommodationTaxRate:"));
     assertFalse(contract.contains("cityTaxAmount:"));
     assertTrue(contract.contains("enum: [RECEIVED]"));
