@@ -3608,6 +3608,294 @@ img {
   font-size: 0.78rem;
 }
 
+.booking-management-page {
+  width: min(100% - 3rem, 1180px);
+  min-height: 70vh;
+  margin: 0 auto;
+  padding: clamp(7rem, 9vw, 8.25rem) 0 clamp(3rem, 5vw, 5rem);
+}
+
+.booking-management-heading {
+  padding-bottom: 1.4rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.booking-management-heading > p,
+.booking-management-action > p {
+  margin: 0 0 0.35rem;
+  color: var(--brick);
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.booking-management-heading h1 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(2.25rem, 5vw, 4rem);
+  font-weight: 500;
+}
+
+.booking-management-heading > div {
+  display: flex;
+  margin-top: 0.85rem;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.booking-management-heading span {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.booking-management-heading strong {
+  padding: 0.35rem 0.55rem;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--gold) 20%, transparent);
+  color: var(--ink);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+}
+
+.booking-management-heading strong[data-status='CONFIRMED'] {
+  background: color-mix(in srgb, var(--forest) 16%, transparent);
+  color: var(--forest);
+}
+
+.booking-management-heading strong[data-status='REJECTED'],
+.booking-management-heading strong[data-status='CANCELLED'] {
+  background: color-mix(in srgb, var(--brick) 13%, transparent);
+  color: var(--brick);
+}
+
+.booking-management-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 350px);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  padding-top: 2rem;
+  align-items: start;
+}
+
+.booking-management-summary {
+  display: grid;
+  gap: 2rem;
+}
+
+.booking-management-summary h2,
+.booking-management-action h2 {
+  margin: 0 0 1rem;
+  color: var(--forest);
+  font-family: var(--serif);
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.booking-management-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.booking-management-facts article {
+  display: grid;
+  min-width: 0;
+  padding: 1rem;
+  gap: 0.25rem;
+  border-right: 1px solid var(--line);
+}
+
+.booking-management-facts article:last-child {
+  border-right: 0;
+}
+
+.booking-management-facts svg,
+.booking-management-details svg {
+  width: 19px;
+  height: 19px;
+  margin-bottom: 0.3rem;
+  color: var(--forest);
+}
+
+.booking-management-facts span,
+.booking-management-details strong {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.booking-management-facts strong {
+  font-size: 0.88rem;
+}
+
+.booking-management-details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+}
+
+.booking-management-details h2 {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+  padding-bottom: 0.8rem;
+  background: var(--paper);
+}
+
+.booking-management-details > div {
+  display: grid;
+  padding: 1rem;
+  gap: 0.3rem;
+  background: var(--paper);
+}
+
+.booking-management-details span {
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.booking-management-action {
+  position: sticky;
+  top: 6.5rem;
+  padding: 1.35rem;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--gold);
+  background: var(--paper-light);
+}
+
+.booking-management-action dl {
+  display: grid;
+  margin: 1.2rem 0;
+  padding: 1rem 0;
+  gap: 0.55rem;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-size: 0.8rem;
+}
+
+.booking-management-action dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.booking-management-action dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.booking-management-total {
+  display: block;
+  color: var(--forest);
+  font-family: var(--serif);
+  font-size: 2.15rem;
+  font-weight: 500;
+}
+
+.booking-management-cancellation > button,
+.booking-management-cancellation [role='alertdialog'] button {
+  min-height: 44px;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--brick);
+  background: transparent;
+  color: var(--brick);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.booking-management-cancellation > button {
+  width: 100%;
+}
+
+.booking-management-cancellation [role='alertdialog'] {
+  padding: 1rem;
+  border-left: 3px solid var(--brick);
+  background: color-mix(in srgb, var(--brick) 6%, var(--paper-light));
+}
+
+.booking-management-cancellation h3,
+.booking-management-contact h3 {
+  margin: 0 0 0.4rem;
+  font-family: var(--serif);
+  font-size: 1.05rem;
+}
+
+.booking-management-cancellation p,
+.booking-management-contact p,
+.booking-management-closed {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.booking-management-cancellation [role='alertdialog'] > div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.booking-management-cancellation [role='alertdialog'] button:first-child {
+  background: var(--brick);
+  color: var(--paper-light);
+}
+
+.booking-management-contact {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.booking-management-contact a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--forest);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.booking-management-contact svg,
+.booking-management-payment svg {
+  width: 17px;
+  height: 17px;
+}
+
+.booking-management-payment {
+  display: flex;
+  margin: 1rem 0 0;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.booking-management-state {
+  width: min(100%, 620px);
+  margin: 0 auto;
+  padding: 2rem;
+  border: 1px solid var(--line);
+  background: var(--paper-light);
+  text-align: center;
+}
+
+.booking-management-state h1 {
+  font-family: var(--serif);
+  font-size: 2rem;
+  font-weight: 500;
+}
+
+.booking-management-state a {
+  color: var(--brick);
+  font-weight: 700;
+}
+
+.booking-management-success svg {
+  color: var(--forest);
+}
+
 @keyframes booking-spin {
   to {
     transform: rotate(360deg);
@@ -3621,6 +3909,26 @@ img {
 
   .booking-review-summary {
     position: static;
+  }
+
+  .booking-management-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .booking-management-action {
+    position: static;
+  }
+
+  .booking-management-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .booking-management-facts article:nth-child(2) {
+    border-right: 0;
+  }
+
+  .booking-management-facts article:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--line);
   }
 }
 
@@ -3641,6 +3949,23 @@ img {
 
   .booking-success-summary dd {
     text-align: left;
+  }
+
+  .booking-management-page {
+    width: min(100% - 2rem, 1180px);
+  }
+
+  .booking-management-heading > div {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .booking-management-details {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .booking-management-details h2 {
+    grid-column: auto;
   }
 }
 

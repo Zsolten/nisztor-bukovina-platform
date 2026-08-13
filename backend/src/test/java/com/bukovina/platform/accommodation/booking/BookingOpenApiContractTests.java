@@ -20,6 +20,8 @@ class BookingOpenApiContractTests {
 
     assertTrue(paths.containsKey("/booking-quotes"));
     assertTrue(paths.containsKey("/booking-requests"));
+    assertTrue(paths.containsKey("/booking-management/{token}"));
+    assertTrue(paths.containsKey("/booking-management/{token}/cancellation"));
     assertTrue(contract.contains("name: Idempotency-Key"));
     assertTrue(contract.contains("BookingValidationError"));
     assertTrue(contract.contains("acceptedTotal:"));
@@ -30,5 +32,7 @@ class BookingOpenApiContractTests {
     assertFalse(contract.contains("cityTaxAmount:"));
     assertTrue(contract.contains("enum: [RECEIVED]"));
     assertFalse(contract.contains("PENDING_EMAIL_VERIFICATION"));
+    assertTrue(contract.contains("BOOKING_MANAGEMENT_LINK_INVALID"));
+    assertTrue(contract.contains("token was revoked"));
   }
 }

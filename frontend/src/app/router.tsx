@@ -7,6 +7,7 @@ import AdminLoginPage from '../features/admin/auth/AdminLoginPage'
 import ProtectedAdminRoute from '../features/admin/auth/ProtectedAdminRoute'
 import AdminShell from '../features/admin/layout/AdminShell'
 import BookingPage from '../features/booking/BookingPage'
+import BookingManagementPage from '../features/booking/BookingManagementPage'
 import BookingRequestSuccessPage from '../features/booking/BookingRequestSuccessPage'
 import { DEFAULT_LANGUAGE, readPreferredLanguage } from '../i18n/languages'
 import LanguageLayout from './LanguageLayout'
@@ -75,6 +76,10 @@ export const appRoutes: RouteObject[] = [
       {
         path: 'booking-request-success',
         element: <BookingRequestSuccessPage />,
+      },
+      {
+        path: 'booking-management/:token',
+        element: <BookingManagementPage />,
       },
     ],
   },
