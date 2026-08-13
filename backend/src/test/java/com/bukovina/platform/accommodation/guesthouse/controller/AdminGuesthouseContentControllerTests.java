@@ -81,7 +81,8 @@ class AdminGuesthouseContentControllerTests {
     mockMvc
         .perform(get("/api/guesthouses/nisztor-panzio").param("lang", "en"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.name").value("Updated English name"));
+        .andExpect(jsonPath("$.name").value("Updated English name"))
+        .andExpect(jsonPath("$.pageText.storyTitle").value("Bemutatkozás címe"));
     mockMvc
         .perform(get("/api/guesthouses/nisztor-panzio").param("lang", "hu"))
         .andExpect(status().isOk())
@@ -201,8 +202,19 @@ class AdminGuesthouseContentControllerTests {
           "shortDescription": "Rövid leírás",
           "description": "Részletes leírás",
           "roomDescription": "Szobák bevezetője",
+          "storyEyebrow": "Bemutatkozás label",
+          "storyTitle": "Bemutatkozás címe",
+          "diningEyebrow": "Étkezés label",
+          "diningTitle": "Étkezés címe",
+          "diningDescription": "Étkezés leírása",
+          "amenitiesTitle": "Szolgáltatások",
+          "roomTypesTitle": "Szobatípusok",
+          "pricingTitle": "Árak",
+          "historyEyebrow": "Örökség",
           "historyTitle": "Történet címe",
-          "historyText": "Történet szövege"
+          "historyText": "Történet szövege",
+          "galleryTitle": "Képgaléria",
+          "galleryHint": "Válasszon képet."
         }
         """
         .formatted(version, name);
@@ -216,8 +228,19 @@ class AdminGuesthouseContentControllerTests {
           "shortDescription": "Rövid leírás",
           "description": "Részletes leírás",
           "roomDescription": "Szobák bevezetője",
+          "storyEyebrow": "Bemutatkozás label",
+          "storyTitle": "Bemutatkozás címe",
+          "diningEyebrow": "Étkezés label",
+          "diningTitle": "Étkezés címe",
+          "diningDescription": "Étkezés leírása",
+          "amenitiesTitle": "Szolgáltatások",
+          "roomTypesTitle": "Szobatípusok",
+          "pricingTitle": "Árak",
+          "historyEyebrow": "Örökség",
           "historyTitle": "%s",
-          "historyText": "Történet szövege"
+          "historyText": "Történet szövege",
+          "galleryTitle": "Képgaléria",
+          "galleryHint": "Válasszon képet."
         }
         """
         .formatted(historyTitle);

@@ -63,8 +63,19 @@ public class AdminGuesthouseContentService {
         request.shortDescription().trim(),
         request.description().trim(),
         request.roomDescription().trim(),
+        request.storyEyebrow().trim(),
+        request.storyTitle().trim(),
+        request.diningEyebrow().trim(),
+        request.diningTitle().trim(),
+        request.diningDescription().trim(),
+        request.amenitiesTitle().trim(),
+        request.roomTypesTitle().trim(),
+        request.pricingTitle().trim(),
+        request.historyEyebrow().trim(),
         request.historyTitle().trim(),
-        request.historyText().trim());
+        request.historyText().trim(),
+        request.galleryTitle().trim(),
+        request.galleryHint().trim());
 
     try {
       return toTranslationResponse(translationRepository.saveAndFlush(translation));
@@ -96,7 +107,8 @@ public class AdminGuesthouseContentService {
   }
 
   private AdminGuesthouseTranslationResponse emptyTranslation(String language) {
-    return new AdminGuesthouseTranslationResponse(language, null, "", "", "", "", "", "");
+    return new AdminGuesthouseTranslationResponse(
+        language, null, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
   }
 
   private AdminGuesthouseTranslationResponse toTranslationResponse(
@@ -108,7 +120,18 @@ public class AdminGuesthouseContentService {
         translation.getShortDescription(),
         translation.getDescription(),
         translation.getRoomDescription(),
+        translation.getStoryEyebrow(),
+        translation.getStoryTitle(),
+        translation.getDiningEyebrow(),
+        translation.getDiningTitle(),
+        translation.getDiningDescription(),
+        translation.getAmenitiesTitle(),
+        translation.getRoomTypesTitle(),
+        translation.getPricingTitle(),
+        translation.getHistoryEyebrow(),
         translation.getHistoryTitle(),
-        translation.getHistoryText());
+        translation.getHistoryText(),
+        translation.getGalleryTitle(),
+        translation.getGalleryHint());
   }
 }

@@ -666,6 +666,7 @@ components:
           required:
             - description
             - roomDescription
+            - pageText
             - images
             - history
             - contacts
@@ -678,6 +679,8 @@ components:
               type: string
             roomDescription:
               type: string
+            pageText:
+              $ref: '#/components/schemas/GuesthousePageText'
             images:
               type: array
               minItems: 1
@@ -1186,6 +1189,22 @@ components:
           maxItems: 3
           items:
             $ref: '#/components/schemas/AdminGuesthouseTranslation'
+    GuesthousePageText:
+      type: object
+      additionalProperties: false
+      required: [storyEyebrow, storyTitle, diningEyebrow, diningTitle, diningDescription, amenitiesTitle, roomTypesTitle, pricingTitle, historyEyebrow, galleryTitle, galleryHint]
+      properties:
+        storyEyebrow: { type: string }
+        storyTitle: { type: string }
+        diningEyebrow: { type: string }
+        diningTitle: { type: string }
+        diningDescription: { type: string }
+        amenitiesTitle: { type: string }
+        roomTypesTitle: { type: string }
+        pricingTitle: { type: string }
+        historyEyebrow: { type: string }
+        galleryTitle: { type: string }
+        galleryHint: { type: string }
     AdminGuesthouseTranslation:
       type: object
       additionalProperties: false
@@ -1196,8 +1215,19 @@ components:
         - shortDescription
         - description
         - roomDescription
+        - storyEyebrow
+        - storyTitle
+        - diningEyebrow
+        - diningTitle
+        - diningDescription
+        - amenitiesTitle
+        - roomTypesTitle
+        - pricingTitle
+        - historyEyebrow
         - historyTitle
         - historyText
+        - galleryTitle
+        - galleryHint
       properties:
         language: { type: string, enum: [hu, ro, en] }
         version:
@@ -1209,8 +1239,19 @@ components:
         shortDescription: { type: string, maxLength: 500 }
         description: { type: string, maxLength: 5000 }
         roomDescription: { type: string, maxLength: 3000 }
+        storyEyebrow: { type: string, maxLength: 240 }
+        storyTitle: { type: string, maxLength: 240 }
+        diningEyebrow: { type: string, maxLength: 240 }
+        diningTitle: { type: string, maxLength: 240 }
+        diningDescription: { type: string, maxLength: 1000 }
+        amenitiesTitle: { type: string, maxLength: 240 }
+        roomTypesTitle: { type: string, maxLength: 240 }
+        pricingTitle: { type: string, maxLength: 240 }
+        historyEyebrow: { type: string, maxLength: 240 }
         historyTitle: { type: string, maxLength: 240 }
         historyText: { type: string, maxLength: 5000 }
+        galleryTitle: { type: string, maxLength: 240 }
+        galleryHint: { type: string, maxLength: 500 }
     AdminGuesthouseTranslationUpdate:
       type: object
       additionalProperties: false
@@ -1220,8 +1261,19 @@ components:
         - shortDescription
         - description
         - roomDescription
+        - storyEyebrow
+        - storyTitle
+        - diningEyebrow
+        - diningTitle
+        - diningDescription
+        - amenitiesTitle
+        - roomTypesTitle
+        - pricingTitle
+        - historyEyebrow
         - historyTitle
         - historyText
+        - galleryTitle
+        - galleryHint
       properties:
         version:
           type: [integer, 'null']
@@ -1231,8 +1283,19 @@ components:
         shortDescription: { type: string, minLength: 1, maxLength: 500 }
         description: { type: string, minLength: 1, maxLength: 5000 }
         roomDescription: { type: string, minLength: 1, maxLength: 3000 }
+        storyEyebrow: { type: string, minLength: 1, maxLength: 240 }
+        storyTitle: { type: string, minLength: 1, maxLength: 240 }
+        diningEyebrow: { type: string, minLength: 1, maxLength: 240 }
+        diningTitle: { type: string, minLength: 1, maxLength: 240 }
+        diningDescription: { type: string, minLength: 1, maxLength: 1000 }
+        amenitiesTitle: { type: string, minLength: 1, maxLength: 240 }
+        roomTypesTitle: { type: string, minLength: 1, maxLength: 240 }
+        pricingTitle: { type: string, minLength: 1, maxLength: 240 }
+        historyEyebrow: { type: string, minLength: 1, maxLength: 240 }
         historyTitle: { type: string, minLength: 1, maxLength: 240 }
         historyText: { type: string, minLength: 1, maxLength: 5000 }
+        galleryTitle: { type: string, minLength: 1, maxLength: 240 }
+        galleryHint: { type: string, minLength: 1, maxLength: 500 }
     AdminGuesthouseContentError:
       type: object
       additionalProperties: false
