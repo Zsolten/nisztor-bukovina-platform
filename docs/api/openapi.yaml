@@ -350,6 +350,83 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AdminBookingError'
+  /admin/guesthouses/content:
+    get:
+      operationId: listAdminGuesthouseContent
+      summary: List editable content for every guesthouse
+      description: Returns active and inactive guesthouses with raw HU, RO, and EN translations. Missing translations are returned as empty editable records without applying public fallback.
+      tags: [Administration]
+      security:
+        - AdminBearerAuth: []
+      responses:
+        '200':
+          description: Guesthouses in display order with all editable translations.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminGuesthouseContent'
+        '401':
+          description: Administrator authentication is missing or invalid.
+        '403':
+          description: The authenticated account is not an administrator.
+  /admin/guesthouses/{guesthouseId}/translations/{language}:
+    put:
+      operationId: updateAdminGuesthouseTranslation
+      summary: Create or replace one guesthouse translation
+      description: Uses a per-translation version for optimistic concurrency. A missing translation is created when version is null.
+      tags: [Administration]
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - name: guesthouseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: language
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [hu, ro, en]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminGuesthouseTranslationUpdate'
+      responses:
+        '200':
+          description: Saved translation with its current version.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminGuesthouseTranslation'
+        '400':
+          description: Unsupported language, malformed input, or field validation failure.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminGuesthouseContentError'
+        '401':
+          description: Administrator authentication is missing or invalid.
+        '403':
+          description: The authenticated account is not an administrator.
+        '404':
+          description: No guesthouse exists with the supplied identifier.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminGuesthouseContentError'
+        '409':
+          description: The translation was changed after the administrator loaded it.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminGuesthouseContentError'
 components:
   securitySchemes:
     AdminBearerAuth:
@@ -980,6 +1057,89 @@ components:
         code:
           type: string
           enum: [ADMIN_BOOKING_NOT_FOUND, INVALID_ADMIN_BOOKING_QUERY]
+    AdminGuesthouseContent:
+      type: object
+      additionalProperties: false
+      required: [id, slug, active, translations]
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        active: { type: boolean }
+        translations:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items:
+            $ref: '#/components/schemas/AdminGuesthouseTranslation'
+    AdminGuesthouseTranslation:
+      type: object
+      additionalProperties: false
+      required:
+        - language
+        - version
+        - name
+        - shortDescription
+        - description
+        - roomDescription
+        - historyTitle
+        - historyText
+      properties:
+        language: { type: string, enum: [hu, ro, en] }
+        version:
+          type: [integer, 'null']
+          format: int64
+          minimum: 0
+          description: Null only when the language-specific translation does not exist yet.
+        name: { type: string, maxLength: 160 }
+        shortDescription: { type: string, maxLength: 500 }
+        description: { type: string, maxLength: 5000 }
+        roomDescription: { type: string, maxLength: 3000 }
+        historyTitle: { type: string, maxLength: 240 }
+        historyText: { type: string, maxLength: 5000 }
+    AdminGuesthouseTranslationUpdate:
+      type: object
+      additionalProperties: false
+      required:
+        - version
+        - name
+        - shortDescription
+        - description
+        - roomDescription
+        - historyTitle
+        - historyText
+      properties:
+        version:
+          type: [integer, 'null']
+          format: int64
+          minimum: 0
+        name: { type: string, minLength: 1, maxLength: 160 }
+        shortDescription: { type: string, minLength: 1, maxLength: 500 }
+        description: { type: string, minLength: 1, maxLength: 5000 }
+        roomDescription: { type: string, minLength: 1, maxLength: 3000 }
+        historyTitle: { type: string, minLength: 1, maxLength: 240 }
+        historyText: { type: string, minLength: 1, maxLength: 5000 }
+    AdminGuesthouseContentError:
+      type: object
+      additionalProperties: false
+      required: [code, fieldErrors]
+      properties:
+        code:
+          type: string
+          enum:
+            - ADMIN_GUESTHOUSE_NOT_FOUND
+            - UNSUPPORTED_CONTENT_LANGUAGE
+            - ADMIN_CONTENT_VALIDATION_FAILED
+            - INVALID_ADMIN_CONTENT_REQUEST
+            - ADMIN_CONTENT_VERSION_CONFLICT
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: string
+            enum: [REQUIRED, TOO_LONG]
+        currentContent:
+          oneOf:
+            - $ref: '#/components/schemas/AdminGuesthouseTranslation'
+            - type: 'null'
     AdminBookingStatusUpdateRequest:
       type: object
       additionalProperties: false
