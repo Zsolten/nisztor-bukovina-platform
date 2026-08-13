@@ -11,6 +11,7 @@ import com.bukovina.platform.accommodation.guesthouse.model.GuesthouseTranslatio
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,7 +80,7 @@ public class AdminGuesthouseContentService {
 
     try {
       return toTranslationResponse(translationRepository.saveAndFlush(translation));
-    } catch (OptimisticLockingFailureException exception) {
+    } catch (OptimisticLockingFailureException | DataIntegrityViolationException exception) {
       throw new AdminGuesthouseContentConflictException(null);
     }
   }
