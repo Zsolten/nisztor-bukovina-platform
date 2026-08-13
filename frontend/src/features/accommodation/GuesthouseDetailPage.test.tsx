@@ -93,6 +93,10 @@ describe('GuesthouseDetailPage', () => {
       screen.getByRole('heading', { name: 'Ételek, amelyek visszahívják vendégeinket' }),
     ).toBeVisible()
     expect(screen.getByRole('heading', { name: 'Szobatípusok' })).toBeVisible()
+    expect(
+      screen.getByRole('heading', { name: 'Bukovinai székely örökség Csernakeresztúron' }),
+    ).toBeVisible()
+    expect(screen.getByText('A hagyományokat nemzedékről nemzedékre továbbadják.')).toBeVisible()
     expect(screen.getByRole('heading', { name: 'Szobai kényelem' })).toBeVisible()
     expect(screen.getByRole('heading', { name: 'Étkezés és konyha' })).toBeVisible()
     expect(screen.getByText('130 RON')).toBeVisible()

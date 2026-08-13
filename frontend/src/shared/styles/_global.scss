@@ -613,6 +613,24 @@ img {
   line-height: 1;
 }
 
+.history-sheet {
+  display: grid;
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr);
+  gap: clamp(2rem, 7vw, 7rem);
+}
+
+.history-sheet .detail-sheet-heading {
+  margin-bottom: 0;
+}
+
+.history-text {
+  max-width: 68ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.85;
+}
+
 .quick-facts-sheet {
   z-index: 3;
   width: 100%;
@@ -2846,6 +2864,10 @@ img {
     width: 100%;
     padding: 4rem 0;
     transform: none;
+  }
+  .history-sheet {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
   .quick-facts-sheet {
     width: 100%;
