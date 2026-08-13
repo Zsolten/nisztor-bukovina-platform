@@ -204,6 +204,25 @@ describe('AdminGuesthouseContentEditor', () => {
     expect(authorizedFetch).toHaveBeenCalledTimes(1)
   })
 
+  it('uses the branded dialog before leaving a page with unsaved changes', async () => {
+    const user = userEvent.setup()
+    const authorizedFetch = vi.fn().mockResolvedValue(response(200, content))
+    const router = renderEditor(authorizedFetch)
+
+    const name = await screen.findByLabelText('Panzió neve')
+    await user.clear(name)
+    await user.type(name, 'Módosított név')
+    await router.navigate('/admin/bookings')
+
+    expect(await screen.findByRole('heading', { name: 'Elveti a módosításokat?' })).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Maradok az oldalon' }))
+    expect(router.state.location.pathname).toBe('/admin/content')
+
+    await router.navigate('/admin/bookings')
+    await user.click(await screen.findByRole('button', { name: 'Kilépés mentés nélkül' }))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/admin/bookings'))
+  })
+
   it('requires an explicit action before overwriting a concurrent update', async () => {
     const user = userEvent.setup()
     const currentContent = { ...hu, version: 1, name: 'Másik admin változata' }

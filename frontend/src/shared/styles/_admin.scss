@@ -1217,6 +1217,77 @@
   gap: 1.25rem;
 }
 
+.admin-unsaved-changes-modal {
+  .modal-dialog {
+    max-width: 29rem;
+  }
+}
+
+.admin-unsaved-changes-modal-content {
+  overflow: hidden;
+  border: 1px solid rgba($forest-dark, 0.16);
+  border-radius: 0.65rem;
+  background: $paper-light;
+  box-shadow: $shadow;
+
+  .modal-body {
+    padding: 2rem;
+  }
+
+  .admin-eyebrow {
+    margin-top: 1.25rem;
+  }
+
+  h2 {
+    margin: 0;
+    color: $forest-dark;
+    font-family: $serif;
+    font-size: 1.75rem;
+  }
+
+  .modal-body > p:last-child {
+    max-width: 25rem;
+    margin: 0.75rem 0 0;
+    color: $muted;
+    line-height: 1.6;
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.65rem;
+    padding: 1rem 2rem 1.5rem;
+    border-top: 0;
+  }
+
+  .btn {
+    min-height: 2.75rem;
+    border-radius: 0.4rem;
+    font-weight: 700;
+  }
+}
+
+.admin-unsaved-changes-icon {
+  display: grid;
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 0.5rem;
+  background: rgba($gold, 0.2);
+  color: darken($gold, 18%);
+  place-items: center;
+}
+
+.admin-unsaved-changes-leave {
+  border-color: $brick;
+  background: $brick;
+
+  &:hover,
+  &:focus-visible {
+    border-color: darken($brick, 8%);
+    background: darken($brick, 8%);
+  }
+}
+
 .admin-content-heading {
   display: flex;
   align-items: end;
@@ -1868,6 +1939,22 @@
     align-items: start;
     flex-direction: column;
     gap: 0.75rem;
+  }
+
+  .admin-unsaved-changes-modal-content {
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .modal-footer {
+      display: grid;
+      padding: 0 1.5rem 1.5rem;
+      grid-template-columns: 1fr;
+
+      .btn {
+        width: 100%;
+      }
+    }
   }
 
   .admin-content-toolbar,

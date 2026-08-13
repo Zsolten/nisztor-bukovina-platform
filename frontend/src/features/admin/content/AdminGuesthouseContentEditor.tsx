@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react'
-import { Alert, Badge, Button, Form, Spinner } from 'react-bootstrap'
+import { Alert, Badge, Button, Form, Modal, Spinner } from 'react-bootstrap'
 import {
+  AlertTriangle,
   BedDouble,
   BookOpen,
   Check,
@@ -194,6 +195,7 @@ export default function AdminGuesthouseContentEditor() {
     message: string
   } | null>(null)
   const [conflict, setConflict] = useState<AdminGuesthouseTranslation | null>(null)
+  const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] = useState(false)
 
   const currentKey = guesthouseId ? translationKey(guesthouseId, language) : ''
   const draft = drafts[currentKey]
@@ -250,12 +252,18 @@ export default function AdminGuesthouseContentEditor() {
   const blocker = useBlocker(dirty)
   useEffect(() => {
     if (blocker.state !== 'blocked') return
-    if (window.confirm('Nem mentett módosításai vannak. Biztosan elhagyja az oldalt?')) {
-      blocker.proceed()
-    } else {
-      blocker.reset()
-    }
+    setShowUnsavedChangesDialog(true)
   }, [blocker])
+
+  function stayOnPage() {
+    setShowUnsavedChangesDialog(false)
+    blocker.reset?.()
+  }
+
+  function leaveWithoutSaving() {
+    setShowUnsavedChangesDialog(false)
+    blocker.proceed?.()
+  }
 
   function updateField(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const field = event.target.name as ContentField
@@ -541,6 +549,31 @@ export default function AdminGuesthouseContentEditor() {
           </Form>
         </aside>
       </div>
+
+      <Modal
+        centered
+        className="admin-unsaved-changes-modal"
+        contentClassName="admin-unsaved-changes-modal-content"
+        onHide={stayOnPage}
+        show={showUnsavedChangesDialog}
+      >
+        <Modal.Body>
+          <span className="admin-unsaved-changes-icon" aria-hidden="true">
+            <AlertTriangle size={22} />
+          </span>
+          <p className="admin-eyebrow">Mentetlen szerkesztés</p>
+          <h2>Elveti a módosításokat?</h2>
+          <p>A kiválasztott panzió fordításán végzett változtatások nem lettek mentve.</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-secondary" onClick={stayOnPage}>
+            Maradok az oldalon
+          </Button>
+          <Button className="admin-unsaved-changes-leave" onClick={leaveWithoutSaving}>
+            Kilépés mentés nélkül
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </section>
   )
 }
