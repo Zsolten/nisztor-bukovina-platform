@@ -7,8 +7,19 @@ export interface AdminGuesthouseTranslation {
   shortDescription: string
   description: string
   roomDescription: string
+  storyEyebrow: string
+  storyTitle: string
+  diningEyebrow: string
+  diningTitle: string
+  diningDescription: string
+  amenitiesTitle: string
+  roomTypesTitle: string
+  pricingTitle: string
+  historyEyebrow: string
   historyTitle: string
   historyText: string
+  galleryTitle: string
+  galleryHint: string
 }
 
 export interface AdminGuesthouseContent {
@@ -19,7 +30,23 @@ export interface AdminGuesthouseContent {
 }
 
 export type ContentField =
-  'name' | 'shortDescription' | 'description' | 'roomDescription' | 'historyTitle' | 'historyText'
+  | 'name'
+  | 'shortDescription'
+  | 'description'
+  | 'roomDescription'
+  | 'storyEyebrow'
+  | 'storyTitle'
+  | 'diningEyebrow'
+  | 'diningTitle'
+  | 'diningDescription'
+  | 'amenitiesTitle'
+  | 'roomTypesTitle'
+  | 'pricingTitle'
+  | 'historyEyebrow'
+  | 'historyTitle'
+  | 'historyText'
+  | 'galleryTitle'
+  | 'galleryHint'
 
 export class AdminGuesthouseContentApiError extends Error {
   constructor(

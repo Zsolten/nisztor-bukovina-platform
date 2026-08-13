@@ -11,7 +11,8 @@ import GuesthousePricing from './GuesthousePricing'
 import GuesthouseRoomTypes from './GuesthouseRoomTypes'
 import GuesthouseStory from './GuesthouseStory'
 
-export type GuesthouseContentSection = 'hero' | 'story' | 'rooms' | 'history'
+export type GuesthouseContentSection =
+  'hero' | 'story' | 'dining' | 'amenities' | 'rooms' | 'pricing' | 'history' | 'gallery'
 
 interface GuesthouseDetailContentProps {
   data: GuesthouseDetail
@@ -56,28 +57,56 @@ export default function GuesthouseDetailContent({
       <div className="detail-sheet-stack">
         {wrapSection(
           'story',
-          <GuesthouseStory description={data.description} images={storyImages} />,
+          <GuesthouseStory
+            description={data.description}
+            eyebrow={data.pageText.storyEyebrow}
+            images={storyImages}
+            title={data.pageText.storyTitle}
+          />,
         )}
-        <GuesthouseDining />
-        <GuesthouseAmenities amenities={data.amenities} />
+        {wrapSection(
+          'dining',
+          <GuesthouseDining
+            description={data.pageText.diningDescription}
+            eyebrow={data.pageText.diningEyebrow}
+            title={data.pageText.diningTitle}
+          />,
+        )}
+        {wrapSection(
+          'amenities',
+          <GuesthouseAmenities amenities={data.amenities} title={data.pageText.amenitiesTitle} />,
+        )}
         {wrapSection(
           'rooms',
-          <GuesthouseRoomTypes roomTypes={data.roomTypes} description={data.roomDescription} />,
+          <GuesthouseRoomTypes
+            roomTypes={data.roomTypes}
+            description={data.roomDescription}
+            title={data.pageText.roomTypesTitle}
+          />,
         )}
-        <GuesthousePricing pricing={data.pricing} />
-        {wrapSection('history', <GuesthouseHistory history={data.history} />)}
+        {wrapSection(
+          'pricing',
+          <GuesthousePricing pricing={data.pricing} title={data.pageText.pricingTitle} />,
+        )}
+        {wrapSection(
+          'history',
+          <GuesthouseHistory history={data.history} eyebrow={data.pageText.historyEyebrow} />,
+        )}
       </div>
 
-      <section className="gallery-section" aria-labelledby="gallery-heading">
-        <header className="section-heading compact">
-          <p className="section-index">07</p>
-          <div>
-            <h2 id="gallery-heading">{t('guesthouses.gallery')}</h2>
-            <p>{t('guesthouses.galleryHint')}</p>
-          </div>
-        </header>
-        <GuesthouseGallery images={data.images} />
-      </section>
+      {wrapSection(
+        'gallery',
+        <section className="gallery-section" aria-labelledby="gallery-heading">
+          <header className="section-heading compact">
+            <p className="section-index">07</p>
+            <div>
+              <h2 id="gallery-heading">{data.pageText.galleryTitle}</h2>
+              <p>{data.pageText.galleryHint}</p>
+            </div>
+          </header>
+          <GuesthouseGallery images={data.images} />
+        </section>,
+      )}
     </>
   )
 }

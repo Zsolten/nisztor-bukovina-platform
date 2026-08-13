@@ -13,8 +13,12 @@ import type { AdminGuesthouseTranslation, ContentLanguage } from '../api/adminGu
 const SECTION_LABELS: Record<GuesthouseContentSection, string> = {
   hero: 'Nyitókép és cím',
   story: 'Bemutatkozás',
+  dining: 'Étkezés',
+  amenities: 'Szolgáltatások',
   rooms: 'Szobák',
+  pricing: 'Árak',
   history: 'Történet és örökség',
+  gallery: 'Képgaléria',
 }
 
 interface AdminGuesthousePagePreviewProps {
@@ -57,6 +61,19 @@ export default function AdminGuesthousePagePreview({
     shortDescription: draft.shortDescription,
     description: draft.description,
     roomDescription: draft.roomDescription,
+    pageText: {
+      storyEyebrow: draft.storyEyebrow,
+      storyTitle: draft.storyTitle,
+      diningEyebrow: draft.diningEyebrow,
+      diningTitle: draft.diningTitle,
+      diningDescription: draft.diningDescription,
+      amenitiesTitle: draft.amenitiesTitle,
+      roomTypesTitle: draft.roomTypesTitle,
+      pricingTitle: draft.pricingTitle,
+      historyEyebrow: draft.historyEyebrow,
+      galleryTitle: draft.galleryTitle,
+      galleryHint: draft.galleryHint,
+    },
     history: {
       title: draft.historyTitle,
       text: draft.historyText,

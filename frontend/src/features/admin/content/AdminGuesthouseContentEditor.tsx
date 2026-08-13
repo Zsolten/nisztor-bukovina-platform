@@ -1,6 +1,19 @@
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import { Alert, Badge, Button, Form, Spinner } from 'react-bootstrap'
-import { BedDouble, BookOpen, Check, Eye, House, RefreshCw, Save, Type } from 'lucide-react'
+import {
+  BedDouble,
+  BookOpen,
+  Check,
+  CircleDollarSign,
+  Eye,
+  House,
+  Images,
+  RefreshCw,
+  Save,
+  Sparkles,
+  Type,
+  Utensils,
+} from 'lucide-react'
 import { useBeforeUnload, useBlocker } from 'react-router-dom'
 import type { GuesthouseContentSection } from '../../accommodation/GuesthouseDetailContent'
 import {
@@ -26,15 +39,30 @@ const FIELD_LIMITS: Record<ContentField, number> = {
   shortDescription: 500,
   description: 5000,
   roomDescription: 3000,
+  storyEyebrow: 240,
+  storyTitle: 240,
+  diningEyebrow: 240,
+  diningTitle: 240,
+  diningDescription: 1000,
+  amenitiesTitle: 240,
+  roomTypesTitle: 240,
+  pricingTitle: 240,
+  historyEyebrow: 240,
   historyTitle: 240,
   historyText: 5000,
+  galleryTitle: 240,
+  galleryHint: 500,
 }
 
 const SECTION_FIELDS: Record<GuesthouseContentSection, ContentField[]> = {
   hero: ['name', 'shortDescription'],
-  story: ['description'],
-  rooms: ['roomDescription'],
-  history: ['historyTitle', 'historyText'],
+  story: ['storyEyebrow', 'storyTitle', 'description'],
+  dining: ['diningEyebrow', 'diningTitle', 'diningDescription'],
+  amenities: ['amenitiesTitle'],
+  rooms: ['roomTypesTitle', 'roomDescription'],
+  pricing: ['pricingTitle'],
+  history: ['historyEyebrow', 'historyTitle', 'historyText'],
+  gallery: ['galleryTitle', 'galleryHint'],
 }
 
 const SECTION_DETAILS: Array<{
@@ -56,16 +84,40 @@ const SECTION_DETAILS: Array<{
     icon: Type,
   },
   {
+    id: 'dining',
+    label: 'Étkezés',
+    description: 'Az étkezési szakasz címei és bemutatkozó szövege.',
+    icon: Utensils,
+  },
+  {
+    id: 'amenities',
+    label: 'Szolgáltatások',
+    description: 'A szolgáltatások szakasz címe.',
+    icon: Sparkles,
+  },
+  {
     id: 'rooms',
     label: 'Szobák',
     description: 'A szobatípusok előtt megjelenő bevezető.',
     icon: BedDouble,
   },
   {
+    id: 'pricing',
+    label: 'Árak',
+    description: 'Az árakat és feltételeket bemutató szakasz címe.',
+    icon: CircleDollarSign,
+  },
+  {
     id: 'history',
     label: 'Történet és örökség',
     description: 'A panzióoldal történeti zárószakasza.',
     icon: BookOpen,
+  },
+  {
+    id: 'gallery',
+    label: 'Képgaléria',
+    description: 'A galéria címe és rövid segédszövege.',
+    icon: Images,
   },
 ]
 
@@ -81,8 +133,19 @@ const FIELD_DETAILS: Record<ContentField, { label: string; multiline?: boolean; 
     shortDescription: { label: 'Rövid leírás', multiline: true },
     description: { label: 'Részletes leírás', multiline: true, large: true },
     roomDescription: { label: 'Szobák bevezető szövege', multiline: true },
+    storyEyebrow: { label: 'Bemutatkozás labelje' },
+    storyTitle: { label: 'Bemutatkozás címe' },
+    diningEyebrow: { label: 'Étkezés labelje' },
+    diningTitle: { label: 'Étkezés címe' },
+    diningDescription: { label: 'Étkezés leírása', multiline: true },
+    amenitiesTitle: { label: 'Szolgáltatások címe' },
+    roomTypesTitle: { label: 'Szobatípusok címe' },
+    pricingTitle: { label: 'Árak címe' },
+    historyEyebrow: { label: 'Történeti rész labelje' },
     historyTitle: { label: 'Történet címe' },
     historyText: { label: 'Történet szövege', multiline: true, large: true },
+    galleryTitle: { label: 'Galéria címe' },
+    galleryHint: { label: 'Galéria segédszövege', multiline: true },
   }
 
 type TranslationMap = Record<string, AdminGuesthouseTranslation>
