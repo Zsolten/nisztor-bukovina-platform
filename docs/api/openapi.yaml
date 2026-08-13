@@ -107,6 +107,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BookingError'
+  /booking-management/{token}:
+    get:
+      operationId: getBookingManagementSummary
+      summary: Get a booking-request summary through its management token
+      tags: [Bookings]
+      parameters:
+        - $ref: '#/components/parameters/BookingManagementToken'
+        - $ref: '#/components/parameters/Language'
+      responses:
+        '200':
+          description: Token-scoped, non-editable booking-request summary.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingManagementSummary'
+        '404':
+          $ref: '#/components/responses/BookingManagementLinkInvalid'
+  /booking-management/{token}/cancellation:
+    post:
+      operationId: cancelBookingThroughManagementLink
+      summary: Cancel a cancellable booking request through its management token
+      tags: [Bookings]
+      parameters:
+        - $ref: '#/components/parameters/BookingManagementToken'
+      responses:
+        '204':
+          description: The booking request was cancelled and the token was revoked.
+        '404':
+          $ref: '#/components/responses/BookingManagementLinkInvalid'
+        '409':
+          description: The valid token belongs to a booking that cannot be self-service cancelled.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingManagementError'
   /admin/auth/login:
     post:
       operationId: loginAdministrator
@@ -440,7 +475,21 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/BookingError'
+    BookingManagementLinkInvalid:
+      description: The management link is invalid, expired, revoked, or already used.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BookingManagementError'
   parameters:
+    BookingManagementToken:
+      name: token
+      in: path
+      required: true
+      description: Random URL-safe management token. Its raw value is never persisted.
+      schema:
+        type: string
+        pattern: '^[A-Za-z0-9_-]{43}$'
     Language:
       name: lang
       in: query
@@ -872,6 +921,72 @@ components:
         requestOnly:
           type: boolean
           const: true
+    BookingManagementSummary:
+      type: object
+      required: [reference, status, guesthouse, stay, guests, services, rooms, price, cancellationAllowed]
+      properties:
+        reference: { type: string }
+        status: { $ref: '#/components/schemas/BookingStatus' }
+        guesthouse:
+          type: object
+          required: [name, contacts]
+          properties:
+            name: { type: string }
+            contacts:
+              type: array
+              items:
+                type: object
+                required: [type, value, preferred]
+                properties:
+                  type: { type: string, enum: [PHONE, EMAIL] }
+                  value: { type: string }
+                  label: { type: [string, 'null'] }
+                  preferred: { type: boolean }
+        stay:
+          type: object
+          required: [checkInDate, checkOutDate, nights]
+          properties:
+            checkInDate: { type: string, format: date }
+            checkOutDate: { type: string, format: date }
+            nights: { type: integer, format: int64, minimum: 1 }
+        guests:
+          type: object
+          required: [adults, childrenAge3to10, childrenAge0to3]
+          properties:
+            adults: { type: integer, minimum: 0 }
+            childrenAge3to10: { type: integer, minimum: 0 }
+            childrenAge0to3: { type: integer, minimum: 0 }
+        services:
+          type: object
+          required: [breakfastParticipants, dinnerParticipants]
+          properties:
+            breakfastParticipants: { type: integer, minimum: 0 }
+            dinnerParticipants: { type: integer, minimum: 0 }
+        rooms:
+          type: array
+          items:
+            type: object
+            required: [name, quantity]
+            properties:
+              name: { type: string }
+              quantity: { type: integer, minimum: 1 }
+        price:
+          type: object
+          required: [accommodationTotal, breakfastTotal, dinnerTotal, totalPayable, currency]
+          properties:
+            accommodationTotal: { type: number, minimum: 0 }
+            breakfastTotal: { type: number, minimum: 0 }
+            dinnerTotal: { type: number, minimum: 0 }
+            totalPayable: { type: number, minimum: 0 }
+            currency: { type: string, enum: [RON] }
+        cancellationAllowed: { type: boolean }
+    BookingManagementError:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          enum: [BOOKING_MANAGEMENT_LINK_INVALID, BOOKING_CANCELLATION_NOT_ALLOWED]
     BookingFieldError:
       type: object
       required: [code, field, rule]

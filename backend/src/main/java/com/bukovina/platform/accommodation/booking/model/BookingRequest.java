@@ -99,6 +99,9 @@ public class BookingRequest {
   @Column(name = "management_token_expires_at", nullable = false)
   private Instant managementTokenExpiresAt;
 
+  @Column(name = "management_token_revoked_at")
+  private Instant managementTokenRevokedAt;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -296,6 +299,18 @@ public class BookingRequest {
 
   public Instant getManagementTokenExpiresAt() {
     return managementTokenExpiresAt;
+  }
+
+  public Instant getManagementTokenRevokedAt() {
+    return managementTokenRevokedAt;
+  }
+
+  public boolean hasUsableManagementTokenAt(Instant instant) {
+    return managementTokenRevokedAt == null && managementTokenExpiresAt.isAfter(instant);
+  }
+
+  public void revokeManagementToken(Instant revokedAt) {
+    managementTokenRevokedAt = Objects.requireNonNull(revokedAt);
   }
 
   public Instant getCreatedAt() {

@@ -384,7 +384,7 @@ class PublicBookingControllerTests {
     assertEquals(1, count("booking_request"));
     assertEquals(1, count("booking_room_selection"));
     assertEquals(1, count("booking_status_history"));
-    assertEquals(2, count("notification_outbox"));
+    assertEquals(3, count("notification_outbox"));
     assertEquals(
         1,
         jdbcTemplate.queryForObject(
@@ -394,6 +394,11 @@ class PublicBookingControllerTests {
         1,
         jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM notification_outbox WHERE notification_type = 'BOOKING_RECEIVED_ADMIN' AND recipient = 'admin@example.com'",
+            Integer.class));
+    assertEquals(
+        1,
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM notification_outbox WHERE notification_type = 'BOOKING_RECEIVED_ADMIN' AND recipient = 'nistorzsolt5@gmail.com'",
             Integer.class));
     assertEquals(
         "RECEIVED",
@@ -421,7 +426,7 @@ class PublicBookingControllerTests {
     assertEquals(
         first.getResponse().getContentAsString(), second.getResponse().getContentAsString());
     assertEquals(1, count("booking_request"));
-    assertEquals(1, count("notification_outbox"));
+    assertEquals(2, count("notification_outbox"));
 
     String changedBody = body.replace("  Teszt   Vendeg  ", "Masik Vendeg");
     mockMvc
@@ -433,7 +438,7 @@ class PublicBookingControllerTests {
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.code").value("IDEMPOTENCY_KEY_REUSED"));
     assertEquals(1, count("booking_request"));
-    assertEquals(1, count("notification_outbox"));
+    assertEquals(2, count("notification_outbox"));
   }
 
   @Test

@@ -13,7 +13,15 @@ public interface BookingRequestRepository extends JpaRepository<BookingRequest, 
 
   Optional<BookingRequest> findByIdempotencyKeyHash(String idempotencyKeyHash);
 
+  Optional<BookingRequest> findByManagementTokenHash(String managementTokenHash);
+
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT booking FROM BookingRequest booking WHERE booking.id = :bookingId")
   Optional<BookingRequest> findForUpdateById(@Param("bookingId") UUID bookingId);
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query(
+      "SELECT booking FROM BookingRequest booking WHERE booking.managementTokenHash = :tokenHash")
+  Optional<BookingRequest> findForUpdateByManagementTokenHash(
+      @Param("tokenHash") String managementTokenHash);
 }

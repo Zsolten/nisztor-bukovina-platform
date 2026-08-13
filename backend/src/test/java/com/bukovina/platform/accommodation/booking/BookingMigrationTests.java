@@ -43,6 +43,28 @@ class BookingMigrationTests {
   }
 
   @Test
+  void configuresTheDefaultAdminRecipientForBothGuesthouses() {
+    Integer recipientCount =
+        jdbcTemplate.queryForObject(
+            """
+            SELECT COUNT(*)
+            FROM guesthouse_notification_recipient recipient
+            JOIN guesthouse ON guesthouse.id = recipient.guesthouse_id
+            WHERE LOWER(recipient.email) = 'nistorzsolt5@gmail.com'
+              AND recipient.active = TRUE
+              AND guesthouse.slug IN ('nisztor-panzio', 'bukovina-panzio')
+            """,
+            Integer.class);
+
+    assertEquals(2, recipientCount);
+  }
+
+  @Test
+  void storesExplicitManagementTokenRevocation() {
+    assertTrue(columnExists("booking_request", "management_token_revoked_at"));
+  }
+
+  @Test
   void createsAdminFilteringIndexes() {
     List<String> indexDefinitions =
         jdbcTemplate.queryForList(
