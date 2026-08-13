@@ -49,7 +49,7 @@ describe('bookingReducer', () => {
     expect(changed.roomQuantities).toEqual({})
   })
 
-  it('persists dates and guest counts for back and forward navigation', () => {
+  it('persists booking details but excludes personal contact data', () => {
     const state = {
       ...initialBookingFlowState,
       guesthouseId: 'guesthouse-id',
@@ -59,12 +59,55 @@ describe('bookingReducer', () => {
       adults: 3,
       childrenAge0to3: 1,
       roomQuantities: { triple: 1, single: 1 },
+      contact: {
+        contactName: 'Nisztor Zsolt',
+        contactEmail: 'zsolt@example.com',
+        contactPhone: '+40743677812',
+        preferredLanguage: 'hu' as const,
+        note: 'Csendes szobát kérünk.',
+      },
+      preferredLanguageSelectedByVisitor: true,
     }
 
     persistBookingFlowState(state)
 
-    expect(window.sessionStorage.getItem(BOOKING_FLOW_STORAGE_KEY)).not.toBeNull()
-    expect(restoreBookingFlowState()).toEqual(state)
+    const stored = window.sessionStorage.getItem(BOOKING_FLOW_STORAGE_KEY)
+    expect(stored).not.toBeNull()
+    expect(stored).not.toContain('Nisztor Zsolt')
+    expect(stored).not.toContain('zsolt@example.com')
+    expect(stored).not.toContain('+40743677812')
+    expect(stored).not.toContain('Csendes szobát kérünk.')
+    expect(JSON.parse(stored ?? '{}')).not.toHaveProperty('contact')
+
+    expect(restoreBookingFlowState()).toEqual({
+      ...state,
+      contact: initialBookingFlowState.contact,
+      preferredLanguageSelectedByVisitor: false,
+    })
+  })
+
+  it('discards personal data from a previously stored booking flow', () => {
+    window.sessionStorage.setItem(
+      BOOKING_FLOW_STORAGE_KEY,
+      JSON.stringify({
+        ...initialBookingFlowState,
+        checkInDate: '2030-08-21',
+        contact: {
+          contactName: 'Nisztor Zsolt',
+          contactEmail: 'zsolt@example.com',
+          contactPhone: '+40743677812',
+          preferredLanguage: 'hu',
+          note: 'Csendes szobát kérünk.',
+        },
+        preferredLanguageSelectedByVisitor: true,
+      }),
+    )
+
+    expect(restoreBookingFlowState()).toMatchObject({
+      checkInDate: '2030-08-21',
+      contact: initialBookingFlowState.contact,
+      preferredLanguageSelectedByVisitor: false,
+    })
   })
 
   it('never stores negative counts and clamps meal participants to the new guest total', () => {
