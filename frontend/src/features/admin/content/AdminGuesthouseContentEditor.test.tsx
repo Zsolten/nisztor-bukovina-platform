@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { AdminAuthContext } from '../auth/adminAuthContext'
 import type {
   AdminGuesthouseContent,
@@ -32,6 +32,44 @@ const content: AdminGuesthouseContent[] = [
     ],
   },
 ]
+
+const previewDetail = {
+  id: content[0].id,
+  slug: content[0].slug,
+  name: hu.name,
+  shortDescription: hu.shortDescription,
+  roomCount: 5,
+  coverImage: { path: '/cover.jpg', altText: 'Panzió', cover: true },
+  description: hu.description,
+  roomDescription: hu.roomDescription,
+  images: [
+    { path: '/cover.jpg', altText: 'Panzió', cover: true },
+    { path: '/story.jpg', altText: 'Udvar', cover: false },
+  ],
+  history: { title: hu.historyTitle, text: hu.historyText },
+  contacts: [],
+  address: { formatted: 'Csernakeresztúr', latitude: 45.8, longitude: 22.9 },
+  roomTypes: [
+    {
+      id: 'double',
+      name: 'Kétágyas szoba',
+      quantity: 3,
+      standardOccupancy: 2,
+      roomsWithExtraBed: 0,
+      extraBedsPerEligibleRoom: 0,
+      features: [],
+    },
+  ],
+  amenities: [],
+  pricing: {
+    currency: 'RON',
+    items: [],
+    taxes: [],
+    surcharges: [],
+    discounts: [],
+    paymentNote: '',
+  },
+}
 
 function response(status: number, body: unknown) {
   return {
@@ -70,9 +108,34 @@ function renderEditor(
   return router
 }
 
+beforeEach(() => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(() =>
+      Promise.resolve({ ok: true, status: 200, json: async () => previewDetail } as Response),
+    ),
+  )
+})
+
 afterEach(() => vi.restoreAllMocks())
 
 describe('AdminGuesthouseContentEditor', () => {
+  it('updates the live page preview and opens fields from the selected section', async () => {
+    const user = userEvent.setup()
+    const authorizedFetch = vi.fn().mockResolvedValue(response(200, content))
+    renderEditor(authorizedFetch)
+
+    const name = await screen.findByLabelText('Panzió neve')
+    await screen.findByRole('heading', { name: 'Nisztor Panzió' })
+    await user.clear(name)
+    await user.type(name, 'Új élő név')
+
+    expect(screen.getByRole('heading', { name: 'Új élő név' })).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Szobák szerkesztése' }))
+    expect(screen.getByLabelText('Szobák bevezető szövege')).toBeVisible()
+    expect(screen.queryByLabelText('Panzió neve')).not.toBeInTheDocument()
+  })
+
   it('keeps language drafts and saves only the selected translation', async () => {
     const user = userEvent.setup()
     const authorizedFetch = vi

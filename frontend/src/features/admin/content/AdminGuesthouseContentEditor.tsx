@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import { Alert, Badge, Button, Form, Spinner } from 'react-bootstrap'
-import { Check, RefreshCw, Save } from 'lucide-react'
+import { BedDouble, BookOpen, Check, Eye, House, RefreshCw, Save, Type } from 'lucide-react'
 import { useBeforeUnload, useBlocker } from 'react-router-dom'
+import type { GuesthouseContentSection } from '../../accommodation/GuesthouseDetailContent'
 import {
   AdminGuesthouseContentApiError,
   fetchAdminGuesthouseContent,
@@ -12,6 +13,7 @@ import {
   type ContentLanguage,
 } from '../api/adminGuesthouseContent'
 import { useAdminAuth } from '../auth/adminAuthContext'
+import AdminGuesthousePagePreview from './AdminGuesthousePagePreview'
 
 const LANGUAGES: Array<{ code: ContentLanguage; label: string }> = [
   { code: 'hu', label: 'Magyar' },
@@ -27,6 +29,61 @@ const FIELD_LIMITS: Record<ContentField, number> = {
   historyTitle: 240,
   historyText: 5000,
 }
+
+const SECTION_FIELDS: Record<GuesthouseContentSection, ContentField[]> = {
+  hero: ['name', 'shortDescription'],
+  story: ['description'],
+  rooms: ['roomDescription'],
+  history: ['historyTitle', 'historyText'],
+}
+
+const SECTION_DETAILS: Array<{
+  id: GuesthouseContentSection
+  label: string
+  description: string
+  icon: typeof House
+}> = [
+  {
+    id: 'hero',
+    label: 'Nyitókép és cím',
+    description: 'A panzió neve és rövid bemutatása.',
+    icon: House,
+  },
+  {
+    id: 'story',
+    label: 'Bemutatkozás',
+    description: 'A panzió részletes bemutatkozó szövege.',
+    icon: Type,
+  },
+  {
+    id: 'rooms',
+    label: 'Szobák',
+    description: 'A szobatípusok előtt megjelenő bevezető.',
+    icon: BedDouble,
+  },
+  {
+    id: 'history',
+    label: 'Történet és örökség',
+    description: 'A panzióoldal történeti zárószakasza.',
+    icon: BookOpen,
+  },
+]
+
+const FIELD_SECTION = Object.fromEntries(
+  Object.entries(SECTION_FIELDS).flatMap(([section, fields]) =>
+    fields.map((field) => [field, section]),
+  ),
+) as Record<ContentField, GuesthouseContentSection>
+
+const FIELD_DETAILS: Record<ContentField, { label: string; multiline?: boolean; large?: boolean }> =
+  {
+    name: { label: 'Panzió neve' },
+    shortDescription: { label: 'Rövid leírás', multiline: true },
+    description: { label: 'Részletes leírás', multiline: true, large: true },
+    roomDescription: { label: 'Szobák bevezető szövege', multiline: true },
+    historyTitle: { label: 'Történet címe' },
+    historyText: { label: 'Történet szövege', multiline: true, large: true },
+  }
 
 type TranslationMap = Record<string, AdminGuesthouseTranslation>
 type FieldErrors = Partial<Record<ContentField, string>>
@@ -64,6 +121,8 @@ export default function AdminGuesthouseContentEditor() {
   const [drafts, setDrafts] = useState<TranslationMap>({})
   const [guesthouseId, setGuesthouseId] = useState('')
   const [language, setLanguage] = useState<ContentLanguage>('hu')
+  const [selectedSection, setSelectedSection] = useState<GuesthouseContentSection>('hero')
+  const [mobileView, setMobileView] = useState<'preview' | 'edit'>('edit')
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -76,6 +135,7 @@ export default function AdminGuesthouseContentEditor() {
   const currentKey = guesthouseId ? translationKey(guesthouseId, language) : ''
   const draft = drafts[currentKey]
   const selectedGuesthouse = guesthouses.find((item) => item.id === guesthouseId)
+  const selectedSectionDetails = SECTION_DETAILS.find((item) => item.id === selectedSection)!
   const dirty = useMemo(
     () =>
       Object.keys(drafts).some((key) => JSON.stringify(drafts[key]) !== JSON.stringify(saved[key])),
@@ -152,6 +212,9 @@ export default function AdminGuesthouseContentEditor() {
     const errors = validate(content)
     setFieldErrors(errors)
     if (Object.keys(errors).length) {
+      const firstInvalidField = Object.keys(errors)[0] as ContentField
+      setSelectedSection(FIELD_SECTION[firstInvalidField])
+      setMobileView('edit')
       setFeedback({ variant: 'danger', message: 'Ellenőrizze a megjelölt mezőket.' })
       return
     }
@@ -310,77 +373,111 @@ export default function AdminGuesthouseContentEditor() {
         </div>
       )}
 
-      <Form
-        className="admin-content-form"
-        onSubmit={(event) => {
-          event.preventDefault()
-          void saveCurrent()
-        }}
-      >
-        <ContentFieldInput
-          field="name"
-          label="Panzió neve"
-          value={draft.name}
-          error={fieldErrors.name}
-          onChange={updateField}
-        />
-        <ContentFieldInput
-          field="shortDescription"
-          label="Rövid leírás"
-          value={draft.shortDescription}
-          error={fieldErrors.shortDescription}
-          onChange={updateField}
-          multiline
-        />
-        <ContentFieldInput
-          field="description"
-          label="Részletes leírás"
-          value={draft.description}
-          error={fieldErrors.description}
-          onChange={updateField}
-          multiline
-          large
-        />
-        <ContentFieldInput
-          field="roomDescription"
-          label="Szobák bevezető szövege"
-          value={draft.roomDescription}
-          error={fieldErrors.roomDescription}
-          onChange={updateField}
-          multiline
-        />
-        <ContentFieldInput
-          field="historyTitle"
-          label="Történet címe"
-          value={draft.historyTitle}
-          error={fieldErrors.historyTitle}
-          onChange={updateField}
-        />
-        <ContentFieldInput
-          field="historyText"
-          label="Történet szövege"
-          value={draft.historyText}
-          error={fieldErrors.historyText}
-          onChange={updateField}
-          multiline
-          large
-        />
+      <div className="admin-content-mobile-view" aria-label="Tartalomnézet">
+        <button
+          className={mobileView === 'preview' ? 'active' : ''}
+          onClick={() => setMobileView('preview')}
+          type="button"
+        >
+          <Eye aria-hidden="true" size={17} /> Előnézet
+        </button>
+        <button
+          className={mobileView === 'edit' ? 'active' : ''}
+          onClick={() => setMobileView('edit')}
+          type="button"
+        >
+          <Type aria-hidden="true" size={17} /> Szerkesztés
+        </button>
+      </div>
 
-        <div className="admin-content-save">
-          <span>{selectedGuesthouse.active ? 'Aktív panzió' : 'Inaktív panzió'}</span>
-          <Button
-            disabled={saving || JSON.stringify(draft) === JSON.stringify(saved[currentKey])}
-            type="submit"
+      <div className={`admin-content-workspace mobile-${mobileView}`}>
+        <section className="admin-content-preview" aria-labelledby="content-preview-heading">
+          <header>
+            <div>
+              <p className="admin-eyebrow">Élő előnézet</p>
+              <h2 id="content-preview-heading">A publikus panzióoldal</h2>
+            </div>
+            <span>A keretezett részek szerkeszthetők</span>
+          </header>
+          <div className="admin-content-preview-viewport">
+            <AdminGuesthousePagePreview
+              draft={draft}
+              language={language}
+              onSelectSection={(section) => {
+                setSelectedSection(section)
+                setMobileView('edit')
+              }}
+              selectedSection={selectedSection}
+              slug={selectedGuesthouse.slug}
+            />
+          </div>
+        </section>
+
+        <aside className="admin-content-inspector" aria-labelledby="content-inspector-heading">
+          <nav aria-label="Oldalszakaszok" className="admin-content-section-nav">
+            {SECTION_DETAILS.map((section) => {
+              const Icon = section.icon
+              return (
+                <button
+                  aria-current={selectedSection === section.id ? 'true' : undefined}
+                  className={selectedSection === section.id ? 'active' : ''}
+                  key={section.id}
+                  onClick={() => setSelectedSection(section.id)}
+                  type="button"
+                >
+                  <Icon aria-hidden="true" size={17} />
+                  <span>{section.label}</span>
+                </button>
+              )
+            })}
+          </nav>
+
+          <Form
+            className="admin-content-form"
+            onSubmit={(event) => {
+              event.preventDefault()
+              void saveCurrent()
+            }}
           >
-            {saving ? (
-              <Spinner animation="border" size="sm" />
-            ) : (
-              <Save aria-hidden="true" size={17} />
-            )}
-            {saving ? 'Mentés…' : 'Fordítás mentése'}
-          </Button>
-        </div>
-      </Form>
+            <header className="admin-content-form-heading">
+              <p className="admin-eyebrow">Kiválasztott szakasz</p>
+              <h2 id="content-inspector-heading">{selectedSectionDetails.label}</h2>
+              <p>{selectedSectionDetails.description}</p>
+            </header>
+
+            {SECTION_FIELDS[selectedSection].map((field) => {
+              const details = FIELD_DETAILS[field]
+              return (
+                <ContentFieldInput
+                  error={fieldErrors[field]}
+                  field={field}
+                  key={field}
+                  label={details.label}
+                  large={details.large}
+                  multiline={details.multiline}
+                  onChange={updateField}
+                  value={draft[field]}
+                />
+              )
+            })}
+
+            <div className="admin-content-save">
+              <span>{selectedGuesthouse.active ? 'Aktív panzió' : 'Inaktív panzió'}</span>
+              <Button
+                disabled={saving || JSON.stringify(draft) === JSON.stringify(saved[currentKey])}
+                type="submit"
+              >
+                {saving ? (
+                  <Spinner animation="border" size="sm" />
+                ) : (
+                  <Save aria-hidden="true" size={17} />
+                )}
+                {saving ? 'Mentés…' : 'Fordítás mentése'}
+              </Button>
+            </div>
+          </Form>
+        </aside>
+      </div>
     </section>
   )
 }
