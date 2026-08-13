@@ -1470,6 +1470,26 @@
     padding-block: 2.75rem;
   }
 
+  .gallery-section .section-heading {
+    margin-bottom: 1.75rem;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+
+  .gallery-section .section-heading.compact > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+
+  .gallery-section .section-heading h2 {
+    font-size: 2.25rem;
+  }
+
+  .gallery-section .section-heading p:not(.section-index) {
+    max-width: none;
+    margin: 0;
+  }
+
   a,
   button:not(.admin-content-preview-region > button) {
     pointer-events: none;
