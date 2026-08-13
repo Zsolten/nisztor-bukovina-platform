@@ -51,12 +51,13 @@ export async function updateAdminGuesthouseTranslation(
   guesthouseId: string,
   translation: AdminGuesthouseTranslation,
 ) {
+  const { language, ...content } = translation
   const response = await authorizedFetch(
-    `/api/admin/guesthouses/${encodeURIComponent(guesthouseId)}/translations/${translation.language}`,
+    `/api/admin/guesthouses/${encodeURIComponent(guesthouseId)}/translations/${language}`,
     {
       method: 'PUT',
       headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-      body: JSON.stringify(translation),
+      body: JSON.stringify(content),
     },
   )
   if (!response.ok) throw await contentApiError(response)

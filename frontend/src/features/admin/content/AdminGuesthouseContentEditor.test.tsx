@@ -161,10 +161,10 @@ describe('AdminGuesthouseContentEditor', () => {
     )
     const request = authorizedFetch.mock.calls.at(-1)?.[1] as RequestInit
     expect(JSON.parse(request.body as string)).toMatchObject({
-      language: 'hu',
       version: 0,
       name: 'Új Nisztor név',
     })
+    expect(JSON.parse(request.body as string)).not.toHaveProperty('language')
   })
 
   it('shows local field feedback without calling the update endpoint', async () => {
