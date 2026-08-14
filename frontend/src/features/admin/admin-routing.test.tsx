@@ -172,7 +172,7 @@ describe('administrator routing and authentication', () => {
     await signIn(user)
     expect(await screen.findByRole('heading', { name: 'Foglalási kérelmek' })).toBeVisible()
     await user.click(
-      within(screen.getByRole('complementary', { name: 'Admin navigáció' })).getByRole('button', {
+      within(screen.getByRole('navigation', { name: 'Admin navigáció' })).getByRole('button', {
         name: 'Kijelentkezés',
       }),
     )

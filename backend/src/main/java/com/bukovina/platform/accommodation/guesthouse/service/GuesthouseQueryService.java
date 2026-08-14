@@ -148,7 +148,13 @@ public class GuesthouseQueryService implements GuesthouseBookingQuery {
 
   private AmenityResponse toAmenity(AmenityView amenity) {
     return new AmenityResponse(
-        amenity.id(), amenity.name(), amenity.description(), amenity.category());
+        amenity.id(),
+        amenity.name(),
+        amenity.description(),
+        amenity.detailedDescription(),
+        amenity.category(),
+        amenity.pricingType(),
+        amenity.displayOrder());
   }
 
   private GuesthousePricingResponse toPricing(PricingView pricing) {

@@ -18,46 +18,14 @@ export default function AdminShell() {
 
   return (
     <div className="admin-shell">
-      <aside className="admin-sidebar" aria-label="Admin navigáció">
-        <NavLink className="admin-sidebar-brand" to="/admin/bookings">
-          <span className="admin-brand-mark" aria-hidden="true">
-            NB
-          </span>
-          <span className="admin-brand-copy">
-            <strong>Nisztor–Bukovina</strong>
-            <small>Adminisztráció</small>
-          </span>
-        </NavLink>
-
-        <nav className="admin-sidebar-navigation">
-          <NavLink to="/admin/bookings">
-            <CalendarDays aria-hidden="true" size={19} />
-            <span>Foglalások</span>
-          </NavLink>
-          <NavLink to="/admin/content">
-            <FileText aria-hidden="true" size={19} />
-            <span>Tartalmak</span>
-          </NavLink>
-        </nav>
-
-        <button
-          className="admin-sidebar-logout"
-          disabled={loggingOut}
-          onClick={() => void handleLogout()}
-          type="button"
-        >
-          <LogOut aria-hidden="true" size={18} />
-          <span>{loggingOut ? 'Kijelentkezés…' : 'Kijelentkezés'}</span>
-        </button>
-      </aside>
-
       <Navbar
-        className="admin-header admin-mobile-header"
-        expand={false}
+        aria-label="Admin navigáció"
+        className="admin-header"
+        expand="md"
         expanded={navigationOpen}
         onToggle={setNavigationOpen}
       >
-        <Container>
+        <Container className="admin-header-container" fluid>
           <Navbar.Brand as={NavLink} to="/admin/bookings">
             <span className="admin-brand-mark" aria-hidden="true">
               NB

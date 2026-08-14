@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { useBeforeUnload, useBlocker } from 'react-router-dom'
 import type { GuesthouseContentSection } from '../../accommodation/GuesthouseDetailContent'
+import { type AdminAmenity, type AmenityLanguage } from '../api/adminAmenities'
 import {
   AdminGuesthouseContentApiError,
   fetchAdminGuesthouseContent,
@@ -27,6 +28,7 @@ import {
   type ContentLanguage,
 } from '../api/adminGuesthouseContent'
 import { useAdminAuth } from '../auth/adminAuthContext'
+import AdminAmenityEditor from './AdminAmenityEditor'
 import AdminGuesthousePagePreview from './AdminGuesthousePagePreview'
 
 const LANGUAGES: Array<{ code: ContentLanguage; label: string }> = [
@@ -186,6 +188,7 @@ export default function AdminGuesthouseContentEditor() {
   const [guesthouseId, setGuesthouseId] = useState('')
   const [language, setLanguage] = useState<ContentLanguage>('hu')
   const [selectedSection, setSelectedSection] = useState<GuesthouseContentSection>('hero')
+  const [previewScrollRequest, setPreviewScrollRequest] = useState(0)
   const [mobileView, setMobileView] = useState<'preview' | 'edit'>('edit')
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [loading, setLoading] = useState(true)
@@ -195,11 +198,16 @@ export default function AdminGuesthouseContentEditor() {
     message: string
   } | null>(null)
   const [conflict, setConflict] = useState<AdminGuesthouseTranslation | null>(null)
+  const [dismissedBlockLocationKey, setDismissedBlockLocationKey] = useState<string | null>(null)
+  const [amenityCatalogue, setAmenityCatalogue] = useState<AdminAmenity[] | null>(null)
 
   const currentKey = guesthouseId ? translationKey(guesthouseId, language) : ''
   const draft = drafts[currentKey]
   const selectedGuesthouse = guesthouses.find((item) => item.id === guesthouseId)
   const selectedSectionDetails = SECTION_DETAILS.find((item) => item.id === selectedSection)!
+  const previewAmenities = amenityCatalogue
+    ? toPreviewAmenities(amenityCatalogue, guesthouseId, language)
+    : undefined
   const dirty = useMemo(
     () =>
       Object.keys(drafts).some((key) => JSON.stringify(drafts[key]) !== JSON.stringify(saved[key])),
@@ -249,12 +257,15 @@ export default function AdminGuesthouseContentEditor() {
     ),
   )
   const blocker = useBlocker(dirty)
+  const blockedLocationKey = blocker.state === 'blocked' ? blocker.location.key : null
 
   function stayOnPage() {
+    setDismissedBlockLocationKey(blockedLocationKey)
     blocker.reset?.()
   }
 
   function leaveWithoutSaving() {
+    setDismissedBlockLocationKey(blockedLocationKey)
     blocker.proceed?.()
   }
 
@@ -268,6 +279,12 @@ export default function AdminGuesthouseContentEditor() {
     setFieldErrors((current) => ({ ...current, [field]: undefined }))
     setFeedback(null)
     setConflict(null)
+  }
+
+  function selectSection(section: GuesthouseContentSection) {
+    setSelectedSection(section)
+    setMobileView('edit')
+    setPreviewScrollRequest((current) => current + 1)
   }
 
   async function saveCurrent(overwriteVersion?: number | null) {
@@ -454,7 +471,7 @@ export default function AdminGuesthouseContentEditor() {
         </button>
       </div>
 
-      <div className={`admin-content-workspace mobile-${mobileView}`}>
+      <div className={`admin-content-workspace mobile-${mobileView} section-${selectedSection}`}>
         <section className="admin-content-preview" aria-labelledby="content-preview-heading">
           <header>
             <div>
@@ -465,12 +482,13 @@ export default function AdminGuesthouseContentEditor() {
           </header>
           <div className="admin-content-preview-viewport">
             <AdminGuesthousePagePreview
+              amenities={previewAmenities}
               draft={draft}
               language={language}
               onSelectSection={(section) => {
-                setSelectedSection(section)
-                setMobileView('edit')
+                selectSection(section)
               }}
+              previewScrollRequest={previewScrollRequest}
               selectedSection={selectedSection}
               slug={selectedGuesthouse.slug}
             />
@@ -486,7 +504,7 @@ export default function AdminGuesthouseContentEditor() {
                   aria-current={selectedSection === section.id ? 'true' : undefined}
                   className={selectedSection === section.id ? 'active' : ''}
                   key={section.id}
-                  onClick={() => setSelectedSection(section.id)}
+                  onClick={() => selectSection(section.id)}
                   type="button"
                 >
                   <Icon aria-hidden="true" size={17} />
@@ -540,15 +558,27 @@ export default function AdminGuesthouseContentEditor() {
               </Button>
             </div>
           </Form>
+
         </aside>
       </div>
+
+      {selectedSection === 'amenities' && (
+        <div className="admin-amenity-editor-anchor">
+          <AdminAmenityEditor
+            guesthouses={guesthouses}
+            language={language}
+            onCatalogueChange={setAmenityCatalogue}
+            selectedGuesthouseId={guesthouseId}
+          />
+        </div>
+      )}
 
       <Modal
         centered
         className="admin-unsaved-changes-modal"
         contentClassName="admin-unsaved-changes-modal-content"
         onHide={stayOnPage}
-        show={blocker.state === 'blocked'}
+        show={blocker.state === 'blocked' && dismissedBlockLocationKey !== blockedLocationKey}
       >
         <Modal.Body>
           <span className="admin-unsaved-changes-icon" aria-hidden="true">
@@ -631,4 +661,41 @@ function errorMessage(code?: string) {
   if (code === 'UNSUPPORTED_CONTENT_LANGUAGE') return 'Ez a nyelv nem támogatott.'
   if (code === 'INVALID_ADMIN_CONTENT_REQUEST') return 'A küldött tartalom nem értelmezhető.'
   return 'A mentés nem sikerült. Próbálja újra.'
+}
+
+function toPreviewAmenities(
+  catalogue: AdminAmenity[],
+  guesthouseId: string,
+  language: AmenityLanguage,
+) {
+  return catalogue
+    .filter((amenity) =>
+      amenity.assignments.some(
+        (assignment) => assignment.guesthouseId === guesthouseId && assignment.active,
+      ),
+    )
+    .sort(
+      (left, right) =>
+        left.assignments.find((assignment) => assignment.guesthouseId === guesthouseId)!
+          .displayOrder -
+        right.assignments.find((assignment) => assignment.guesthouseId === guesthouseId)!
+          .displayOrder,
+    )
+    .map((amenity) => {
+      const hungarian = amenity.translations.find((translation) => translation.language === 'hu')!
+      const requested =
+        amenity.translations.find((translation) => translation.language === language) ?? hungarian
+      return {
+        id: amenity.code,
+        name: requested.name || hungarian.name,
+        description: requested.description || hungarian.description || undefined,
+        detailedDescription:
+          requested.detailedDescription || hungarian.detailedDescription || undefined,
+        category: amenity.category,
+        pricingType: amenity.pricingType,
+        displayOrder: amenity.assignments.find(
+          (assignment) => assignment.guesthouseId === guesthouseId,
+        )!.displayOrder,
+      }
+    })
 }

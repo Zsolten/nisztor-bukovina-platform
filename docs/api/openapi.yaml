@@ -462,6 +462,123 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AdminGuesthouseContentError'
+  /admin/amenities:
+    get:
+      operationId: listAdminAmenities
+      summary: List the editable guesthouse service catalogue
+      tags: [Administration]
+      security:
+        - AdminBearerAuth: []
+      responses:
+        '200':
+          description: Every service definition with its translations and guesthouse assignments.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminAmenity'
+        '401': { description: Administrator authentication is missing or invalid. }
+        '403': { description: The authenticated account is not an administrator. }
+    post:
+      operationId: createAdminAmenity
+      summary: Create a service definition and optionally assign it to guesthouses
+      tags: [Administration]
+      security:
+        - AdminBearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminAmenityUpdate'
+      responses:
+        '201':
+          description: Created service definition.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminAmenity'
+        '400':
+          description: Invalid category, classification, translation, assignment, or request body.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminAmenityError' }
+        '401': { description: Administrator authentication is missing or invalid. }
+        '403': { description: The authenticated account is not an administrator. }
+        '409':
+          description: A service already uses the supplied stable code.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminAmenityError' }
+  /admin/amenities/{amenityId}:
+    put:
+      operationId: updateAdminAmenity
+      summary: Replace a service definition and its guesthouse assignments
+      tags: [Administration]
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AmenityId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminAmenityUpdate' }
+      responses:
+        '200':
+          description: Saved service definition.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminAmenity' }
+        '400':
+          description: Invalid category, classification, translation, assignment, or request body.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminAmenityError' }
+        '401': { description: Administrator authentication is missing or invalid. }
+        '403': { description: The authenticated account is not an administrator. }
+        '404':
+          description: The service or an assigned guesthouse does not exist.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminAmenityError' }
+        '409':
+          description: A different service already uses the supplied stable code.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminAmenityError' }
+  /admin/guesthouses/{guesthouseId}/amenities/order:
+    put:
+      operationId: reorderAdminGuesthouseAmenities
+      summary: Replace the display order of one guesthouse's assigned services
+      tags: [Administration]
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - name: guesthouseId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminAmenityOrderUpdate' }
+      responses:
+        '204': { description: The service order was updated. }
+        '400':
+          description: The ordered identifiers do not exactly match the guesthouse assignments.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminAmenityError' }
+        '401': { description: Administrator authentication is missing or invalid. }
+        '403': { description: The authenticated account is not an administrator. }
+        '404':
+          description: The guesthouse does not exist.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminAmenityError' }
 components:
   securitySchemes:
     AdminBearerAuth:
@@ -482,6 +599,11 @@ components:
           schema:
             $ref: '#/components/schemas/BookingManagementError'
   parameters:
+    AmenityId:
+      name: amenityId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
     BookingManagementToken:
       name: token
       in: path
@@ -578,7 +700,7 @@ components:
             type: string
     Amenity:
       type: object
-      required: [id, name, category]
+      required: [id, name, category, pricingType, displayOrder]
       properties:
         id:
           type: string
@@ -589,6 +711,14 @@ components:
         category:
           type: string
           enum: [ROOM_COMFORT, FOOD_KITCHEN, OUTDOOR_WELLNESS, PROGRAM_GROUP]
+        pricingType:
+          type: string
+          enum: [FREE, PAID]
+        detailedDescription:
+          type: string
+        displayOrder:
+          type: integer
+          minimum: 0
     PriceItem:
       type: object
       required: [id, label, amount, unit]
@@ -1318,6 +1448,88 @@ components:
           oneOf:
             - $ref: '#/components/schemas/AdminGuesthouseTranslation'
             - type: 'null'
+    AdminAmenity:
+      type: object
+      additionalProperties: false
+      required: [id, code, category, pricingType, translations, assignments]
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string, pattern: '^[a-z0-9]+(?:_[a-z0-9]+)*$', maxLength: 80 }
+        category:
+          type: string
+          enum: [ROOM_COMFORT, FOOD_KITCHEN, OUTDOOR_WELLNESS, PROGRAM_GROUP]
+        pricingType:
+          type: string
+          enum: [FREE, PAID]
+        translations:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items: { $ref: '#/components/schemas/AdminAmenityTranslation' }
+        assignments:
+          type: array
+          items: { $ref: '#/components/schemas/AdminAmenityAssignment' }
+    AdminAmenityTranslation:
+      type: object
+      additionalProperties: false
+      required: [language, name, description, detailedDescription]
+      properties:
+        language: { type: string, enum: [hu, ro, en] }
+        name: { type: string, maxLength: 240 }
+        description: { type: string, maxLength: 1000 }
+        detailedDescription: { type: string, maxLength: 5000 }
+    AdminAmenityAssignment:
+      type: object
+      additionalProperties: false
+      required: [guesthouseId, active, displayOrder]
+      properties:
+        guesthouseId: { type: string, format: uuid }
+        active: { type: boolean }
+        displayOrder: { type: integer, minimum: 0 }
+    AdminAmenityUpdate:
+      type: object
+      additionalProperties: false
+      required: [code, category, pricingType, translations, assignments]
+      properties:
+        code: { type: string, pattern: '^[a-z0-9]+(?:_[a-z0-9]+)*$', minLength: 1, maxLength: 80 }
+        category:
+          type: string
+          enum: [ROOM_COMFORT, FOOD_KITCHEN, OUTDOOR_WELLNESS, PROGRAM_GROUP]
+        pricingType: { type: string, enum: [FREE, PAID] }
+        translations:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items: { $ref: '#/components/schemas/AdminAmenityTranslation' }
+        assignments:
+          type: array
+          items: { $ref: '#/components/schemas/AdminAmenityAssignment' }
+    AdminAmenityOrderUpdate:
+      type: object
+      additionalProperties: false
+      required: [amenityIds]
+      properties:
+        amenityIds:
+          type: array
+          uniqueItems: true
+          items: { type: string, format: uuid }
+    AdminAmenityError:
+      type: object
+      additionalProperties: false
+      required: [code]
+      properties:
+        code:
+          type: string
+          enum:
+            - ADMIN_AMENITY_VALIDATION_FAILED
+            - ADMIN_AMENITY_NOT_FOUND
+            - ADMIN_AMENITY_GUESTHOUSE_NOT_FOUND
+            - AMENITY_CODE_ALREADY_EXISTS
+            - INVALID_ADMIN_AMENITY_REQUEST
+            - INVALID_AMENITY_ORDER
+        fieldErrors:
+          type: object
+          additionalProperties: { type: string }
     AdminBookingStatusUpdateRequest:
       type: object
       additionalProperties: false

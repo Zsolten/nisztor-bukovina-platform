@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, type ReactNode } from 'react'
 import { Pencil } from 'lucide-react'
 import { I18nextProvider } from 'react-i18next'
 import GuesthouseDetailContent, {
@@ -6,7 +6,7 @@ import GuesthouseDetailContent, {
 } from '../../accommodation/GuesthouseDetailContent'
 import { useGuesthouse } from '../../accommodation/useGuesthouseData'
 import i18n from '../../../i18n/config'
-import type { GuesthouseDetail } from '../../../shared/api/guesthouses'
+import type { GuesthouseAmenity, GuesthouseDetail } from '../../../shared/api/guesthouses'
 import AsyncStatus from '../../../shared/components/AsyncStatus'
 import type { AdminGuesthouseTranslation, ContentLanguage } from '../api/adminGuesthouseContent'
 
@@ -27,6 +27,8 @@ interface AdminGuesthousePagePreviewProps {
   draft: AdminGuesthouseTranslation
   selectedSection: GuesthouseContentSection
   onSelectSection: (section: GuesthouseContentSection) => void
+  previewScrollRequest: number
+  amenities?: GuesthouseAmenity[]
 }
 
 export default function AdminGuesthousePagePreview({
@@ -35,12 +37,23 @@ export default function AdminGuesthousePagePreview({
   draft,
   selectedSection,
   onSelectSection,
+  previewScrollRequest,
+  amenities,
 }: AdminGuesthousePagePreviewProps) {
   const { data, loading, error } = useGuesthouse(slug, language)
+  const sectionRefs = useRef<Partial<Record<GuesthouseContentSection, HTMLDivElement>>>({})
   const previewI18n = useMemo(
     () => i18n.cloneInstance({ initAsync: false, lng: language }),
     [language],
   )
+
+  useEffect(() => {
+    if (!previewScrollRequest) return
+    const frame = window.requestAnimationFrame(() => {
+      scrollPreviewToSection(sectionRefs.current[selectedSection])
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [previewScrollRequest, selectedSection])
 
   if (loading) {
     return <AsyncStatus variant="loading" message="Oldalelőnézet betöltése…" />
@@ -78,6 +91,7 @@ export default function AdminGuesthousePagePreview({
       title: draft.historyTitle,
       text: draft.historyText,
     },
+    amenities: amenities ?? data.amenities,
   }
 
   function wrapSection(section: GuesthouseContentSection, content: ReactNode) {
@@ -86,11 +100,16 @@ export default function AdminGuesthousePagePreview({
       <div
         className={`admin-content-preview-region${selectedSection === section ? ' active' : ''}`}
         key={section}
+        ref={(element) => {
+          sectionRefs.current[section] = element ?? undefined
+        }}
       >
         {content}
         <button
           aria-label={`${label} szerkesztése`}
-          onClick={() => onSelectSection(section)}
+          onClick={() => {
+            onSelectSection(section)
+          }}
           type="button"
         >
           <Pencil aria-hidden="true" size={14} />
@@ -112,4 +131,14 @@ export default function AdminGuesthousePagePreview({
       </div>
     </I18nextProvider>
   )
+}
+
+function scrollPreviewToSection(section: HTMLDivElement | undefined) {
+  const viewport = section?.closest<HTMLElement>('.admin-content-preview-viewport')
+  if (!section || !viewport) return
+
+  const top = section.getBoundingClientRect().top - viewport.getBoundingClientRect().top + viewport.scrollTop
+  const options = { behavior: 'smooth' as const, top: Math.max(0, top - 8) }
+  if (typeof viewport.scrollTo === 'function') viewport.scrollTo(options)
+  else viewport.scrollTop = options.top
 }

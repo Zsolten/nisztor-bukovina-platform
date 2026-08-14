@@ -1992,10 +1992,30 @@ img {
   font-weight: 650;
 }
 
-.amenity-group li span {
+.amenity-name-row {
+  display: block;
+}
+
+.amenity-group li .amenity-description {
   color: var(--muted);
   font-size: 0.76rem;
   line-height: 1.55;
+}
+
+.amenity-group li .amenity-paid-tag {
+  align-self: flex-end;
+  justify-self: end;
+  margin-top: 0.15rem;
+  padding: 0.1rem 0.34rem;
+  border: 1px solid rgba($gold, 0.45);
+  border-radius: 999px;
+  background: rgba($gold, 0.1);
+  color: darken($gold, 18%);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  line-height: 1.2;
+  text-transform: uppercase;
 }
 
 .price-list {

@@ -24,5 +24,9 @@ class AdminGuesthouseContentOpenApiContractTests {
     assertTrue(contract.contains("ADMIN_CONTENT_VALIDATION_FAILED"));
     assertTrue(contract.contains("maxLength: 5000"));
     assertTrue(contract.contains("AdminBearerAuth"));
+    assertTrue(paths.containsKey("/admin/amenities"));
+    assertTrue(paths.containsKey("/admin/guesthouses/{guesthouseId}/amenities/order"));
+    assertTrue(contract.contains("AdminAmenityUpdate"));
+    assertTrue(contract.contains("AMENITY_CODE_ALREADY_EXISTS"));
   }
 }
