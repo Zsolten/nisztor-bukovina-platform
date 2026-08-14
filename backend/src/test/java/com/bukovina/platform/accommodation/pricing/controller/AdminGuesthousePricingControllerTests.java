@@ -1,11 +1,14 @@
 package com.bukovina.platform.accommodation.pricing.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bukovina.platform.testsupport.PostgreSqlTestContainerConfiguration;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest(properties = "DB_PASSWORD=test-password")
@@ -30,6 +34,7 @@ class AdminGuesthousePricingControllerTests {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private JdbcTemplate jdbcTemplate;
+  @Autowired private ObjectMapper objectMapper;
 
   @Test
   void protectsGuesthousePricesFromAnonymousUsers() throws Exception {
@@ -48,23 +53,42 @@ class AdminGuesthousePricingControllerTests {
         .andExpect(jsonPath("$.currency").value("RON"))
         .andExpect(jsonPath("$.items[?(@.code == 'accommodation')].amount").isNotEmpty());
 
-    mockMvc
-        .perform(
-            put("/api/admin/guesthouses/{guesthouseId}/pricing", guesthouseId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(updateRequest(guesthouseId, new BigDecimal("199.00"))))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.items[?(@.code == 'accommodation')].amount[0]").value(199));
+    MvcResult adminUpdate =
+        mockMvc
+            .perform(
+                put("/api/admin/guesthouses/{guesthouseId}/pricing", guesthouseId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(updateRequest(guesthouseId, new BigDecimal("199.00"))))
+            .andExpect(status().isOk())
+            .andReturn();
+    assertPriceAmount(adminUpdate, "/items", "code", "accommodation", new BigDecimal("199.00"));
 
-    mockMvc
-        .perform(get("/api/guesthouses/nisztor-panzio").queryParam("lang", "hu"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.pricing.items[?(@.id == 'accommodation')].amount[0]").value(199));
+    MvcResult publicResponse =
+        mockMvc
+            .perform(get("/api/guesthouses/nisztor-panzio").queryParam("lang", "hu"))
+            .andExpect(status().isOk())
+            .andReturn();
+    assertPriceAmount(
+        publicResponse, "/pricing/items", "id", "accommodation", new BigDecimal("199.00"));
   }
 
   private UUID guesthouseId() {
     return jdbcTemplate.queryForObject(
         "SELECT id FROM guesthouse WHERE slug = 'nisztor-panzio'", UUID.class);
+  }
+
+  private void assertPriceAmount(
+      MvcResult response, String itemsPath, String codeField, String code, BigDecimal expected)
+      throws Exception {
+    JsonNode items =
+        objectMapper.readTree(response.getResponse().getContentAsString()).at(itemsPath);
+    for (JsonNode item : items) {
+      if (code.equals(item.path(codeField).asText())) {
+        assertEquals(0, expected.compareTo(item.path("amount").decimalValue()));
+        return;
+      }
+    }
+    throw new AssertionError("Price item not found: " + code);
   }
 
   private String updateRequest(UUID guesthouseId, BigDecimal accommodationAmount) {
