@@ -166,9 +166,7 @@ describe('AdminGuesthouseContentEditor', () => {
               { language: 'ro', name: '', description: '', detailedDescription: '' },
               { language: 'en', name: '', description: '', detailedDescription: '' },
             ],
-            assignments: [
-              { guesthouseId: content[0].id, active: true, displayOrder: 0 },
-            ],
+            assignments: [{ guesthouseId: content[0].id, active: true, displayOrder: 0 }],
           },
         ]),
       )
@@ -216,7 +214,8 @@ describe('AdminGuesthouseContentEditor', () => {
         ),
       )
     } finally {
-      if (originalScrollTo) Object.defineProperty(HTMLElement.prototype, 'scrollTo', originalScrollTo)
+      if (originalScrollTo)
+        Object.defineProperty(HTMLElement.prototype, 'scrollTo', originalScrollTo)
       else delete (HTMLElement.prototype as { scrollTo?: unknown }).scrollTo
     }
   })

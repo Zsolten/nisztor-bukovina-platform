@@ -1,8 +1,4 @@
-export type AmenityCategory =
-  | 'ROOM_COMFORT'
-  | 'FOOD_KITCHEN'
-  | 'OUTDOOR_WELLNESS'
-  | 'PROGRAM_GROUP'
+export type AmenityCategory = 'ROOM_COMFORT' | 'FOOD_KITCHEN' | 'OUTDOOR_WELLNESS' | 'PROGRAM_GROUP'
 
 export type AmenityPricingType = 'FREE' | 'PAID'
 export type AmenityLanguage = 'hu' | 'ro' | 'en'

@@ -47,7 +47,7 @@ class ModuleArchitectureTests {
           .resideInAPackage("..controller..")
           .should()
           .dependOnClassesThat()
-          .resideInAPackage("..dao..");
+          .resideInAPackage("com.bukovina.platform..dao..");
 
   @ArchTest
   static final ArchRule GUESTHOUSE_DAO_MUST_REMAIN_INSIDE_GUESTHOUSE_MODULE =

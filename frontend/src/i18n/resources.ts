@@ -18,7 +18,7 @@ export const resources = {
           contactTitle: 'Kapcsolat és foglalás',
           navigationTitle: 'Navigáció',
           bookingRequest: 'Foglalási kérelem',
-          address: 'Bucovina utca 17., Csernakeresztúr 330003, Románia',
+          address: 'Bucovina utca 59., Csernakeresztúr 330003, Románia',
           home: 'Főoldal',
           nisztorGuesthouse: 'Nisztor Panzió',
           bukovinaGuesthouse: 'Bukovina Panzió',
@@ -66,6 +66,8 @@ export const resources = {
         retry: 'Újrapróbálás',
         numberOfRooms: 'Szobák száma',
         perPersonNight: '/ fő / éj',
+        perRoomNight: '/ szoba / éj',
+        roomPriceDetail: '{{amount}} / fő / éj',
         capacityStatus: '{{guests}} vendég · {{capacity}} kiválasztott férőhely',
         meals: 'Étkezések',
         mealsHint: 'A reggeli és a vacsora nem része az alapárnak.',
@@ -86,7 +88,7 @@ export const resources = {
         total: 'Összesen',
         largeGroupTitle: 'Egyeztessünk telefonon',
         largeGroupMessage:
-          '{{threshold}} vagy több vendég esetén személyre szabott ajánlatot adunk.',
+          '{{threshold}} fő fölött telefonon egyeztetünk a szobabeosztásról, és személyre szabott ajánlatot adunk.',
         continueToContact: 'Tovább az adatokhoz',
         reviewTitle: 'Kapcsolat és ellenőrzés',
         backToBooking: 'Vissza a foglalási adatokhoz',
@@ -258,6 +260,7 @@ export const resources = {
         },
         priceUnits: {
           person_night: 'fő / éj',
+          room_night: 'szoba / éj',
           person: 'fő',
           day: 'nap',
         },
@@ -326,8 +329,7 @@ export const resources = {
         map: {
           eyebrow: 'Megközelítés',
           title: 'Így talál meg minket.',
-          description:
-            'Mindkét panzió a Bucovina utca 17. alatt található, Déva és Vajdahunyad között.',
+          description: 'Mindkét panzió a Csernakeresztúron található, Déva és Vajdahunyad között.',
           openMap: 'Útvonaltervezés Google Térképen',
           frameTitle: 'A panziók helye a Google Térképen',
         },
@@ -401,6 +403,8 @@ export const resources = {
         retry: 'Reîncearcă',
         numberOfRooms: 'Număr de camere',
         perPersonNight: '/ persoană / noapte',
+        perRoomNight: '/ cameră / noapte',
+        roomPriceDetail: '{{amount}} / persoană / noapte',
         capacityStatus: '{{guests}} oaspeți · {{capacity}} locuri selectate',
         meals: 'Mese',
         mealsHint: 'Micul dejun și cina nu sunt incluse în prețul de bază.',
@@ -421,7 +425,7 @@ export const resources = {
         total: 'Total',
         largeGroupTitle: 'Să discutăm telefonic',
         largeGroupMessage:
-          'Pentru {{threshold}} sau mai mulți oaspeți pregătim o ofertă personalizată.',
+          'Pentru mai mult de {{threshold}} oaspeți stabilim telefonic repartizarea camerelor și pregătim o ofertă personalizată.',
         continueToContact: 'Continuă la datele personale',
         reviewTitle: 'Contact și verificare',
         backToBooking: 'Înapoi la datele rezervării',
@@ -587,6 +591,7 @@ export const resources = {
         },
         priceUnits: {
           person_night: 'persoană / noapte',
+          room_night: 'cameră / noapte',
           person: 'persoană',
           day: 'zi',
         },
@@ -656,8 +661,7 @@ export const resources = {
         map: {
           eyebrow: 'Sosire',
           title: 'Cum ajungeți la noi.',
-          description:
-            'Ambele pensiuni se află pe Strada Bucovina nr. 17, între Deva și Hunedoara.',
+          description: 'Ambele pensiuni se află în Cristur, între Deva și Hunedoara.',
           openMap: 'Planifică traseul în Google Maps',
           frameTitle: 'Locația pensiunilor în Google Maps',
         },
@@ -731,6 +735,8 @@ export const resources = {
         retry: 'Retry',
         numberOfRooms: 'Number of rooms',
         perPersonNight: '/ person / night',
+        perRoomNight: '/ room / night',
+        roomPriceDetail: '{{amount}} / person / night',
         capacityStatus: '{{guests}} guests · {{capacity}} selected beds',
         meals: 'Meals',
         mealsHint: 'Breakfast and dinner are not included in the base price.',
@@ -750,7 +756,8 @@ export const resources = {
         accommodation: 'Accommodation',
         total: 'Total',
         largeGroupTitle: 'Let’s arrange this by phone',
-        largeGroupMessage: 'For {{threshold}} or more guests, we prepare a personalised offer.',
+        largeGroupMessage:
+          'For more than {{threshold}} guests, we arrange the room allocation by phone and prepare a personalised offer.',
         continueToContact: 'Continue to contact details',
         reviewTitle: 'Contact and review',
         backToBooking: 'Back to booking details',
@@ -920,6 +927,7 @@ export const resources = {
         },
         priceUnits: {
           person_night: 'person / night',
+          room_night: 'room / night',
           person: 'person',
           day: 'day',
         },
@@ -989,8 +997,7 @@ export const resources = {
         map: {
           eyebrow: 'Getting here',
           title: 'How to find us.',
-          description:
-            'Both guesthouses are located at 17 Bucovina Street, between Deva and Hunedoara.',
+          description: 'Both guesthouses are located in Cristur, between Deva and Hunedoara.',
           openMap: 'Plan your route in Google Maps',
           frameTitle: 'Guesthouse location in Google Maps',
         },

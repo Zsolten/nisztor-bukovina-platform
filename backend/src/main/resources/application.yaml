@@ -41,7 +41,7 @@ management:
 
 booking:
   public:
-    large-group-threshold: ${BOOKING_LARGE_GROUP_THRESHOLD:20}
+    large-group-threshold: ${BOOKING_LARGE_GROUP_THRESHOLD:30}
   notification:
     enabled: ${NOTIFICATIONS_ENABLED:false}
     max-attempts: ${BOOKING_NOTIFICATION_MAX_ATTEMPTS:5}

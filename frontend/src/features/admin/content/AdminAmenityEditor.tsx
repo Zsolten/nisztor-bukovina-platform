@@ -63,9 +63,10 @@ export default function AdminAmenityEditor({
   const [amenities, setAmenities] = useState<AdminAmenity[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [feedback, setFeedback] = useState<{ variant: 'success' | 'danger'; message: string } | null>(
-    null,
-  )
+  const [feedback, setFeedback] = useState<{
+    variant: 'success' | 'danger'
+    message: string
+  } | null>(null)
   const [editing, setEditing] = useState<AdminAmenity | null>(null)
   const [editingError, setEditingError] = useState<string | null>(null)
 
@@ -99,7 +100,9 @@ export default function AdminAmenityEditor({
   const assignedAmenities = useMemo(
     () =>
       amenities
-        .filter((amenity) => amenity.assignments.some((item) => item.guesthouseId === selectedGuesthouseId))
+        .filter((amenity) =>
+          amenity.assignments.some((item) => item.guesthouseId === selectedGuesthouseId),
+        )
         .sort(
           (left, right) =>
             assignmentFor(left, selectedGuesthouseId)!.displayOrder -
@@ -119,7 +122,9 @@ export default function AdminAmenityEditor({
   function startCreate() {
     const currentMax = Math.max(
       -1,
-      ...assignedAmenities.map((amenity) => assignmentFor(amenity, selectedGuesthouseId)!.displayOrder),
+      ...assignedAmenities.map(
+        (amenity) => assignmentFor(amenity, selectedGuesthouseId)!.displayOrder,
+      ),
     )
     setFeedback(null)
     setEditingError(null)
@@ -129,7 +134,9 @@ export default function AdminAmenityEditor({
       category: 'ROOM_COMFORT',
       pricingType: 'FREE',
       translations: EMPTY_TRANSLATIONS.map((translation) => ({ ...translation })),
-      assignments: [{ guesthouseId: selectedGuesthouseId, active: true, displayOrder: currentMax + 1 }],
+      assignments: [
+        { guesthouseId: selectedGuesthouseId, active: true, displayOrder: currentMax + 1 },
+      ],
     })
   }
 
@@ -245,7 +252,9 @@ export default function AdminAmenityEditor({
       )}
 
       {assignedAmenities.length === 0 ? (
-        <div className="admin-amenity-empty">Ehhez a panzióhoz még nincs szolgáltatás hozzárendelve.</div>
+        <div className="admin-amenity-empty">
+          Ehhez a panzióhoz még nincs szolgáltatás hozzárendelve.
+        </div>
       ) : (
         <div className="admin-amenity-categories">
           {amenityCategories.map(({ category, amenities: categoryAmenities }) => (
@@ -267,7 +276,10 @@ export default function AdminAmenityEditor({
                         <strong>{translation.name || 'Névtelen fordítás'}</strong>
                         <code>{amenity.code}</code>
                       </div>
-                      <Badge bg={amenity.pricingType === 'FREE' ? 'success' : 'warning'} text="dark">
+                      <Badge
+                        bg={amenity.pricingType === 'FREE' ? 'success' : 'warning'}
+                        text="dark"
+                      >
                         {amenity.pricingType === 'FREE' ? 'Ingyenes' : 'Fizetős'}
                       </Badge>
                       <Form.Check
@@ -377,7 +389,10 @@ function AmenityEditModal({
   const hungarian = translationFor(amenity, 'hu')
   const validCode = /^[a-z0-9]+(?:_[a-z0-9]+)*$/.test(amenity.code)
 
-  function updateTranslation(field: keyof Omit<AdminAmenityTranslation, 'language'>, value: string) {
+  function updateTranslation(
+    field: keyof Omit<AdminAmenityTranslation, 'language'>,
+    value: string,
+  ) {
     const shouldUpdateCode =
       !amenity.id &&
       language === 'hu' &&
@@ -389,11 +404,7 @@ function AmenityEditModal({
         item.language === language ? { ...item, [field]: value } : item,
       ),
     }
-    onChange(
-      shouldUpdateCode
-        ? { ...nextAmenity, code: toAmenityCode(value) }
-        : nextAmenity,
-    )
+    onChange(shouldUpdateCode ? { ...nextAmenity, code: toAmenityCode(value) } : nextAmenity)
   }
 
   function toggleAssignment(guesthouseId: string) {
@@ -428,7 +439,11 @@ function AmenityEditModal({
         >
           {error && <Alert variant="danger">{error}</Alert>}
 
-          <div className="admin-amenity-language" aria-label="Szolgáltatás fordításának nyelve" role="tablist">
+          <div
+            className="admin-amenity-language"
+            aria-label="Szolgáltatás fordításának nyelve"
+            role="tablist"
+          >
             {(Object.keys(LANGUAGE_LABELS) as AmenityLanguage[]).map((languageCode) => (
               <button
                 aria-selected={language === languageCode}
@@ -504,7 +519,9 @@ function AmenityEditModal({
           <section className="admin-amenity-translation">
             <p className="admin-eyebrow">{LANGUAGE_LABELS[language]} fordítás</p>
             {language !== 'hu' && !translation.name && (
-              <Alert variant="secondary">Üresen hagyva a publikus oldalon a magyar szöveg jelenik meg.</Alert>
+              <Alert variant="secondary">
+                Üresen hagyva a publikus oldalon a magyar szöveg jelenik meg.
+              </Alert>
             )}
             <Form.Group controlId="amenity-name">
               <Form.Label>Megnevezés {language === 'hu' && '*'}</Form.Label>
@@ -536,9 +553,14 @@ function AmenityEditModal({
 
           <section className="admin-amenity-assignments">
             <p className="admin-eyebrow">Hozzárendelés</p>
-            <p>Ugyanaz a szolgáltatás mindkét panziónál használható, külön aktiválással és sorrenddel.</p>
+            <p>
+              Ugyanaz a szolgáltatás mindkét panziónál használható, külön aktiválással és
+              sorrenddel.
+            </p>
             {guesthouses.map((guesthouse) => {
-              const name = guesthouse.translations.find((item) => item.language === 'hu')?.name ?? guesthouse.slug
+              const name =
+                guesthouse.translations.find((item) => item.language === 'hu')?.name ??
+                guesthouse.slug
               return (
                 <Form.Check
                   checked={Boolean(assignmentFor(amenity, guesthouse.id))}
@@ -567,7 +589,11 @@ function AmenityEditModal({
           form="admin-amenity-form"
           type="submit"
         >
-          {saving ? <Spinner animation="border" size="sm" /> : <Save aria-hidden="true" size={16} />}
+          {saving ? (
+            <Spinner animation="border" size="sm" />
+          ) : (
+            <Save aria-hidden="true" size={16} />
+          )}
           {saving ? 'Mentés…' : 'Szolgáltatás mentése'}
         </Button>
       </Modal.Footer>
@@ -601,7 +627,8 @@ function copyAmenity(amenity: AdminAmenity): AdminAmenity {
 function amenityErrorMessage(error: unknown) {
   if (error instanceof AdminAmenityApiError) {
     if (error.code === 'AMENITY_CODE_ALREADY_EXISTS') return 'Ez az azonosító kód már foglalt.'
-    if (error.code === 'INVALID_AMENITY_ORDER') return 'A szolgáltatások sorrendje időközben megváltozott. Töltsd be újra az oldalt.'
+    if (error.code === 'INVALID_AMENITY_ORDER')
+      return 'A szolgáltatások sorrendje időközben megváltozott. Töltsd be újra az oldalt.'
     if (error.code === 'ADMIN_AMENITY_VALIDATION_FAILED') {
       return 'Ellenőrizd a megadott szolgáltatásadatokat és a hozzárendelést.'
     }

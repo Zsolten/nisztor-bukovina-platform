@@ -137,7 +137,8 @@ function scrollPreviewToSection(section: HTMLDivElement | undefined) {
   const viewport = section?.closest<HTMLElement>('.admin-content-preview-viewport')
   if (!section || !viewport) return
 
-  const top = section.getBoundingClientRect().top - viewport.getBoundingClientRect().top + viewport.scrollTop
+  const top =
+    section.getBoundingClientRect().top - viewport.getBoundingClientRect().top + viewport.scrollTop
   const options = { behavior: 'smooth' as const, top: Math.max(0, top - 8) }
   if (typeof viewport.scrollTo === 'function') viewport.scrollTo(options)
   else viewport.scrollTop = options.top

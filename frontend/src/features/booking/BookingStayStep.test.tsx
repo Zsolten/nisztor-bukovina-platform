@@ -46,7 +46,7 @@ const guesthouse = {
   amenities: [],
   pricing: {
     currency: 'RON',
-    items: [{ id: 'lodging', label: 'Szállás', amount: 130, unit: 'person_night' }],
+    items: [{ id: 'accommodation', label: 'Szállás', amount: 130, unit: 'person_night' }],
     taxes: [{ id: 'city-tax', label: 'Idegenforgalmi adó', percentage: 1 }],
     surcharges: [],
     discounts: [],
@@ -84,11 +84,18 @@ function renderStep(adults: number, roomQuantity: number) {
 }
 
 describe('BookingStayStep', () => {
-  it('replaces continue with phone contact at the large-group boundary', async () => {
+  it('shows the total nightly price of a multi-bed room with its per-person detail', () => {
+    renderStep(2, 0)
+
+    expect(screen.getByText(/260/)).toBeVisible()
+    expect(screen.getByText(/130.*fő.*éj/)).toBeVisible()
+  })
+
+  it('replaces continue with phone contact above thirty guests', async () => {
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
 
-    renderStep(20, 0)
+    renderStep(31, 0)
 
     expect(await screen.findByText('Egyeztessünk telefonon')).toBeVisible()
     expect(screen.getByRole('link', { name: '+40 743 677 812' })).toHaveAttribute(

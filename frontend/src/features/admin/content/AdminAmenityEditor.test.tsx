@@ -40,7 +40,10 @@ const roomAmenities: AdminAmenity[] = [
     id: 'e4d5840f-c54c-435f-a746-9d6174d41a11',
     code: 'wifi',
     category: 'ROOM_COMFORT',
-    translations: [{ language: 'hu', name: 'Wi-Fi', description: '', detailedDescription: '' }, ...existingAmenity.translations.slice(1)],
+    translations: [
+      { language: 'hu', name: 'Wi-Fi', description: '', detailedDescription: '' },
+      ...existingAmenity.translations.slice(1),
+    ],
     assignments: [{ guesthouseId, active: true, displayOrder: 0 }],
   },
   {
@@ -48,7 +51,10 @@ const roomAmenities: AdminAmenity[] = [
     id: '5ab10451-64c9-4f31-89ed-e4032f9d7064',
     code: 'television',
     category: 'ROOM_COMFORT',
-    translations: [{ language: 'hu', name: 'Televízió', description: '', detailedDescription: '' }, ...existingAmenity.translations.slice(1)],
+    translations: [
+      { language: 'hu', name: 'Televízió', description: '', detailedDescription: '' },
+      ...existingAmenity.translations.slice(1),
+    ],
     assignments: [{ guesthouseId, active: true, displayOrder: 1 }],
   },
 ]
@@ -124,7 +130,9 @@ describe('AdminAmenityEditor', () => {
       .mockResolvedValueOnce(response(204, null))
     renderEditor(authorizedFetch, 'hu')
 
-    const roomCategory = (await screen.findByRole('heading', { name: 'Szobai kényelem' })).closest('section')!
+    const roomCategory = (await screen.findByRole('heading', { name: 'Szobai kényelem' })).closest(
+      'section',
+    )!
     expect(within(roomCategory).getByText('Wi-Fi')).toBeVisible()
     expect(within(roomCategory).getByText('Televízió')).toBeVisible()
     expect(screen.getByRole('heading', { name: 'Program és közösség' })).toBeVisible()
