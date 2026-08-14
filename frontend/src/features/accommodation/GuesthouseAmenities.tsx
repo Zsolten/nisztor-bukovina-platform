@@ -36,7 +36,15 @@ export default function GuesthouseAmenities({ amenities, title }: GuesthouseAmen
       </header>
       <div className="amenity-groups">
         {CATEGORY_ORDER.map((category) => {
-          const categoryAmenities = amenities.filter((amenity) => amenity.category === category)
+          const categoryAmenities = amenities
+            .map((amenity, index) => ({ amenity, index }))
+            .filter(({ amenity }) => amenity.category === category)
+            .sort(
+              (left, right) =>
+                (left.amenity.displayOrder ?? left.index) -
+                (right.amenity.displayOrder ?? right.index),
+            )
+            .map(({ amenity }) => amenity)
           if (categoryAmenities.length === 0) return null
 
           return (
@@ -47,12 +55,12 @@ export default function GuesthouseAmenities({ amenities, title }: GuesthouseAmen
                   <li key={amenity.id}>
                     <div className="amenity-name-row">
                       <strong>{amenity.name}</strong>
-                      {amenity.pricingType === 'PAID' && (
-                        <span className="amenity-paid-tag">{t('guesthouses.paidService')}</span>
-                      )}
                     </div>
                     {amenity.description && (
                       <span className="amenity-description">{amenity.description}</span>
+                    )}
+                    {amenity.pricingType === 'PAID' && (
+                      <span className="amenity-paid-tag">{t('guesthouses.paidService')}</span>
                     )}
                   </li>
                 ))}

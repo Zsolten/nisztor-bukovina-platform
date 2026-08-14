@@ -35,4 +35,24 @@ describe('GuesthouseAmenities', () => {
     expect(screen.getByText(label)).toBeVisible()
     expect(document.querySelectorAll('.amenity-paid-tag')).toHaveLength(1)
   })
+
+  it('keeps the saved order inside each category', () => {
+    render(
+      <GuesthouseAmenities
+        title="Szolgáltatások"
+        amenities={[
+          { id: 'television', name: 'Televízió', category: 'ROOM_COMFORT', pricingType: 'FREE', displayOrder: 4 },
+          { id: 'wifi', name: 'Wi-Fi', category: 'ROOM_COMFORT', pricingType: 'FREE', displayOrder: 1 },
+          { id: 'badminton', name: 'Tollaslabda', category: 'PROGRAM_GROUP', pricingType: 'FREE', displayOrder: 0 },
+        ]}
+      />,
+    )
+
+    const roomComfort = screen.getByRole('heading', { name: 'Szobai kényelem' }).closest('.amenity-group')
+    expect([...roomComfort!.querySelectorAll('.amenity-name-row strong')].map((item) => item.textContent)).toEqual([
+      'Wi-Fi',
+      'Televízió',
+    ])
+    expect(screen.getByRole('heading', { name: 'Programok és csoportok' })).toBeVisible()
+  })
 })

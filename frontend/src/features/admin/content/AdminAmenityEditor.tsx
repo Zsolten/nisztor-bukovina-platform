@@ -31,6 +31,13 @@ const CATEGORY_LABELS: Record<AmenityCategory, string> = {
   PROGRAM_GROUP: 'Program és közösség',
 }
 
+const CATEGORY_ORDER: AmenityCategory[] = [
+  'ROOM_COMFORT',
+  'FOOD_KITCHEN',
+  'OUTDOOR_WELLNESS',
+  'PROGRAM_GROUP',
+]
+
 const EMPTY_TRANSLATIONS: AdminAmenityTranslation[] = ['hu', 'ro', 'en'].map((language) => ({
   language: language as AmenityLanguage,
   name: '',
@@ -100,6 +107,14 @@ export default function AdminAmenityEditor({
         ),
     [amenities, selectedGuesthouseId],
   )
+  const amenityCategories = useMemo(
+    () =>
+      CATEGORY_ORDER.map((category) => ({
+        category,
+        amenities: assignedAmenities.filter((amenity) => amenity.category === category),
+      })).filter((group) => group.amenities.length > 0),
+    [assignedAmenities],
+  )
 
   function startCreate() {
     const currentMax = Math.max(
@@ -162,12 +177,20 @@ export default function AdminAmenityEditor({
     })
   }
 
-  async function move(amenityId: string, direction: -1 | 1) {
-    const from = assignedAmenities.findIndex((amenity) => amenity.id === amenityId)
+  async function move(category: AmenityCategory, amenityId: string, direction: -1 | 1) {
+    const categoryAmenities = assignedAmenities.filter((amenity) => amenity.category === category)
+    const from = categoryAmenities.findIndex((amenity) => amenity.id === amenityId)
     const to = from + direction
-    if (from < 0 || to < 0 || to >= assignedAmenities.length) return
-    const orderedIds = assignedAmenities.map((amenity) => amenity.id)
-    ;[orderedIds[from], orderedIds[to]] = [orderedIds[to], orderedIds[from]]
+    if (from < 0 || to < 0 || to >= categoryAmenities.length) return
+    const categoryIds = categoryAmenities.map((amenity) => amenity.id)
+    ;[categoryIds[from], categoryIds[to]] = [categoryIds[to], categoryIds[from]]
+    const orderedIds = CATEGORY_ORDER.flatMap((currentCategory) =>
+      currentCategory === category
+        ? categoryIds
+        : assignedAmenities
+            .filter((amenity) => amenity.category === currentCategory)
+            .map((amenity) => amenity.id),
+    )
     setSaving(true)
     setFeedback(null)
     try {
@@ -224,66 +247,75 @@ export default function AdminAmenityEditor({
       {assignedAmenities.length === 0 ? (
         <div className="admin-amenity-empty">Ehhez a panzióhoz még nincs szolgáltatás hozzárendelve.</div>
       ) : (
-        <ul className="admin-amenity-list">
-          {assignedAmenities.map((amenity, index) => {
-            const translation = translationFor(amenity, language)
-            const assignment = assignmentFor(amenity, selectedGuesthouseId)!
-            return (
-              <li className={!assignment.active ? 'inactive' : ''} key={amenity.id}>
-                <div className="admin-amenity-order" aria-label={`${index + 1}. hely`}>
-                  {index + 1}
-                </div>
-                <div className="admin-amenity-copy">
-                  <strong>{translation.name || 'Névtelen fordítás'}</strong>
-                  <span>{CATEGORY_LABELS[amenity.category]}</span>
-                  <code>{amenity.code}</code>
-                </div>
-                <Badge bg={amenity.pricingType === 'FREE' ? 'success' : 'warning'} text="dark">
-                  {amenity.pricingType === 'FREE' ? 'Ingyenes' : 'Fizetős'}
-                </Badge>
-                <Form.Check
-                  aria-label={`${translation.name || amenity.code} aktív`}
-                  checked={assignment.active}
-                  disabled={saving}
-                  label={assignment.active ? 'Aktív' : 'Inaktív'}
-                  onChange={() => void toggleActive(amenity)}
-                  role="switch"
-                  type="switch"
-                />
-                <div className="admin-amenity-actions">
-                  <Button
-                    aria-label="Felébb"
-                    disabled={saving || index === 0}
-                    onClick={() => void move(amenity.id, -1)}
-                    size="sm"
-                    variant="outline-secondary"
-                  >
-                    <ArrowUp aria-hidden="true" size={16} />
-                  </Button>
-                  <Button
-                    aria-label="Lejjebb"
-                    disabled={saving || index === assignedAmenities.length - 1}
-                    onClick={() => void move(amenity.id, 1)}
-                    size="sm"
-                    variant="outline-secondary"
-                  >
-                    <ArrowDown aria-hidden="true" size={16} />
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setEditingError(null)
-                      setEditing(copyAmenity(amenity))
-                    }}
-                    size="sm"
-                    variant="outline-primary"
-                  >
-                    <Pencil aria-hidden="true" size={16} /> Szerkesztés
-                  </Button>
-                </div>
-              </li>
-            )
-          })}
-        </ul>
+        <div className="admin-amenity-categories">
+          {amenityCategories.map(({ category, amenities: categoryAmenities }) => (
+            <section className="admin-amenity-category" key={category}>
+              <header>
+                <h4>{CATEGORY_LABELS[category]}</h4>
+                <span>{categoryAmenities.length} szolgáltatás</span>
+              </header>
+              <ul className="admin-amenity-list">
+                {categoryAmenities.map((amenity, index) => {
+                  const translation = translationFor(amenity, language)
+                  const assignment = assignmentFor(amenity, selectedGuesthouseId)!
+                  return (
+                    <li className={!assignment.active ? 'inactive' : ''} key={amenity.id}>
+                      <div className="admin-amenity-order" aria-label={`${index + 1}. hely`}>
+                        {index + 1}
+                      </div>
+                      <div className="admin-amenity-copy">
+                        <strong>{translation.name || 'Névtelen fordítás'}</strong>
+                        <code>{amenity.code}</code>
+                      </div>
+                      <Badge bg={amenity.pricingType === 'FREE' ? 'success' : 'warning'} text="dark">
+                        {amenity.pricingType === 'FREE' ? 'Ingyenes' : 'Fizetős'}
+                      </Badge>
+                      <Form.Check
+                        aria-label={`${translation.name || amenity.code} aktív`}
+                        checked={assignment.active}
+                        disabled={saving}
+                        label={assignment.active ? 'Aktív' : 'Inaktív'}
+                        onChange={() => void toggleActive(amenity)}
+                        role="switch"
+                        type="switch"
+                      />
+                      <div className="admin-amenity-actions">
+                        <Button
+                          aria-label="Felébb"
+                          disabled={saving || index === 0}
+                          onClick={() => void move(category, amenity.id, -1)}
+                          size="sm"
+                          variant="outline-secondary"
+                        >
+                          <ArrowUp aria-hidden="true" size={16} />
+                        </Button>
+                        <Button
+                          aria-label="Lejjebb"
+                          disabled={saving || index === categoryAmenities.length - 1}
+                          onClick={() => void move(category, amenity.id, 1)}
+                          size="sm"
+                          variant="outline-secondary"
+                        >
+                          <ArrowDown aria-hidden="true" size={16} />
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setEditingError(null)
+                            setEditing(copyAmenity(amenity))
+                          }}
+                          size="sm"
+                          variant="outline-primary"
+                        >
+                          <Pencil aria-hidden="true" size={16} /> Szerkesztés
+                        </Button>
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            </section>
+          ))}
+        </div>
       )}
 
       {editing && (

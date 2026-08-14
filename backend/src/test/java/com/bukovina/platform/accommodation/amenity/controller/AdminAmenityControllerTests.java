@@ -65,7 +65,8 @@ class AdminAmenityControllerTests {
         .perform(get("/api/guesthouses/nisztor-panzio").param("lang", "en"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.amenities[?(@.id == 'table_tennis')].name").value("Asztalitenisz"))
-        .andExpect(jsonPath("$.amenities[?(@.id == 'table_tennis')].pricingType").value("FREE"));
+        .andExpect(jsonPath("$.amenities[?(@.id == 'table_tennis')].pricingType").value("FREE"))
+        .andExpect(jsonPath("$.amenities[?(@.id == 'table_tennis')].displayOrder").value(nisztorOrder));
 
     UUID amenityId = amenityId("table_tennis");
     mockMvc

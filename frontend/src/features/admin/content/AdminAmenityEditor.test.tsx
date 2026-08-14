@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { AdminAmenity } from '../api/adminAmenities'
@@ -33,6 +33,25 @@ const existingAmenity: AdminAmenity = {
   ],
   assignments: [{ guesthouseId, active: true, displayOrder: 0 }],
 }
+
+const roomAmenities: AdminAmenity[] = [
+  {
+    ...existingAmenity,
+    id: 'e4d5840f-c54c-435f-a746-9d6174d41a11',
+    code: 'wifi',
+    category: 'ROOM_COMFORT',
+    translations: [{ language: 'hu', name: 'Wi-Fi', description: '', detailedDescription: '' }, ...existingAmenity.translations.slice(1)],
+    assignments: [{ guesthouseId, active: true, displayOrder: 0 }],
+  },
+  {
+    ...existingAmenity,
+    id: '5ab10451-64c9-4f31-89ed-e4032f9d7064',
+    code: 'television',
+    category: 'ROOM_COMFORT',
+    translations: [{ language: 'hu', name: 'Televízió', description: '', detailedDescription: '' }, ...existingAmenity.translations.slice(1)],
+    assignments: [{ guesthouseId, active: true, displayOrder: 1 }],
+  },
+]
 
 describe('AdminAmenityEditor', () => {
   it('creates a service from a non-Hungarian page language', async () => {
@@ -94,6 +113,33 @@ describe('AdminAmenityEditor', () => {
     expect(authorizedFetch).toHaveBeenLastCalledWith(
       `/api/admin/amenities/${existingAmenity.id}`,
       expect.objectContaining({ method: 'PUT' }),
+    )
+  })
+
+  it('groups services by category and reorders them within that category', async () => {
+    const user = userEvent.setup()
+    const authorizedFetch = vi
+      .fn()
+      .mockResolvedValueOnce(response(200, [existingAmenity, ...roomAmenities]))
+      .mockResolvedValueOnce(response(204, null))
+    renderEditor(authorizedFetch, 'hu')
+
+    const roomCategory = (await screen.findByRole('heading', { name: 'Szobai kényelem' })).closest('section')!
+    expect(within(roomCategory).getByText('Wi-Fi')).toBeVisible()
+    expect(within(roomCategory).getByText('Televízió')).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'Program és közösség' })).toBeVisible()
+
+    await user.click(within(roomCategory).getAllByRole('button', { name: 'Lejjebb' })[0])
+
+    await waitFor(() => expect(authorizedFetch).toHaveBeenCalledTimes(2))
+    expect(authorizedFetch).toHaveBeenLastCalledWith(
+      `/api/admin/guesthouses/${guesthouseId}/amenities/order`,
+      expect.objectContaining({
+        body: JSON.stringify({
+          amenityIds: [roomAmenities[1].id, roomAmenities[0].id, existingAmenity.id],
+        }),
+        method: 'PUT',
+      }),
     )
   })
 })

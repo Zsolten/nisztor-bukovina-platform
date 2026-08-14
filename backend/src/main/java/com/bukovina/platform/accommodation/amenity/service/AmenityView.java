@@ -6,4 +6,5 @@ public record AmenityView(
     String description,
     String detailedDescription,
     String category,
-    String pricingType) {}
+    String pricingType,
+    int displayOrder) {}

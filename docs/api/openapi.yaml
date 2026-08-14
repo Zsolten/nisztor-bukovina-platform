@@ -700,7 +700,7 @@ components:
             type: string
     Amenity:
       type: object
-      required: [id, name, category, pricingType]
+      required: [id, name, category, pricingType, displayOrder]
       properties:
         id:
           type: string
@@ -716,6 +716,9 @@ components:
           enum: [FREE, PAID]
         detailedDescription:
           type: string
+        displayOrder:
+          type: integer
+          minimum: 0
     PriceItem:
       type: object
       required: [id, label, amount, unit]

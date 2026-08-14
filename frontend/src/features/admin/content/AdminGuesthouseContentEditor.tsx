@@ -693,6 +693,9 @@ function toPreviewAmenities(
           requested.detailedDescription || hungarian.detailedDescription || undefined,
         category: amenity.category,
         pricingType: amenity.pricingType,
+        displayOrder: amenity.assignments.find(
+          (assignment) => assignment.guesthouseId === guesthouseId,
+        )!.displayOrder,
       }
     })
 }

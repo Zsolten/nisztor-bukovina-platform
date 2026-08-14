@@ -24,7 +24,8 @@ public class AmenityQueryDao {
                    COALESCE(requested.description, fallback.description) AS description,
                    COALESCE(requested.detailed_description, fallback.detailed_description) AS detailed_description,
                    amenity.category,
-                   amenity.pricing_type
+                   amenity.pricing_type,
+                   assignment.display_order
             FROM guesthouse_amenity assignment
             JOIN amenity ON amenity.id = assignment.amenity_id
             LEFT JOIN amenity_translation requested
@@ -47,7 +48,8 @@ public class AmenityQueryDao {
                     resultSet.getString("description"),
                     resultSet.getString("detailed_description"),
                     resultSet.getString("category"),
-                    resultSet.getString("pricing_type")))
+                    resultSet.getString("pricing_type"),
+                    resultSet.getInt("display_order")))
         .list();
   }
 }
