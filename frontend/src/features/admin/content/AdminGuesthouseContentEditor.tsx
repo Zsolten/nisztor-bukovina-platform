@@ -31,6 +31,7 @@ import { useAdminAuth } from '../auth/adminAuthContext'
 import AdminAmenityEditor from './AdminAmenityEditor'
 import AdminGuesthousePricingEditor from './AdminGuesthousePricingEditor'
 import AdminGuesthousePagePreview from './AdminGuesthousePagePreview'
+import AdminRoomTypeEditor from './AdminRoomTypeEditor'
 
 const LANGUAGES: Array<{ code: ContentLanguage; label: string }> = [
   { code: 'hu', label: 'Magyar' },
@@ -203,6 +204,7 @@ export default function AdminGuesthouseContentEditor() {
   const [amenityCatalogue, setAmenityCatalogue] = useState<AdminAmenity[] | null>(null)
   const [pricingDirty, setPricingDirty] = useState(false)
   const [pricingPreviewVersion, setPricingPreviewVersion] = useState(0)
+  const [roomTypesPreviewVersion, setRoomTypesPreviewVersion] = useState(0)
 
   const currentKey = guesthouseId ? translationKey(guesthouseId, language) : ''
   const draft = drafts[currentKey]
@@ -489,7 +491,7 @@ export default function AdminGuesthouseContentEditor() {
             <AdminGuesthousePagePreview
               amenities={previewAmenities}
               draft={draft}
-              key={`${guesthouseId}:${language}:${pricingPreviewVersion}`}
+              key={`${guesthouseId}:${language}:${pricingPreviewVersion}:${roomTypesPreviewVersion}`}
               language={language}
               onSelectSection={(section) => {
                 selectSection(section)
@@ -584,6 +586,15 @@ export default function AdminGuesthouseContentEditor() {
           guesthouseName={draft.name}
           onDirtyChange={setPricingDirty}
           onSaved={() => setPricingPreviewVersion((current) => current + 1)}
+        />
+      )}
+
+      {selectedSection === 'rooms' && (
+        <AdminRoomTypeEditor
+          guesthouseId={guesthouseId}
+          guesthouseName={draft.name}
+          language={language}
+          onSaved={() => setRoomTypesPreviewVersion((current) => current + 1)}
         />
       )}
 

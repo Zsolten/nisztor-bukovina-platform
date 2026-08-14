@@ -38,6 +38,7 @@ export default function GuesthouseRoomTypes({
             <Card as="article" className="room-type-card h-100">
               <Card.Body>
                 <Card.Title as="h3">{roomType.name}</Card.Title>
+                {roomType.shortDescription && <Card.Text>{roomType.shortDescription}</Card.Text>}
                 <div className="room-type-facts">
                   <span>{t('guesthouses.capacity', { count: roomType.standardOccupancy })}</span>
                 </div>

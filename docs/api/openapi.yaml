@@ -515,6 +515,77 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/AdminGuesthousePricingError' }
+  /admin/guesthouses/{guesthouseId}/room-types:
+    get:
+      operationId: listAdminRoomTypes
+      summary: List editable room types of one guesthouse
+      tags: [Administration]
+      security: [{ AdminBearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/GuesthouseId' }]
+      responses:
+        '200':
+          description: Room types in public display order.
+          content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/AdminRoomType' } } } }
+        '400': { description: Invalid request. }
+        '401': { description: Administrator authentication is missing or invalid. }
+        '403': { description: The authenticated account is not an administrator. }
+        '404': { description: Guesthouse not found. }
+    post:
+      operationId: createAdminRoomType
+      summary: Create a guesthouse-specific room type
+      tags: [Administration]
+      security: [{ AdminBearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/GuesthouseId' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/AdminRoomTypeUpdate' } } }
+      responses:
+        '201':
+          description: Created room type.
+          content: { application/json: { schema: { $ref: '#/components/schemas/AdminRoomType' } } }
+        '400': { description: Invalid room type data. }
+        '401': { description: Administrator authentication is missing or invalid. }
+        '403': { description: The authenticated account is not an administrator. }
+        '404': { description: Guesthouse not found. }
+  /admin/guesthouses/{guesthouseId}/room-types/{roomTypeId}:
+    put:
+      operationId: updateAdminRoomType
+      summary: Update a room type, including its selectable quantity
+      tags: [Administration]
+      security: [{ AdminBearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/GuesthouseId'
+        - name: roomTypeId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/AdminRoomTypeUpdate' } } }
+      responses:
+        '200':
+          description: Updated room type.
+          content: { application/json: { schema: { $ref: '#/components/schemas/AdminRoomType' } } }
+        '400': { description: Invalid room type data. }
+        '401': { description: Administrator authentication is missing or invalid. }
+        '403': { description: The authenticated account is not an administrator. }
+        '404': { description: Guesthouse or room type not found. }
+  /admin/guesthouses/{guesthouseId}/room-types/order:
+    put:
+      operationId: reorderAdminRoomTypes
+      summary: Replace the room-type display order of one guesthouse
+      tags: [Administration]
+      security: [{ AdminBearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/GuesthouseId' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/AdminRoomTypeOrderUpdate' } } }
+      responses:
+        '204': { description: Room types reordered. }
+        '400': { description: Invalid room type order. }
+        '401': { description: Administrator authentication is missing or invalid. }
+        '403': { description: The authenticated account is not an administrator. }
+        '404': { description: Guesthouse not found. }
   /admin/amenities:
     get:
       operationId: listAdminAmenities
@@ -729,6 +800,8 @@ components:
       required:
         - id
         - name
+        - shortDescription
+        - detailedDescription
         - quantity
         - standardOccupancy
         - roomsWithExtraBed
@@ -739,6 +812,10 @@ components:
           type: string
           format: uuid
         name:
+          type: string
+        shortDescription:
+          type: string
+        detailedDescription:
           type: string
         quantity:
           type: integer
@@ -1578,6 +1655,69 @@ components:
             - ADMIN_PRICING_NOT_FOUND
             - ADMIN_PRICING_VALIDATION_FAILED
             - INVALID_ADMIN_PRICING_REQUEST
+        fieldErrors:
+          type: object
+          additionalProperties: { type: string }
+    AdminRoomType:
+      type: object
+      additionalProperties: false
+      required: [id, code, quantity, standardOccupancy, roomsWithExtraBed, extraBedsPerEligibleRoom, active, displayOrder, translations]
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string, pattern: '^[a-z0-9]+(?:_[a-z0-9]+)*$', maxLength: 80 }
+        quantity: { type: integer, minimum: 0, maximum: 15 }
+        standardOccupancy: { type: integer, minimum: 1, maximum: 4 }
+        roomsWithExtraBed: { type: integer, minimum: 0, maximum: 15 }
+        extraBedsPerEligibleRoom: { type: integer, minimum: 0, maximum: 4 }
+        active: { type: boolean }
+        displayOrder: { type: integer, minimum: 0 }
+        translations:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items: { $ref: '#/components/schemas/AdminRoomTypeTranslation' }
+    AdminRoomTypeTranslation:
+      type: object
+      additionalProperties: false
+      required: [language, name, shortDescription, detailedDescription]
+      properties:
+        language: { type: string, enum: [hu, ro, en] }
+        name: { type: string, maxLength: 160 }
+        shortDescription: { type: string, maxLength: 1000 }
+        detailedDescription: { type: string, maxLength: 5000 }
+    AdminRoomTypeUpdate:
+      type: object
+      additionalProperties: false
+      required: [code, quantity, standardOccupancy, roomsWithExtraBed, extraBedsPerEligibleRoom, active, translations]
+      properties:
+        code: { type: string, pattern: '^[a-z0-9]+(?:_[a-z0-9]+)*$', minLength: 1, maxLength: 80 }
+        quantity: { type: integer, minimum: 0, maximum: 15 }
+        standardOccupancy: { type: integer, minimum: 1, maximum: 4 }
+        roomsWithExtraBed: { type: integer, minimum: 0, maximum: 15 }
+        extraBedsPerEligibleRoom: { type: integer, minimum: 0, maximum: 4 }
+        active: { type: boolean }
+        translations:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items: { $ref: '#/components/schemas/AdminRoomTypeTranslation' }
+    AdminRoomTypeOrderUpdate:
+      type: object
+      additionalProperties: false
+      required: [roomTypeIds]
+      properties:
+        roomTypeIds:
+          type: array
+          uniqueItems: true
+          items: { type: string, format: uuid }
+    AdminRoomTypeError:
+      type: object
+      additionalProperties: false
+      required: [code, fieldErrors]
+      properties:
+        code:
+          type: string
+          enum: [ADMIN_ROOM_TYPE_GUESTHOUSE_NOT_FOUND, ROOM_TYPE_NOT_FOUND, ROOM_TYPE_CODE_ALREADY_EXISTS, INVALID_ROOM_TYPE_ORDER, ADMIN_ROOM_TYPE_VALIDATION_FAILED, INVALID_ADMIN_ROOM_TYPE_REQUEST]
         fieldErrors:
           type: object
           additionalProperties: { type: string }

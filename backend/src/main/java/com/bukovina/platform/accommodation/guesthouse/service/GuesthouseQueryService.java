@@ -145,6 +145,8 @@ public class GuesthouseQueryService implements GuesthouseBookingQuery, Guesthous
     return new RoomTypeResponse(
         roomType.id(),
         roomType.name(),
+        roomType.shortDescription(),
+        roomType.detailedDescription(),
         roomType.quantity(),
         roomType.standardOccupancy(),
         roomType.roomsWithExtraBed(),

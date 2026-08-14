@@ -52,6 +52,8 @@ export interface GuesthouseAddress {
 export interface GuesthouseRoomType {
   id: string
   name: string
+  shortDescription?: string
+  detailedDescription?: string
   quantity: number
   standardOccupancy: number
   roomsWithExtraBed: number

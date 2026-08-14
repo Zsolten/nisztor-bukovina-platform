@@ -6,6 +6,8 @@ import java.util.UUID;
 public record RoomTypeView(
     UUID id,
     String name,
+    String shortDescription,
+    String detailedDescription,
     int quantity,
     int standardOccupancy,
     int roomsWithExtraBed,

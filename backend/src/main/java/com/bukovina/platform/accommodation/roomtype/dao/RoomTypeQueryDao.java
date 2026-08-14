@@ -23,6 +23,8 @@ public class RoomTypeQueryDao {
             """
             SELECT room.id, room.code,
                    COALESCE(requested.name, fallback.name) AS name,
+                   COALESCE(requested.short_description, fallback.short_description) AS short_description,
+                   COALESCE(requested.detailed_description, fallback.detailed_description) AS detailed_description,
                    room.quantity, room.standard_occupancy,
                    room.rooms_with_extra_bed, room.extra_beds_per_eligible_room
             FROM room_type room
@@ -43,6 +45,8 @@ public class RoomTypeQueryDao {
                 new RoomTypeView(
                     resultSet.getObject("id", UUID.class),
                     resultSet.getString("name"),
+                    resultSet.getString("short_description"),
+                    resultSet.getString("detailed_description"),
                     resultSet.getInt("quantity"),
                     resultSet.getInt("standard_occupancy"),
                     resultSet.getInt("rooms_with_extra_bed"),
