@@ -1,11 +1,14 @@
 package com.bukovina.platform.accommodation.roomtype.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bukovina.platform.testsupport.PostgreSqlTestContainerConfiguration;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest(properties = "DB_PASSWORD=test-password")
@@ -26,6 +30,7 @@ class AdminRoomTypeControllerTests {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private JdbcTemplate jdbcTemplate;
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Test
   void protectsRoomTypesFromAnonymousUsers() throws Exception {
@@ -48,10 +53,21 @@ class AdminRoomTypeControllerTests {
         .andExpect(jsonPath("$.quantity").value(7))
         .andExpect(jsonPath("$.standardOccupancy").value(4));
 
-    mockMvc
-        .perform(get("/api/guesthouses/nisztor-panzio").queryParam("lang", "en"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.roomTypes[?(@.name == 'Family room')].quantity[0]").value(7));
+    MvcResult publicResponse =
+        mockMvc
+            .perform(get("/api/guesthouses/nisztor-panzio").queryParam("lang", "en"))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    JsonNode roomTypes =
+        objectMapper.readTree(publicResponse.getResponse().getContentAsString()).at("/roomTypes");
+    for (JsonNode roomType : roomTypes) {
+      if ("Family room".equals(roomType.path("name").asText())) {
+        assertEquals(7, roomType.path("quantity").asInt());
+        return;
+      }
+    }
+    throw new AssertionError("Family room not found in public response");
   }
 
   private UUID guesthouseId() {
