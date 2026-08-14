@@ -462,6 +462,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AdminGuesthouseContentError'
+  /admin/guesthouses/{guesthouseId}/pricing:
+    get:
+      operationId: getAdminGuesthousePricing
+      summary: Get the current editable prices of one guesthouse
+      tags: [Administration]
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/GuesthouseId'
+      responses:
+        '200':
+          description: Current guesthouse prices, surcharges, and discounts.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminGuesthousePricing' }
+        '401': { description: Administrator authentication is missing or invalid. }
+        '403': { description: The authenticated account is not an administrator. }
+        '404':
+          description: No guesthouse or active price configuration exists with the supplied identifier.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminGuesthousePricingError' }
+    put:
+      operationId: updateAdminGuesthousePricing
+      summary: Replace the current numeric prices of one guesthouse
+      tags: [Administration]
+      security:
+        - AdminBearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/GuesthouseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminGuesthousePricingUpdate' }
+      responses:
+        '200':
+          description: Updated current guesthouse prices.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminGuesthousePricing' }
+        '400':
+          description: Invalid, missing, duplicate, negative, or unknown price values.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminGuesthousePricingError' }
+        '401': { description: Administrator authentication is missing or invalid. }
+        '403': { description: The authenticated account is not an administrator. }
+        '404':
+          description: No guesthouse or active price configuration exists with the supplied identifier.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminGuesthousePricingError' }
   /admin/amenities:
     get:
       operationId: listAdminAmenities
@@ -599,6 +652,11 @@ components:
           schema:
             $ref: '#/components/schemas/BookingManagementError'
   parameters:
+    GuesthouseId:
+      name: guesthouseId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
     AmenityId:
       name: amenityId
       in: path
@@ -732,7 +790,7 @@ components:
           minimum: 0
         unit:
           type: string
-          enum: [person_night, person, day]
+          enum: [person_night, room_night, person, day]
     PricingAdjustment:
       type: object
       required: [id, label, percentage]
@@ -1448,6 +1506,81 @@ components:
           oneOf:
             - $ref: '#/components/schemas/AdminGuesthouseTranslation'
             - type: 'null'
+    AdminGuesthousePricing:
+      type: object
+      additionalProperties: false
+      required: [guesthouseId, currency, items, surcharges, discounts]
+      properties:
+        guesthouseId: { type: string, format: uuid }
+        currency: { type: string, enum: [RON] }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/AdminPriceItem' }
+        surcharges:
+          type: array
+          items: { $ref: '#/components/schemas/AdminPricingAdjustment' }
+        discounts:
+          type: array
+          items: { $ref: '#/components/schemas/AdminPricingAdjustment' }
+    AdminPriceItem:
+      type: object
+      additionalProperties: false
+      required: [code, label, amount, unit]
+      properties:
+        code: { type: string }
+        label: { type: string }
+        amount: { type: number, minimum: 0 }
+        unit: { type: string, enum: [person_night, room_night, person, day] }
+    AdminPricingAdjustment:
+      type: object
+      additionalProperties: false
+      required: [code, label, percentage]
+      properties:
+        code: { type: string }
+        label: { type: string }
+        percentage: { type: number, minimum: 0, maximum: 100 }
+    AdminGuesthousePricingUpdate:
+      type: object
+      additionalProperties: false
+      required: [items, surcharges, discounts]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [code, amount]
+            properties:
+              code: { type: string, minLength: 1 }
+              amount: { type: number, minimum: 0 }
+        surcharges:
+          type: array
+          items: { $ref: '#/components/schemas/AdminPricingAdjustmentUpdate' }
+        discounts:
+          type: array
+          items: { $ref: '#/components/schemas/AdminPricingAdjustmentUpdate' }
+    AdminPricingAdjustmentUpdate:
+      type: object
+      additionalProperties: false
+      required: [code, percentage]
+      properties:
+        code: { type: string, minLength: 1 }
+        percentage: { type: number, minimum: 0, maximum: 100 }
+    AdminGuesthousePricingError:
+      type: object
+      additionalProperties: false
+      required: [code, fieldErrors]
+      properties:
+        code:
+          type: string
+          enum:
+            - ADMIN_PRICING_GUESTHOUSE_NOT_FOUND
+            - ADMIN_PRICING_NOT_FOUND
+            - ADMIN_PRICING_VALIDATION_FAILED
+            - INVALID_ADMIN_PRICING_REQUEST
+        fieldErrors:
+          type: object
+          additionalProperties: { type: string }
     AdminAmenity:
       type: object
       additionalProperties: false

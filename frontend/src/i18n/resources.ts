@@ -66,6 +66,8 @@ export const resources = {
         retry: 'Újrapróbálás',
         numberOfRooms: 'Szobák száma',
         perPersonNight: '/ fő / éj',
+        perRoomNight: '/ szoba / éj',
+        roomPriceDetail: '{{amount}} / fő / éj',
         capacityStatus: '{{guests}} vendég · {{capacity}} kiválasztott férőhely',
         meals: 'Étkezések',
         mealsHint: 'A reggeli és a vacsora nem része az alapárnak.',
@@ -86,7 +88,7 @@ export const resources = {
         total: 'Összesen',
         largeGroupTitle: 'Egyeztessünk telefonon',
         largeGroupMessage:
-          '{{threshold}} vagy több vendég esetén személyre szabott ajánlatot adunk.',
+          '{{threshold}} fő fölött telefonon egyeztetünk a szobabeosztásról, és személyre szabott ajánlatot adunk.',
         continueToContact: 'Tovább az adatokhoz',
         reviewTitle: 'Kapcsolat és ellenőrzés',
         backToBooking: 'Vissza a foglalási adatokhoz',
@@ -258,6 +260,7 @@ export const resources = {
         },
         priceUnits: {
           person_night: 'fő / éj',
+          room_night: 'szoba / éj',
           person: 'fő',
           day: 'nap',
         },
@@ -401,6 +404,8 @@ export const resources = {
         retry: 'Reîncearcă',
         numberOfRooms: 'Număr de camere',
         perPersonNight: '/ persoană / noapte',
+        perRoomNight: '/ cameră / noapte',
+        roomPriceDetail: '{{amount}} / persoană / noapte',
         capacityStatus: '{{guests}} oaspeți · {{capacity}} locuri selectate',
         meals: 'Mese',
         mealsHint: 'Micul dejun și cina nu sunt incluse în prețul de bază.',
@@ -421,7 +426,7 @@ export const resources = {
         total: 'Total',
         largeGroupTitle: 'Să discutăm telefonic',
         largeGroupMessage:
-          'Pentru {{threshold}} sau mai mulți oaspeți pregătim o ofertă personalizată.',
+          'Pentru mai mult de {{threshold}} oaspeți stabilim telefonic repartizarea camerelor și pregătim o ofertă personalizată.',
         continueToContact: 'Continuă la datele personale',
         reviewTitle: 'Contact și verificare',
         backToBooking: 'Înapoi la datele rezervării',
@@ -587,6 +592,7 @@ export const resources = {
         },
         priceUnits: {
           person_night: 'persoană / noapte',
+          room_night: 'cameră / noapte',
           person: 'persoană',
           day: 'zi',
         },
@@ -731,6 +737,8 @@ export const resources = {
         retry: 'Retry',
         numberOfRooms: 'Number of rooms',
         perPersonNight: '/ person / night',
+        perRoomNight: '/ room / night',
+        roomPriceDetail: '{{amount}} / person / night',
         capacityStatus: '{{guests}} guests · {{capacity}} selected beds',
         meals: 'Meals',
         mealsHint: 'Breakfast and dinner are not included in the base price.',
@@ -750,7 +758,8 @@ export const resources = {
         accommodation: 'Accommodation',
         total: 'Total',
         largeGroupTitle: 'Let’s arrange this by phone',
-        largeGroupMessage: 'For {{threshold}} or more guests, we prepare a personalised offer.',
+        largeGroupMessage:
+          'For more than {{threshold}} guests, we arrange the room allocation by phone and prepare a personalised offer.',
         continueToContact: 'Continue to contact details',
         reviewTitle: 'Contact and review',
         backToBooking: 'Back to booking details',
@@ -920,6 +929,7 @@ export const resources = {
         },
         priceUnits: {
           person_night: 'person / night',
+          room_night: 'room / night',
           person: 'person',
           day: 'day',
         },

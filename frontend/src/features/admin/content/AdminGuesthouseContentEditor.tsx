@@ -29,6 +29,7 @@ import {
 } from '../api/adminGuesthouseContent'
 import { useAdminAuth } from '../auth/adminAuthContext'
 import AdminAmenityEditor from './AdminAmenityEditor'
+import AdminGuesthousePricingEditor from './AdminGuesthousePricingEditor'
 import AdminGuesthousePagePreview from './AdminGuesthousePagePreview'
 
 const LANGUAGES: Array<{ code: ContentLanguage; label: string }> = [
@@ -200,6 +201,8 @@ export default function AdminGuesthouseContentEditor() {
   const [conflict, setConflict] = useState<AdminGuesthouseTranslation | null>(null)
   const [dismissedBlockLocationKey, setDismissedBlockLocationKey] = useState<string | null>(null)
   const [amenityCatalogue, setAmenityCatalogue] = useState<AdminAmenity[] | null>(null)
+  const [pricingDirty, setPricingDirty] = useState(false)
+  const [pricingPreviewVersion, setPricingPreviewVersion] = useState(0)
 
   const currentKey = guesthouseId ? translationKey(guesthouseId, language) : ''
   const draft = drafts[currentKey]
@@ -208,11 +211,12 @@ export default function AdminGuesthouseContentEditor() {
   const previewAmenities = amenityCatalogue
     ? toPreviewAmenities(amenityCatalogue, guesthouseId, language)
     : undefined
-  const dirty = useMemo(
+  const contentDirty = useMemo(
     () =>
       Object.keys(drafts).some((key) => JSON.stringify(drafts[key]) !== JSON.stringify(saved[key])),
     [drafts, saved],
   )
+  const dirty = contentDirty || pricingDirty
 
   const load = useCallback(
     async (signal?: AbortSignal) => {
@@ -394,6 +398,7 @@ export default function AdminGuesthouseContentEditor() {
               setFieldErrors({})
               setFeedback(null)
               setConflict(null)
+              setPricingDirty(false)
             }}
           >
             {guesthouses.map((guesthouse) => {
@@ -484,6 +489,7 @@ export default function AdminGuesthouseContentEditor() {
             <AdminGuesthousePagePreview
               amenities={previewAmenities}
               draft={draft}
+              key={`${guesthouseId}:${language}:${pricingPreviewVersion}`}
               language={language}
               onSelectSection={(section) => {
                 selectSection(section)
@@ -573,6 +579,15 @@ export default function AdminGuesthouseContentEditor() {
         </div>
       )}
 
+      {selectedSection === 'pricing' && (
+        <AdminGuesthousePricingEditor
+          guesthouseId={guesthouseId}
+          guesthouseName={draft.name}
+          onDirtyChange={setPricingDirty}
+          onSaved={() => setPricingPreviewVersion((current) => current + 1)}
+        />
+      )}
+
       <Modal
         centered
         className="admin-unsaved-changes-modal"
@@ -586,7 +601,7 @@ export default function AdminGuesthouseContentEditor() {
           </span>
           <p className="admin-eyebrow">Mentetlen szerkesztés</p>
           <h2>Elveti a módosításokat?</h2>
-          <p>A kiválasztott panzió fordításán végzett változtatások nem lettek mentve.</p>
+          <p>A kiválasztott panzión végzett tartalom- vagy ármódosítások nem lettek mentve.</p>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" onClick={stayOnPage}>

@@ -71,7 +71,7 @@ export interface GuesthouseAmenity {
   displayOrder?: number
 }
 
-export type PriceUnit = 'person_night' | 'person' | 'day'
+export type PriceUnit = 'person_night' | 'room_night' | 'person' | 'day'
 
 export interface GuesthousePriceItem {
   id: string

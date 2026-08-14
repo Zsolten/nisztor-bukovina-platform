@@ -11,6 +11,7 @@ interface GuesthousePricingProps {
 
 const UNIT_LABELS = {
   person_night: 'guesthouses.priceUnits.person_night',
+  room_night: 'guesthouses.priceUnits.room_night',
   person: 'guesthouses.priceUnits.person',
   day: 'guesthouses.priceUnits.day',
 } as const
