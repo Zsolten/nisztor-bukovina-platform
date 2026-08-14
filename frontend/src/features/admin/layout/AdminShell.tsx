@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button, Container, Nav, Navbar, Offcanvas } from 'react-bootstrap'
-import { CalendarDays, LogOut } from 'lucide-react'
+import { CalendarDays, FileText, LogOut } from 'lucide-react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAdminAuth } from '../auth/adminAuthContext'
 
@@ -33,6 +33,10 @@ export default function AdminShell() {
           <NavLink to="/admin/bookings">
             <CalendarDays aria-hidden="true" size={19} />
             <span>Foglalások</span>
+          </NavLink>
+          <NavLink to="/admin/content">
+            <FileText aria-hidden="true" size={19} />
+            <span>Tartalmak</span>
           </NavLink>
         </nav>
 
@@ -82,6 +86,10 @@ export default function AdminShell() {
                 >
                   <CalendarDays aria-hidden="true" size={18} />
                   Foglalások
+                </Nav.Link>
+                <Nav.Link as={NavLink} onClick={() => setNavigationOpen(false)} to="/admin/content">
+                  <FileText aria-hidden="true" size={18} />
+                  Tartalmak
                 </Nav.Link>
               </Nav>
               <Button

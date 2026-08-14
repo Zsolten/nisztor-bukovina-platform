@@ -12,6 +12,7 @@ public record GuesthouseDetailResponse(
     GuesthouseImageResponse coverImage,
     String description,
     String roomDescription,
+    GuesthousePageTextResponse pageText,
     List<GuesthouseImageResponse> images,
     GuesthouseHistoryResponse history,
     List<GuesthouseContactResponse> contacts,

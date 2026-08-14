@@ -8,6 +8,7 @@ import com.bukovina.platform.accommodation.guesthouse.dto.AmenityResponse;
 import com.bukovina.platform.accommodation.guesthouse.dto.GuesthouseDetailResponse;
 import com.bukovina.platform.accommodation.guesthouse.dto.GuesthouseHistoryResponse;
 import com.bukovina.platform.accommodation.guesthouse.dto.GuesthouseImageResponse;
+import com.bukovina.platform.accommodation.guesthouse.dto.GuesthousePageTextResponse;
 import com.bukovina.platform.accommodation.guesthouse.dto.GuesthousePricingResponse;
 import com.bukovina.platform.accommodation.guesthouse.dto.GuesthouseSummaryResponse;
 import com.bukovina.platform.accommodation.guesthouse.dto.PriceItemResponse;
@@ -79,6 +80,18 @@ public class GuesthouseQueryService implements GuesthouseBookingQuery {
         coverImage(images),
         translation.getDescription(),
         translation.getRoomDescription(),
+        new GuesthousePageTextResponse(
+            translation.getStoryEyebrow(),
+            translation.getStoryTitle(),
+            translation.getDiningEyebrow(),
+            translation.getDiningTitle(),
+            translation.getDiningDescription(),
+            translation.getAmenitiesTitle(),
+            translation.getRoomTypesTitle(),
+            translation.getPricingTitle(),
+            translation.getHistoryEyebrow(),
+            translation.getGalleryTitle(),
+            translation.getGalleryHint()),
         images,
         new GuesthouseHistoryResponse(translation.getHistoryTitle(), translation.getHistoryText()),
         contentQueryDao.findContacts(guesthouse.getId(), language),

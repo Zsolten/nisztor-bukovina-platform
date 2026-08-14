@@ -5,7 +5,13 @@ const DINING_IMAGES = [
   '/images/guesthouses/food/food-2.jpg',
 ] as const
 
-export default function GuesthouseDining() {
+interface GuesthouseDiningProps {
+  eyebrow: string
+  title: string
+  description: string
+}
+
+export default function GuesthouseDining({ eyebrow, title, description }: GuesthouseDiningProps) {
   const { t } = useTranslation()
 
   return (
@@ -15,9 +21,9 @@ export default function GuesthouseDining() {
     >
       <div className="editorial-copy">
         <p className="section-index">02</p>
-        <p className="eyebrow">{t('guesthouses.diningEyebrow')}</p>
-        <h2 id="dining-heading">{t('guesthouses.diningTitle')}</h2>
-        <p>{t('guesthouses.diningDescription')}</p>
+        <p className="eyebrow">{eyebrow}</p>
+        <h2 id="dining-heading">{title}</h2>
+        <p>{description}</p>
       </div>
       <div
         className="editorial-images editorial-images--food"
