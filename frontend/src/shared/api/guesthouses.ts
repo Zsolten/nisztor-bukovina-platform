@@ -20,6 +20,20 @@ export interface GuesthouseHistory {
   text: string
 }
 
+export interface GuesthousePageText {
+  storyEyebrow: string
+  storyTitle: string
+  diningEyebrow: string
+  diningTitle: string
+  diningDescription: string
+  amenitiesTitle: string
+  roomTypesTitle: string
+  pricingTitle: string
+  historyEyebrow: string
+  galleryTitle: string
+  galleryHint: string
+}
+
 export type GuesthouseContactType = 'PERSON' | 'PHONE' | 'EMAIL'
 
 export interface GuesthouseContact {
@@ -81,6 +95,7 @@ export interface GuesthousePricing {
 export interface GuesthouseDetail extends GuesthouseSummary {
   description: string
   roomDescription: string
+  pageText: GuesthousePageText
   images: GuesthouseImage[]
   history: GuesthouseHistory
   contacts: GuesthouseContact[]

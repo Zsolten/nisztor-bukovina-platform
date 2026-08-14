@@ -17,6 +17,11 @@ public class GuesthouseTranslationId implements Serializable {
 
   protected GuesthouseTranslationId() {}
 
+  public GuesthouseTranslationId(UUID guesthouseId, String languageCode) {
+    this.guesthouseId = guesthouseId;
+    this.languageCode = languageCode;
+  }
+
   public UUID getGuesthouseId() {
     return guesthouseId;
   }

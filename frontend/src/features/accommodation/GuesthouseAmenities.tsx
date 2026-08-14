@@ -3,6 +3,7 @@ import type { AmenityCategory, GuesthouseAmenity } from '../../shared/api/guesth
 
 interface GuesthouseAmenitiesProps {
   amenities: GuesthouseAmenity[]
+  title: string
 }
 
 const CATEGORY_ORDER: AmenityCategory[] = [
@@ -19,7 +20,7 @@ const CATEGORY_LABELS = {
   PROGRAM_GROUP: 'guesthouses.amenityCategories.PROGRAM_GROUP',
 } as const
 
-export default function GuesthouseAmenities({ amenities }: GuesthouseAmenitiesProps) {
+export default function GuesthouseAmenities({ amenities, title }: GuesthouseAmenitiesProps) {
   const { t } = useTranslation()
 
   if (amenities.length === 0) return null
@@ -31,7 +32,7 @@ export default function GuesthouseAmenities({ amenities }: GuesthouseAmenitiesPr
     >
       <header className="detail-sheet-heading">
         <p className="section-index">03</p>
-        <h2 id="amenities-heading">{t('guesthouses.amenities')}</h2>
+        <h2 id="amenities-heading">{title}</h2>
       </header>
       <div className="amenity-groups">
         {CATEGORY_ORDER.map((category) => {

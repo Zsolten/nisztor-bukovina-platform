@@ -6,6 +6,7 @@ import BookingPlaceholderButton from './BookingPlaceholderButton'
 
 interface GuesthousePricingProps {
   pricing: Pricing
+  title: string
 }
 
 const UNIT_LABELS = {
@@ -14,7 +15,7 @@ const UNIT_LABELS = {
   day: 'guesthouses.priceUnits.day',
 } as const
 
-export default function GuesthousePricing({ pricing }: GuesthousePricingProps) {
+export default function GuesthousePricing({ pricing, title }: GuesthousePricingProps) {
   const { t } = useTranslation()
 
   if (pricing.items.length === 0) return null
@@ -26,7 +27,7 @@ export default function GuesthousePricing({ pricing }: GuesthousePricingProps) {
     >
       <header className="detail-sheet-heading pricing-heading">
         <p className="section-index">05</p>
-        <h2 id="pricing-heading">{t('guesthouses.pricing')}</h2>
+        <h2 id="pricing-heading">{title}</h2>
         <BookingPlaceholderButton />
       </header>
       <Row className="pricing-grid">
