@@ -54,12 +54,12 @@ class AdminGuesthousePricingControllerTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updateRequest(guesthouseId, new BigDecimal("199.00"))))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.items[?(@.code == 'accommodation')][0].amount").value(199));
+        .andExpect(jsonPath("$.items[?(@.code == 'accommodation')].amount[0]").value(199));
 
     mockMvc
         .perform(get("/api/guesthouses/nisztor-panzio").queryParam("lang", "hu"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.pricing.items[?(@.id == 'accommodation')][0].amount").value(199));
+        .andExpect(jsonPath("$.pricing.items[?(@.id == 'accommodation')].amount[0]").value(199));
   }
 
   private UUID guesthouseId() {

@@ -7,7 +7,7 @@ import com.bukovina.platform.accommodation.amenity.dto.AdminAmenityResponse;
 import com.bukovina.platform.accommodation.amenity.dto.AdminAmenityTranslationResponse;
 import com.bukovina.platform.accommodation.amenity.dto.AdminAmenityTranslationUpdateRequest;
 import com.bukovina.platform.accommodation.amenity.dto.AdminAmenityUpdateRequest;
-import com.bukovina.platform.accommodation.guesthouse.dao.GuesthouseRepository;
+import com.bukovina.platform.accommodation.guesthouse.service.GuesthouseExistenceQuery;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,11 +26,12 @@ public class AdminAmenityService {
   private static final Set<String> PRICING_TYPES = Set.of("FREE", "PAID");
 
   private final JdbcClient jdbcClient;
-  private final GuesthouseRepository guesthouseRepository;
+  private final GuesthouseExistenceQuery guesthouseExistenceQuery;
 
-  public AdminAmenityService(JdbcClient jdbcClient, GuesthouseRepository guesthouseRepository) {
+  public AdminAmenityService(
+      JdbcClient jdbcClient, GuesthouseExistenceQuery guesthouseExistenceQuery) {
     this.jdbcClient = jdbcClient;
-    this.guesthouseRepository = guesthouseRepository;
+    this.guesthouseExistenceQuery = guesthouseExistenceQuery;
   }
 
   @Transactional(readOnly = true)
@@ -302,7 +303,7 @@ public class AdminAmenityService {
   }
 
   private void ensureGuesthouseExists(UUID guesthouseId) {
-    if (!guesthouseRepository.existsById(guesthouseId)) {
+    if (!guesthouseExistenceQuery.exists(guesthouseId)) {
       throw new AdminAmenityException("ADMIN_AMENITY_GUESTHOUSE_NOT_FOUND");
     }
   }

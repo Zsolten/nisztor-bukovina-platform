@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class GuesthouseQueryService implements GuesthouseBookingQuery {
+public class GuesthouseQueryService implements GuesthouseBookingQuery, GuesthouseExistenceQuery {
 
   private static final String DEFAULT_LANGUAGE = "hu";
 
@@ -59,6 +59,12 @@ public class GuesthouseQueryService implements GuesthouseBookingQuery {
   @Transactional(readOnly = true)
   public boolean existsActive(java.util.UUID guesthouseId) {
     return guesthouseRepository.existsByIdAndActiveTrue(guesthouseId);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public boolean exists(java.util.UUID guesthouseId) {
+    return guesthouseRepository.existsById(guesthouseId);
   }
 
   @Transactional(readOnly = true)

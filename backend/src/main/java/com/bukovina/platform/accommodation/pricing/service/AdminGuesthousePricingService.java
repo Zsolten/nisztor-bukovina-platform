@@ -1,5 +1,6 @@
 package com.bukovina.platform.accommodation.pricing.service;
 
+import com.bukovina.platform.accommodation.guesthouse.service.GuesthouseExistenceQuery;
 import com.bukovina.platform.accommodation.pricing.dto.AdminGuesthousePricingResponse;
 import com.bukovina.platform.accommodation.pricing.dto.AdminGuesthousePricingUpdateRequest;
 import com.bukovina.platform.accommodation.pricing.dto.AdminPriceItemResponse;
@@ -20,9 +21,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class AdminGuesthousePricingService {
 
   private final JdbcClient jdbcClient;
+  private final GuesthouseExistenceQuery guesthouseExistenceQuery;
 
-  public AdminGuesthousePricingService(JdbcClient jdbcClient) {
+  public AdminGuesthousePricingService(
+      JdbcClient jdbcClient, GuesthouseExistenceQuery guesthouseExistenceQuery) {
     this.jdbcClient = jdbcClient;
+    this.guesthouseExistenceQuery = guesthouseExistenceQuery;
   }
 
   @Transactional(readOnly = true)
@@ -174,13 +178,7 @@ public class AdminGuesthousePricingService {
   }
 
   private void ensureGuesthouseExists(UUID guesthouseId) {
-    boolean exists =
-        jdbcClient
-            .sql("SELECT EXISTS (SELECT 1 FROM guesthouse WHERE id = :guesthouseId)")
-            .param("guesthouseId", guesthouseId)
-            .query(Boolean.class)
-            .single();
-    if (!exists) {
+    if (!guesthouseExistenceQuery.exists(guesthouseId)) {
       throw new AdminPricingException("ADMIN_PRICING_GUESTHOUSE_NOT_FOUND");
     }
   }
