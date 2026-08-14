@@ -132,12 +132,12 @@ class PublicBookingControllerTests {
 
     expectError(quoteJson(guesthouseId, roomTypeId, 0, 0, 0, 1, 0, 0), "TOTAL_GUESTS_REQUIRED");
     expectError(quoteJson(guesthouseId, roomTypeId, -1, 0, 0, 1, 0, 0), "NEGATIVE_GUEST_COUNT");
-    expectError(quoteJson(guesthouseId, roomTypeId, 20, 0, 0, 6, 0, 0), "LARGE_GROUP_OFFLINE_ONLY");
+    expectError(quoteJson(guesthouseId, roomTypeId, 31, 0, 0, 6, 0, 0), "LARGE_GROUP_OFFLINE_ONLY");
 
     UUID triple = roomTypeId("bukovina-panzio", "triple");
-    UUID quadruple = roomTypeId("bukovina-panzio", "quadruple");
+    jdbcTemplate.update("UPDATE room_type SET quantity = 6 WHERE id = ?", triple);
     String boundaryRequest =
-        quoteJson(guesthouseId, roomTypeId, 19, 0, 0, 6, 0, 0)
+        quoteJson(guesthouseId, roomTypeId, 30, 0, 0, 6, 0, 0)
             .replace(
                 "{\"roomTypeId\": \"" + roomTypeId + "\", \"quantity\": 6}",
                 "{\"roomTypeId\": \""
@@ -145,17 +145,14 @@ class PublicBookingControllerTests {
                     + "\", \"quantity\": 6},"
                     + "{\"roomTypeId\": \""
                     + triple
-                    + "\", \"quantity\": 1},"
-                    + "{\"roomTypeId\": \""
-                    + quadruple
-                    + "\", \"quantity\": 1}");
+                    + "\", \"quantity\": 6}");
     mockMvc
         .perform(
             post("/api/booking-quotes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(boundaryRequest))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.totalGuests").value(19));
+        .andExpect(jsonPath("$.totalGuests").value(30));
   }
 
   @Test
