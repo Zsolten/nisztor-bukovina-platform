@@ -27,6 +27,7 @@ import {
   type ContentLanguage,
 } from '../api/adminGuesthouseContent'
 import { useAdminAuth } from '../auth/adminAuthContext'
+import AdminAmenityEditor from './AdminAmenityEditor'
 import AdminGuesthousePagePreview from './AdminGuesthousePagePreview'
 
 const LANGUAGES: Array<{ code: ContentLanguage; label: string }> = [
@@ -195,6 +196,7 @@ export default function AdminGuesthouseContentEditor() {
     message: string
   } | null>(null)
   const [conflict, setConflict] = useState<AdminGuesthouseTranslation | null>(null)
+  const [dismissedBlockLocationKey, setDismissedBlockLocationKey] = useState<string | null>(null)
 
   const currentKey = guesthouseId ? translationKey(guesthouseId, language) : ''
   const draft = drafts[currentKey]
@@ -249,12 +251,15 @@ export default function AdminGuesthouseContentEditor() {
     ),
   )
   const blocker = useBlocker(dirty)
+  const blockedLocationKey = blocker.state === 'blocked' ? blocker.location.key : null
 
   function stayOnPage() {
+    setDismissedBlockLocationKey(blockedLocationKey)
     blocker.reset?.()
   }
 
   function leaveWithoutSaving() {
+    setDismissedBlockLocationKey(blockedLocationKey)
     blocker.proceed?.()
   }
 
@@ -454,7 +459,7 @@ export default function AdminGuesthouseContentEditor() {
         </button>
       </div>
 
-      <div className={`admin-content-workspace mobile-${mobileView}`}>
+      <div className={`admin-content-workspace mobile-${mobileView} section-${selectedSection}`}>
         <section className="admin-content-preview" aria-labelledby="content-preview-heading">
           <header>
             <div>
@@ -540,15 +545,24 @@ export default function AdminGuesthouseContentEditor() {
               </Button>
             </div>
           </Form>
+
         </aside>
       </div>
+
+      {selectedSection === 'amenities' && (
+        <AdminAmenityEditor
+          guesthouses={guesthouses}
+          language={language}
+          selectedGuesthouseId={guesthouseId}
+        />
+      )}
 
       <Modal
         centered
         className="admin-unsaved-changes-modal"
         contentClassName="admin-unsaved-changes-modal-content"
         onHide={stayOnPage}
-        show={blocker.state === 'blocked'}
+        show={blocker.state === 'blocked' && dismissedBlockLocationKey !== blockedLocationKey}
       >
         <Modal.Body>
           <span className="admin-unsaved-changes-icon" aria-hidden="true">

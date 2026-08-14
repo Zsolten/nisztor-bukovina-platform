@@ -65,7 +65,9 @@ export interface GuesthouseAmenity {
   id: string
   name: string
   description?: string
+  detailedDescription?: string
   category: AmenityCategory
+  pricingType: 'FREE' | 'PAID'
 }
 
 export type PriceUnit = 'person_night' | 'person' | 'day'
