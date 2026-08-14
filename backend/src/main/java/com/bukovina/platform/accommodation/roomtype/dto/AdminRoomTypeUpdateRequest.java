@@ -13,7 +13,5 @@ public record AdminRoomTypeUpdateRequest(
     @NotBlank @Size(max = 80) @Pattern(regexp = "^[a-z0-9]+(?:_[a-z0-9]+)*$") String code,
     @Min(0) @Max(15) int quantity,
     @Min(1) @Max(4) int standardOccupancy,
-    @Min(0) @Max(15) int roomsWithExtraBed,
-    @Min(0) @Max(4) int extraBedsPerEligibleRoom,
     boolean active,
     @NotNull List<@Valid AdminRoomTypeTranslationUpdateRequest> translations) {}

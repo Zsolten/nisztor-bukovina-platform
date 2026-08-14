@@ -4,7 +4,6 @@ export interface AdminRoomTypeTranslation {
   language: RoomTypeLanguage
   name: string
   shortDescription: string
-  detailedDescription: string
 }
 
 export interface AdminRoomType {
@@ -12,8 +11,6 @@ export interface AdminRoomType {
   code: string
   quantity: number
   standardOccupancy: number
-  roomsWithExtraBed: number
-  extraBedsPerEligibleRoom: number
   active: boolean
   displayOrder: number
   translations: AdminRoomTypeTranslation[]

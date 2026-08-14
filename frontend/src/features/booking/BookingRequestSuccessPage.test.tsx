@@ -42,8 +42,6 @@ const guesthouse = {
       name: 'Kétágyas szoba',
       quantity: 12,
       standardOccupancy: 2,
-      roomsWithExtraBed: 0,
-      extraBedsPerEligibleRoom: 0,
       features: [],
     },
   ],

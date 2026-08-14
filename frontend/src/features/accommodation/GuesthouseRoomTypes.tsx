@@ -1,4 +1,3 @@
-import Badge from 'react-bootstrap/Badge'
 import Card from 'react-bootstrap/Card'
 import Col from 'react-bootstrap/Col'
 import Row from 'react-bootstrap/Row'
@@ -42,11 +41,6 @@ export default function GuesthouseRoomTypes({
                 <div className="room-type-facts">
                   <span>{t('guesthouses.capacity', { count: roomType.standardOccupancy })}</span>
                 </div>
-                {roomType.roomsWithExtraBed > 0 && (
-                  <Badge as="span" className="information-tag" bg="light" text="dark">
-                    {t('guesthouses.extraBed')}
-                  </Badge>
-                )}
               </Card.Body>
             </Card>
           </Col>

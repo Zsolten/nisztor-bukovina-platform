@@ -69,8 +69,6 @@ const nisztorDetail = {
       name: 'Kétágyas szoba',
       quantity: 3,
       standardOccupancy: 2,
-      roomsWithExtraBed: 1,
-      extraBedsPerEligibleRoom: 1,
       features: ['private-bathroom'],
     },
   ],

@@ -3,6 +3,7 @@ package com.bukovina.platform.accommodation.roomtype.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -70,6 +71,18 @@ class AdminRoomTypeControllerTests {
     throw new AssertionError("Family room not found in public response");
   }
 
+  @Test
+  @WithMockUser(roles = "ADMIN")
+  void rejectsNullRoomTypeIdInOrderWithStableValidationError() throws Exception {
+    mockMvc
+        .perform(
+            put("/api/admin/guesthouses/{guesthouseId}/room-types/order", guesthouseId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"roomTypeIds\":[null]}"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ADMIN_ROOM_TYPE_VALIDATION_FAILED"));
+  }
+
   private UUID guesthouseId() {
     return jdbcTemplate.queryForObject(
         "SELECT id FROM guesthouse WHERE slug = 'nisztor-panzio'", UUID.class);
@@ -79,11 +92,11 @@ class AdminRoomTypeControllerTests {
     return """
         {
           "code":"%s", "quantity":%d, "standardOccupancy":%d,
-          "roomsWithExtraBed":0, "extraBedsPerEligibleRoom":0, "active":%s,
+          "active":%s,
           "translations":[
-            {"language":"hu", "name":"Családi szoba", "shortDescription":"Tágas családi szoba.", "detailedDescription":""},
-            {"language":"ro", "name":"Cameră de familie", "shortDescription":"Cameră spațioasă pentru familie.", "detailedDescription":""},
-            {"language":"en", "name":"Family room", "shortDescription":"Spacious family room.", "detailedDescription":""}
+            {"language":"hu", "name":"Családi szoba", "shortDescription":"Tágas családi szoba."},
+            {"language":"ro", "name":"Cameră de familie", "shortDescription":"Cameră spațioasă pentru familie."},
+            {"language":"en", "name":"Family room", "shortDescription":"Spacious family room."}
           ]
         }
         """
