@@ -163,7 +163,7 @@ class PublicBookingControllerTests {
     expectError(quoteJson(guesthouseId, doubleRoom, 2, 0, 0, 0, 0, 0), "INVALID_ROOM_QUANTITY");
     expectError(quoteJson(guesthouseId, doubleRoom, 2, 0, 0, -1, 0, 0), "INVALID_ROOM_QUANTITY");
     expectError(
-        quoteJson(guesthouseId, doubleRoom, 2, 0, 0, 7, 0, 0), "ROOM_QUANTITY_EXCEEDS_STOCK");
+        quoteJson(guesthouseId, doubleRoom, 2, 0, 0, 16, 0, 0), "ROOM_QUANTITY_EXCEEDS_STOCK");
     expectError(
         quoteJson(guesthouseId, doubleRoom, 3, 0, 0, 1, 0, 0), "INSUFFICIENT_ROOM_CAPACITY");
     expectError(quoteJson(guesthouseId, doubleRoom, 1, 0, 0, 2, 0, 0), "TOO_MANY_ROOMS");

@@ -18,7 +18,7 @@ export const resources = {
           contactTitle: 'Kapcsolat és foglalás',
           navigationTitle: 'Navigáció',
           bookingRequest: 'Foglalási kérelem',
-          address: 'Bucovina utca 17., Csernakeresztúr 330003, Románia',
+          address: 'Bucovina utca 59., Csernakeresztúr 330003, Románia',
           home: 'Főoldal',
           nisztorGuesthouse: 'Nisztor Panzió',
           bukovinaGuesthouse: 'Bukovina Panzió',
@@ -329,8 +329,7 @@ export const resources = {
         map: {
           eyebrow: 'Megközelítés',
           title: 'Így talál meg minket.',
-          description:
-            'Mindkét panzió a Bucovina utca 17. alatt található, Déva és Vajdahunyad között.',
+          description: 'Mindkét panzió a Csernakeresztúron található, Déva és Vajdahunyad között.',
           openMap: 'Útvonaltervezés Google Térképen',
           frameTitle: 'A panziók helye a Google Térképen',
         },
@@ -662,8 +661,7 @@ export const resources = {
         map: {
           eyebrow: 'Sosire',
           title: 'Cum ajungeți la noi.',
-          description:
-            'Ambele pensiuni se află pe Strada Bucovina nr. 17, între Deva și Hunedoara.',
+          description: 'Ambele pensiuni se află în Cristur, între Deva și Hunedoara.',
           openMap: 'Planifică traseul în Google Maps',
           frameTitle: 'Locația pensiunilor în Google Maps',
         },
@@ -999,8 +997,7 @@ export const resources = {
         map: {
           eyebrow: 'Getting here',
           title: 'How to find us.',
-          description:
-            'Both guesthouses are located at 17 Bucovina Street, between Deva and Hunedoara.',
+          description: 'Both guesthouses are located in Cristur, between Deva and Hunedoara.',
           openMap: 'Plan your route in Google Maps',
           frameTitle: 'Guesthouse location in Google Maps',
         },

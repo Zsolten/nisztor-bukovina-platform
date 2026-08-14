@@ -564,7 +564,6 @@ export default function AdminGuesthouseContentEditor() {
               </Button>
             </div>
           </Form>
-
         </aside>
       </div>
 

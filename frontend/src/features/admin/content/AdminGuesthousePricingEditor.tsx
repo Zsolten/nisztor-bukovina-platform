@@ -25,7 +25,14 @@ const UNIT_LABELS = {
   day: 'RON / nap',
 } as const
 
-const MEAL_CODES = new Set(['breakfast', 'lunch', 'dinner', 'bed_and_breakfast', 'half_board', 'full_board'])
+const MEAL_CODES = new Set([
+  'breakfast',
+  'lunch',
+  'dinner',
+  'bed_and_breakfast',
+  'half_board',
+  'full_board',
+])
 
 export default function AdminGuesthousePricingEditor({
   guesthouseId,
@@ -38,7 +45,10 @@ export default function AdminGuesthousePricingEditor({
   const [draft, setDraft] = useState<AmountDraft>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [feedback, setFeedback] = useState<{ variant: 'success' | 'danger'; message: string } | null>(null)
+  const [feedback, setFeedback] = useState<{
+    variant: 'success' | 'danger'
+    message: string
+  } | null>(null)
 
   const load = useCallback(
     async (signal?: AbortSignal) => {
@@ -85,7 +95,10 @@ export default function AdminGuesthousePricingEditor({
     if (!pricing) return
     const payload = toUpdate(pricing, draft)
     if (!payload) {
-      setFeedback({ variant: 'danger', message: 'Minden árnak nulla vagy pozitív számnak kell lennie.' })
+      setFeedback({
+        variant: 'danger',
+        message: 'Minden árnak nulla vagy pozitív számnak kell lennie.',
+      })
       return
     }
 
@@ -97,10 +110,14 @@ export default function AdminGuesthousePricingEditor({
       setDraft(toDraft(result))
       onDirtyChange?.(false)
       onSaved?.()
-      setFeedback({ variant: 'success', message: 'Az árak mentése sikerült. Az új foglalási kalkulációk már ezeket használják.' })
+      setFeedback({
+        variant: 'success',
+        message: 'Az árak mentése sikerült. Az új foglalási kalkulációk már ezeket használják.',
+      })
     } catch (error) {
       const message =
-        error instanceof AdminGuesthousePricingApiError && error.code === 'ADMIN_PRICING_VALIDATION_FAILED'
+        error instanceof AdminGuesthousePricingApiError &&
+        error.code === 'ADMIN_PRICING_VALIDATION_FAILED'
           ? 'A szerver elutasította az árakat. Ellenőrizd a megadott értékeket.'
           : 'Az árak mentése nem sikerült. Próbáld újra.'
       setFeedback({ variant: 'danger', message })
@@ -114,14 +131,20 @@ export default function AdminGuesthousePricingEditor({
   }, [dirty, onDirtyChange])
 
   if (loading) {
-    return <div className="admin-pricing-status" role="status"><Spinner animation="border" size="sm" /> Árak betöltése…</div>
+    return (
+      <div className="admin-pricing-status" role="status">
+        <Spinner animation="border" size="sm" /> Árak betöltése…
+      </div>
+    )
   }
 
   if (!pricing) {
     return (
       <Alert className="admin-pricing-status" variant="danger">
         {feedback?.message ?? 'Nincs szerkeszthető árlista.'}
-        <Button className="ms-3" onClick={() => void load()} size="sm" variant="outline-danger">Újrapróbálás</Button>
+        <Button className="ms-3" onClick={() => void load()} size="sm" variant="outline-danger">
+          Újrapróbálás
+        </Button>
       </Alert>
     )
   }
@@ -132,12 +155,20 @@ export default function AdminGuesthousePricingEditor({
         <div>
           <p className="admin-eyebrow">Aktuális árak</p>
           <h3 id="admin-pricing-heading">{guesthouseName} árkezelése</h3>
-          <p>Csak a most érvényes összegek szerkeszthetők. A korábbi foglalások árösszesítője nem változik.</p>
+          <p>
+            Csak a most érvényes összegek szerkeszthetők. A korábbi foglalások árösszesítője nem
+            változik.
+          </p>
         </div>
         <span>{pricing.currency}</span>
       </header>
 
-      {feedback && <Alert variant={feedback.variant}>{feedback.variant === 'success' && <Check aria-hidden="true" size={17} />} {feedback.message}</Alert>}
+      {feedback && (
+        <Alert variant={feedback.variant}>
+          {feedback.variant === 'success' && <Check aria-hidden="true" size={17} />}{' '}
+          {feedback.message}
+        </Alert>
+      )}
 
       <div className="admin-pricing-groups">
         {groups.map((group) => (
@@ -166,14 +197,34 @@ export default function AdminGuesthousePricingEditor({
           </section>
         ))}
 
-        {pricing.surcharges.length > 0 && <AdjustmentGroup adjustments={pricing.surcharges} draft={draft} onChange={setValue} title="Felárak" type="surcharge" />}
-        {pricing.discounts.length > 0 && <AdjustmentGroup adjustments={pricing.discounts} draft={draft} onChange={setValue} title="Kedvezmények" type="discount" />}
+        {pricing.surcharges.length > 0 && (
+          <AdjustmentGroup
+            adjustments={pricing.surcharges}
+            draft={draft}
+            onChange={setValue}
+            title="Felárak"
+            type="surcharge"
+          />
+        )}
+        {pricing.discounts.length > 0 && (
+          <AdjustmentGroup
+            adjustments={pricing.discounts}
+            draft={draft}
+            onChange={setValue}
+            title="Kedvezmények"
+            type="discount"
+          />
+        )}
       </div>
 
       <footer className="admin-pricing-save">
         <span>{dirty ? 'Nem mentett módosítás' : 'Minden változtatás mentve'}</span>
         <Button disabled={!dirty || saving} onClick={() => void save()}>
-          {saving ? <Spinner animation="border" size="sm" /> : <Save aria-hidden="true" size={17} />}
+          {saving ? (
+            <Spinner animation="border" size="sm" />
+          ) : (
+            <Save aria-hidden="true" size={17} />
+          )}
           {saving ? 'Mentés…' : 'Árak mentése'}
         </Button>
       </footer>
@@ -181,7 +232,19 @@ export default function AdminGuesthousePricingEditor({
   )
 }
 
-function AdjustmentGroup({ adjustments, draft, onChange, title, type }: { adjustments: AdminGuesthousePricing['surcharges']; draft: AmountDraft; onChange: (key: string, value: string) => void; title: string; type: 'surcharge' | 'discount' }) {
+function AdjustmentGroup({
+  adjustments,
+  draft,
+  onChange,
+  title,
+  type,
+}: {
+  adjustments: AdminGuesthousePricing['surcharges']
+  draft: AmountDraft
+  onChange: (key: string, value: string) => void
+  title: string
+  type: 'surcharge' | 'discount'
+}) {
   return (
     <section className="admin-pricing-group">
       <h4>{title}</h4>
@@ -189,7 +252,16 @@ function AdjustmentGroup({ adjustments, draft, onChange, title, type }: { adjust
         <Form.Group controlId={`${type}-${adjustment.code}`} key={adjustment.code}>
           <Form.Label>{adjustment.label}</Form.Label>
           <div className="admin-pricing-input">
-            <Form.Control aria-label={adjustment.label} inputMode="decimal" min="0" max="100" onChange={(event) => onChange(`${type}:${adjustment.code}`, event.target.value)} step="0.01" type="number" value={draft[`${type}:${adjustment.code}`] ?? ''} />
+            <Form.Control
+              aria-label={adjustment.label}
+              inputMode="decimal"
+              min="0"
+              max="100"
+              onChange={(event) => onChange(`${type}:${adjustment.code}`, event.target.value)}
+              step="0.01"
+              type="number"
+              value={draft[`${type}:${adjustment.code}`] ?? ''}
+            />
             <span>%</span>
           </div>
         </Form.Group>
@@ -199,7 +271,9 @@ function AdjustmentGroup({ adjustments, draft, onChange, title, type }: { adjust
 }
 
 function groupItems(items: AdminGuesthousePricing['items']) {
-  const accommodation = items.filter((item) => item.code === 'accommodation' || item.code === 'single_room')
+  const accommodation = items.filter(
+    (item) => item.code === 'accommodation' || item.code === 'single_room',
+  )
   const meals = items.filter((item) => MEAL_CODES.has(item.code))
   const known = new Set([...accommodation, ...meals].map((item) => item.code))
   const other = items.filter((item) => !known.has(item.code))
@@ -213,17 +287,39 @@ function groupItems(items: AdminGuesthousePricing['items']) {
 function toDraft(pricing: AdminGuesthousePricing): AmountDraft {
   return Object.fromEntries([
     ...pricing.items.map((item) => [`item:${item.code}`, String(item.amount)]),
-    ...pricing.surcharges.map((adjustment) => [`surcharge:${adjustment.code}`, String(adjustment.percentage)]),
-    ...pricing.discounts.map((adjustment) => [`discount:${adjustment.code}`, String(adjustment.percentage)]),
+    ...pricing.surcharges.map((adjustment) => [
+      `surcharge:${adjustment.code}`,
+      String(adjustment.percentage),
+    ]),
+    ...pricing.discounts.map((adjustment) => [
+      `discount:${adjustment.code}`,
+      String(adjustment.percentage),
+    ]),
   ])
 }
 
 function toUpdate(pricing: AdminGuesthousePricing, draft: AmountDraft) {
   const number = (value: string | undefined) => Number(value)
-  const items = pricing.items.map((item) => ({ code: item.code, amount: number(draft[`item:${item.code}`]) }))
-  const surcharges = pricing.surcharges.map((item) => ({ code: item.code, percentage: number(draft[`surcharge:${item.code}`]) }))
-  const discounts = pricing.discounts.map((item) => ({ code: item.code, percentage: number(draft[`discount:${item.code}`]) }))
-  if (![...items.map((item) => item.amount), ...surcharges.map((item) => item.percentage), ...discounts.map((item) => item.percentage)].every((value) => Number.isFinite(value) && value >= 0 && value <= 1000000)) return null
+  const items = pricing.items.map((item) => ({
+    code: item.code,
+    amount: number(draft[`item:${item.code}`]),
+  }))
+  const surcharges = pricing.surcharges.map((item) => ({
+    code: item.code,
+    percentage: number(draft[`surcharge:${item.code}`]),
+  }))
+  const discounts = pricing.discounts.map((item) => ({
+    code: item.code,
+    percentage: number(draft[`discount:${item.code}`]),
+  }))
+  if (
+    ![
+      ...items.map((item) => item.amount),
+      ...surcharges.map((item) => item.percentage),
+      ...discounts.map((item) => item.percentage),
+    ].every((value) => Number.isFinite(value) && value >= 0 && value <= 1000000)
+  )
+    return null
   if (![...surcharges, ...discounts].every((item) => item.percentage <= 100)) return null
   return { items, surcharges, discounts }
 }

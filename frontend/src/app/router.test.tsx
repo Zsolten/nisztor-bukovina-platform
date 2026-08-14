@@ -164,11 +164,11 @@ describe('guesthouse and language routing', () => {
     expect(screen.getByRole('heading', { name: 'Így talál meg minket.' })).toBeVisible()
     expect(screen.getByTitle('A panziók helye a Google Térképen')).toHaveAttribute(
       'src',
-      'https://www.google.com/maps?q=45.82361,22.93869&z=15&output=embed',
+      'https://www.google.com/maps?q=45.8234696,22.9360273&z=17&output=embed',
     )
     expect(screen.getByRole('link', { name: 'Útvonaltervezés Google Térképen' })).toHaveAttribute(
       'href',
-      'https://www.google.com/maps/dir/?api=1&destination=45.82361,22.93869',
+      'https://www.google.com/maps/place/Pensiunea+Bukovina/@45.8232847,22.9322946,17z/data=!4m9!3m8!1s0x474e8c95c0541131:0xc8782fdf2f1f66e1!5m2!4m1!1i2!8m2!3d45.823281!4d22.9348695!16s%2Fg%2F11ddwzk7fn?entry=ttu&g_ep=EgoyMDI2MDgxMS4wIKXMDSoASAFQAw%3D%3D',
     )
     expect(screen.getByRole('link', { name: 'Foglalási kérelem' })).toHaveAttribute(
       'href',
