@@ -195,7 +195,6 @@ export default function AdminGuesthouseContentEditor() {
     message: string
   } | null>(null)
   const [conflict, setConflict] = useState<AdminGuesthouseTranslation | null>(null)
-  const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] = useState(false)
 
   const currentKey = guesthouseId ? translationKey(guesthouseId, language) : ''
   const draft = drafts[currentKey]
@@ -250,18 +249,12 @@ export default function AdminGuesthouseContentEditor() {
     ),
   )
   const blocker = useBlocker(dirty)
-  useEffect(() => {
-    if (blocker.state !== 'blocked') return
-    setShowUnsavedChangesDialog(true)
-  }, [blocker])
 
   function stayOnPage() {
-    setShowUnsavedChangesDialog(false)
     blocker.reset?.()
   }
 
   function leaveWithoutSaving() {
-    setShowUnsavedChangesDialog(false)
     blocker.proceed?.()
   }
 
@@ -555,7 +548,7 @@ export default function AdminGuesthouseContentEditor() {
         className="admin-unsaved-changes-modal"
         contentClassName="admin-unsaved-changes-modal-content"
         onHide={stayOnPage}
-        show={showUnsavedChangesDialog}
+        show={blocker.state === 'blocked'}
       >
         <Modal.Body>
           <span className="admin-unsaved-changes-icon" aria-hidden="true">
