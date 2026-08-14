@@ -37,6 +37,7 @@ const existingAmenity: AdminAmenity = {
 describe('AdminAmenityEditor', () => {
   it('creates a service from a non-Hungarian page language', async () => {
     const user = userEvent.setup()
+    const onCatalogueChange = vi.fn()
     const authorizedFetch = vi
       .fn()
       .mockResolvedValueOnce(response(200, []))
@@ -50,7 +51,7 @@ describe('AdminAmenityEditor', () => {
           ),
         }),
       )
-    renderEditor(authorizedFetch, 'ro')
+    renderEditor(authorizedFetch, 'ro', onCatalogueChange)
 
     await user.click(await screen.findByRole('button', { name: 'Új szolgáltatás' }))
     await user.click(screen.getByRole('tab', { name: 'Magyar' }))
@@ -65,6 +66,9 @@ describe('AdminAmenityEditor', () => {
       expect.objectContaining({ method: 'POST' }),
     )
     expect(await screen.findByText('A szolgáltatás mentése sikerült.')).toBeVisible()
+    expect(onCatalogueChange).toHaveBeenLastCalledWith([
+      expect.objectContaining({ code: 'tollaslabda' }),
+    ])
   })
 
   it('edits an existing service and exposes a failed save inside the dialog', async () => {
@@ -97,6 +101,7 @@ describe('AdminAmenityEditor', () => {
 function renderEditor(
   authorizedFetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>,
   language: 'hu' | 'ro' | 'en',
+  onCatalogueChange?: (amenities: AdminAmenity[]) => void,
 ) {
   render(
     <AdminAuthContext
@@ -114,6 +119,7 @@ function renderEditor(
       <AdminAmenityEditor
         guesthouses={guesthouses}
         language={language}
+        onCatalogueChange={onCatalogueChange}
         selectedGuesthouseId={guesthouseId}
       />
     </AdminAuthContext>,

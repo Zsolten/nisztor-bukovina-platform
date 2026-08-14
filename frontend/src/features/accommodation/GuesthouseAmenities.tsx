@@ -45,8 +45,15 @@ export default function GuesthouseAmenities({ amenities, title }: GuesthouseAmen
               <ul>
                 {categoryAmenities.map((amenity) => (
                   <li key={amenity.id}>
-                    <strong>{amenity.name}</strong>
-                    {amenity.description && <span>{amenity.description}</span>}
+                    <div className="amenity-name-row">
+                      <strong>{amenity.name}</strong>
+                      {amenity.pricingType === 'PAID' && (
+                        <span className="amenity-paid-tag">{t('guesthouses.paidService')}</span>
+                      )}
+                    </div>
+                    {amenity.description && (
+                      <span className="amenity-description">{amenity.description}</span>
+                    )}
                   </li>
                 ))}
               </ul>

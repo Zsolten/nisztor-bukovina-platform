@@ -144,6 +144,42 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks())
 
 describe('AdminGuesthouseContentEditor', () => {
+  it('updates the amenities preview from the editable admin catalogue', async () => {
+    const user = userEvent.setup()
+    const authorizedFetch = vi
+      .fn()
+      .mockResolvedValueOnce(response(200, content))
+      .mockResolvedValueOnce(
+        response(200, [
+          {
+            id: '9aff65ca-e42c-4d25-91d2-f6318a943be4',
+            code: 'table_tennis',
+            category: 'PROGRAM_GROUP',
+            pricingType: 'FREE',
+            translations: [
+              {
+                language: 'hu',
+                name: 'Asztalitenisz',
+                description: 'Ingyenes játék',
+                detailedDescription: '',
+              },
+              { language: 'ro', name: '', description: '', detailedDescription: '' },
+              { language: 'en', name: '', description: '', detailedDescription: '' },
+            ],
+            assignments: [
+              { guesthouseId: content[0].id, active: true, displayOrder: 0 },
+            ],
+          },
+        ]),
+      )
+    renderEditor(authorizedFetch)
+
+    await user.click(await screen.findByRole('button', { name: 'Szolgáltatások szerkesztése' }))
+
+    expect(await screen.findAllByText('Asztalitenisz')).toHaveLength(2)
+    expect(screen.getByText('Ingyenes játék')).toBeVisible()
+  })
+
   it('updates the live page preview and opens fields from the selected section', async () => {
     const user = userEvent.setup()
     const authorizedFetch = vi.fn().mockResolvedValue(response(200, content))
@@ -158,6 +194,31 @@ describe('AdminGuesthouseContentEditor', () => {
     await user.click(screen.getByRole('button', { name: 'Szobák szerkesztése' }))
     expect(screen.getByLabelText('Szobák bevezető szövege')).toBeVisible()
     expect(screen.queryByLabelText('Panzió neve')).not.toBeInTheDocument()
+  })
+
+  it('scrolls the preview viewport to the selected section', async () => {
+    const user = userEvent.setup()
+    const scrollTo = vi.fn()
+    const originalScrollTo = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollTo')
+    Object.defineProperty(HTMLElement.prototype, 'scrollTo', {
+      configurable: true,
+      value: scrollTo,
+    })
+
+    try {
+      renderEditor(vi.fn().mockResolvedValue(response(200, content)))
+
+      await user.click(await screen.findByRole('button', { name: /^Árak$/ }))
+
+      await waitFor(() =>
+        expect(scrollTo).toHaveBeenCalledWith(
+          expect.objectContaining({ behavior: 'smooth', top: expect.any(Number) }),
+        ),
+      )
+    } finally {
+      if (originalScrollTo) Object.defineProperty(HTMLElement.prototype, 'scrollTo', originalScrollTo)
+      else delete (HTMLElement.prototype as { scrollTo?: unknown }).scrollTo
+    }
   })
 
   it('keeps language drafts and saves only the selected translation', async () => {

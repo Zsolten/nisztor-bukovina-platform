@@ -249,6 +249,7 @@ export const resources = {
         quantity: '{{count}} szoba',
         capacity: '{{count}} fő',
         extraBed: 'Pótágyazható',
+        paidService: 'Fizetős',
         amenityCategories: {
           ROOM_COMFORT: 'Szobai kényelem',
           FOOD_KITCHEN: 'Étkezés és konyha',
@@ -577,6 +578,7 @@ export const resources = {
         quantity: '{{count}} camere',
         capacity: '{{count}} persoane',
         extraBed: 'Pat suplimentar disponibil',
+        paidService: 'Contra cost',
         amenityCategories: {
           ROOM_COMFORT: 'Confortul camerei',
           FOOD_KITCHEN: 'Masă și bucătărie',
@@ -909,6 +911,7 @@ export const resources = {
         quantity: '{{count}} rooms',
         capacity: '{{count}} guests',
         extraBed: 'Extra bed available',
+        paidService: 'Paid',
         amenityCategories: {
           ROOM_COMFORT: 'Room comfort',
           FOOD_KITCHEN: 'Food and kitchen',

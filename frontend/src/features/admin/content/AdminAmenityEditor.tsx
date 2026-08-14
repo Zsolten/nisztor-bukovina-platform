@@ -21,6 +21,7 @@ interface AdminAmenityEditorProps {
   guesthouses: AdminGuesthouseContent[]
   selectedGuesthouseId: string
   language: ContentLanguage
+  onCatalogueChange?: (amenities: AdminAmenity[]) => void
 }
 
 const CATEGORY_LABELS: Record<AmenityCategory, string> = {
@@ -43,10 +44,13 @@ const LANGUAGE_LABELS: Record<AmenityLanguage, string> = {
   en: 'Angol',
 }
 
+const IGNORE_CATALOGUE_CHANGE = () => undefined
+
 export default function AdminAmenityEditor({
   guesthouses,
   selectedGuesthouseId,
   language,
+  onCatalogueChange = IGNORE_CATALOGUE_CHANGE,
 }: AdminAmenityEditorProps) {
   const { authorizedFetch } = useAdminAuth()
   const [amenities, setAmenities] = useState<AdminAmenity[]>([])
@@ -62,7 +66,9 @@ export default function AdminAmenityEditor({
     async (signal?: AbortSignal) => {
       setLoading(true)
       try {
-        setAmenities(await fetchAdminAmenities(authorizedFetch, signal))
+        const result = await fetchAdminAmenities(authorizedFetch, signal)
+        setAmenities(result)
+        onCatalogueChange(result)
       } catch (error) {
         if (!(error instanceof DOMException && error.name === 'AbortError')) {
           setFeedback({ variant: 'danger', message: 'A szolgáltatások nem tölthetők be.' })
@@ -71,7 +77,7 @@ export default function AdminAmenityEditor({
         if (!signal?.aborted) setLoading(false)
       }
     },
-    [authorizedFetch],
+    [authorizedFetch, onCatalogueChange],
   )
 
   useEffect(() => {
@@ -127,12 +133,13 @@ export default function AdminAmenityEditor({
       const saved = draft.id
         ? await updateAdminAmenity(authorizedFetch, draft.id, payload)
         : await createAdminAmenity(authorizedFetch, payload)
-      setAmenities((current) => {
-        const index = current.findIndex((amenity) => amenity.id === saved.id)
-        return index < 0
-          ? [...current, saved]
-          : current.map((amenity) => (amenity.id === saved.id ? saved : amenity))
-      })
+      const index = amenities.findIndex((amenity) => amenity.id === saved.id)
+      const nextAmenities =
+        index < 0
+          ? [...amenities, saved]
+          : amenities.map((amenity) => (amenity.id === saved.id ? saved : amenity))
+      setAmenities(nextAmenities)
+      onCatalogueChange(nextAmenities)
       setEditing(null)
       setFeedback({ variant: 'success', message: 'A szolgáltatás mentése sikerült.' })
     } catch (error) {
@@ -165,20 +172,20 @@ export default function AdminAmenityEditor({
     setFeedback(null)
     try {
       await reorderAdminAmenities(authorizedFetch, selectedGuesthouseId, orderedIds)
-      setAmenities((current) =>
-        current.map((amenity) => {
-          const index = orderedIds.indexOf(amenity.id)
-          if (index < 0) return amenity
-          return {
-            ...amenity,
-            assignments: amenity.assignments.map((assignment) =>
-              assignment.guesthouseId === selectedGuesthouseId
-                ? { ...assignment, displayOrder: index }
-                : assignment,
-            ),
-          }
-        }),
-      )
+      const nextAmenities = amenities.map((amenity) => {
+        const index = orderedIds.indexOf(amenity.id)
+        if (index < 0) return amenity
+        return {
+          ...amenity,
+          assignments: amenity.assignments.map((assignment) =>
+            assignment.guesthouseId === selectedGuesthouseId
+              ? { ...assignment, displayOrder: index }
+              : assignment,
+          ),
+        }
+      })
+      setAmenities(nextAmenities)
+      onCatalogueChange(nextAmenities)
     } catch (error) {
       setFeedback({ variant: 'danger', message: amenityErrorMessage(error) })
     } finally {
