@@ -25,11 +25,21 @@ class TourismCatalogueControllerTests {
   @Autowired private MockMvc mockMvc;
 
   @Test
-  void protectsTourismAdministrationAndPublishesSeededAttractionsWithHungarianFallback()
-      throws Exception {
+  void protectsTourismAdministrationAndOnlyPublishesAvailableTranslations() throws Exception {
     mockMvc.perform(get("/api/admin/tourism/attractions")).andExpect(status().isUnauthorized());
     mockMvc
         .perform(get("/api/tourism/attractions").param("lang", "en"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(0));
+    mockMvc
+        .perform(get("/api/tourism/attractions/paring-hegyseg").param("lang", "en"))
+        .andExpect(status().isNotFound());
+    mockMvc
+        .perform(get("/api/tourism/collections").param("lang", "ro"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(0));
+    mockMvc
+        .perform(get("/api/tourism/attractions").param("lang", "hu"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(9))
         .andExpect(jsonPath("$[?(@.slug == 'paring-hegyseg')].name").value("Páring-hegység"))
@@ -44,6 +54,24 @@ class TourismCatalogueControllerTests {
             post("/api/admin/tourism/attractions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(attractionRequest(91)))
+        .andExpect(status().isBadRequest());
+    mockMvc
+        .perform(
+            post("/api/admin/tourism/attractions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(attractionRequest(45).replace("\"active\": true,", "")))
+        .andExpect(status().isBadRequest());
+    mockMvc
+        .perform(
+            post("/api/admin/tourism/star-tours")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(tourRequest(false).replace("\"published\": false,", "")))
+        .andExpect(status().isBadRequest());
+    mockMvc
+        .perform(
+            post("/api/admin/tourism/star-tours")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(tourRequest(false).replace("\"active\": true,", "")))
         .andExpect(status().isBadRequest());
 
     String location =
@@ -70,6 +98,9 @@ class TourismCatalogueControllerTests {
         .andExpect(jsonPath("$.published").value(true));
     mockMvc
         .perform(get("/api/tourism/star-tours/teszt-korut").param("lang", "ro"))
+        .andExpect(status().isNotFound());
+    mockMvc
+        .perform(get("/api/tourism/star-tours/teszt-korut").param("lang", "hu"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Teszt körút"))
         .andExpect(jsonPath("$.published").doesNotExist())

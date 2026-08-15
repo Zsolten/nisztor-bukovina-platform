@@ -706,7 +706,7 @@ paths:
   /tourism/attractions:
     get:
       operationId: listPublicAttractions
-      summary: List active attractions with Hungarian fallback
+      summary: List active attractions that have the requested translation
       tags: [Tourism]
       parameters:
         - { name: lang, in: query, schema: { $ref: '#/components/schemas/Language' } }
@@ -719,7 +719,7 @@ paths:
   /tourism/collections:
     get:
       operationId: listPublicTourismCollections
-      summary: List active editorial tourism collections with Hungarian fallback
+      summary: List active editorial tourism collections that have the requested translation
       tags: [Tourism]
       parameters:
         - { name: lang, in: query, schema: { $ref: '#/components/schemas/Language' } }
@@ -745,7 +745,7 @@ paths:
   /tourism/star-tours:
     get:
       operationId: listPublicStarTours
-      summary: List published and active star tours with Hungarian fallback
+      summary: List published and active star tours that have the requested translation
       tags: [Tourism]
       parameters:
         - { name: lang, in: query, schema: { $ref: '#/components/schemas/Language' } }

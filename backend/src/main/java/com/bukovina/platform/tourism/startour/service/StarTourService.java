@@ -118,7 +118,7 @@ public class StarTourService {
         row.active(),
         translationsFor(id),
         tagsFor(id),
-        imagesFor(id, "hu"));
+        adminImagesFor(id));
   }
 
   private ValidStarTour validate(StarTourUpsertRequest request, UUID currentId) {
@@ -140,6 +140,8 @@ public class StarTourService {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "STAR_TOUR_SLUG_EXISTS");
     if (blank(request.mapColor()) || !COLOR.matcher(request.mapColor()).matches())
       throw badRequest("INVALID_MAP_COLOR");
+    if (request.published() == null) throw badRequest("PUBLISHED_REQUIRED");
+    if (request.active() == null) throw badRequest("ACTIVE_REQUIRED");
 
     Map<String, Translation> translations = new LinkedHashMap<>();
     if (request.translations() != null) {
@@ -246,10 +248,9 @@ public class StarTourService {
 
   private List<Image> imagesFor(UUID id, String language) {
     return jdbc.sql(
-            "SELECT image.image_url, COALESCE(requested.alt_text, hu.alt_text, '') alt_text "
-                + "FROM star_tour_image image LEFT JOIN star_tour_image_translation requested "
+            "SELECT image.image_url, requested.alt_text "
+                + "FROM star_tour_image image JOIN star_tour_image_translation requested "
                 + "ON requested.image_id = image.id AND requested.language_code = :language "
-                + "LEFT JOIN star_tour_image_translation hu ON hu.image_id = image.id AND hu.language_code = 'hu' "
                 + "WHERE image.star_tour_id = :id ORDER BY image.display_order")
         .param("language", language)
         .param("id", id)
@@ -257,12 +258,22 @@ public class StarTourService {
         .list();
   }
 
+  private List<Image> adminImagesFor(UUID id) {
+    return jdbc.sql(
+            "SELECT image.image_url, COALESCE(hu.alt_text, '') alt_text "
+                + "FROM star_tour_image image LEFT JOIN star_tour_image_translation hu "
+                + "ON hu.image_id = image.id AND hu.language_code = 'hu' "
+                + "WHERE image.star_tour_id = :id ORDER BY image.display_order")
+        .param("id", id)
+        .query((rs, n) -> new Image(rs.getString("image_url"), rs.getString("alt_text")))
+        .list();
+  }
+
   private String publicSelect() {
-    return "SELECT tour.id, tour.slug, tour.map_color, COALESCE(requested.name, hu.name) name, "
-        + "COALESCE(requested.short_description, hu.short_description) short_description, "
-        + "COALESCE(requested.detailed_description, hu.detailed_description) detailed_description "
-        + "FROM star_tour tour JOIN star_tour_translation hu ON hu.star_tour_id = tour.id AND hu.language_code = 'hu' "
-        + "LEFT JOIN star_tour_translation requested ON requested.star_tour_id = tour.id AND requested.language_code = :language";
+    return "SELECT tour.id, tour.slug, tour.map_color, requested.name, "
+        + "requested.short_description, requested.detailed_description "
+        + "FROM star_tour tour JOIN star_tour_translation requested ON requested.star_tour_id = tour.id "
+        + "AND requested.language_code = :language";
   }
 
   private PublicTourRow mapPublicRow(java.sql.ResultSet rs, int row) throws java.sql.SQLException {
@@ -323,8 +334,8 @@ public class StarTourService {
   public record StarTourUpsertRequest(
       String slug,
       String mapColor,
-      boolean published,
-      boolean active,
+      Boolean published,
+      Boolean active,
       List<Translation> translations,
       List<String> tags,
       List<Image> images) {}

@@ -178,6 +178,7 @@ public class AttractionService {
         || request.longitude().compareTo(BigDecimal.valueOf(180)) > 0)
       throw badRequest("INVALID_LONGITUDE");
     validateHttpUrl(request.googleMapsUrl(), "INVALID_GOOGLE_MAPS_URL");
+    if (request.active() == null) throw badRequest("ACTIVE_REQUIRED");
 
     Map<String, Translation> translations = translations(request.translations());
     Translation hu = translations.get("hu");
@@ -256,12 +257,10 @@ public class AttractionService {
 
   private String publicSelect() {
     return "SELECT attraction.id, attraction.slug, attraction.latitude, attraction.longitude, attraction.google_maps_url, "
-        + "COALESCE(requested.name, hu.name) name, COALESCE(requested.short_description, hu.short_description) short_description, "
-        + "COALESCE(requested.detailed_description, hu.detailed_description) detailed_description, "
-        + "COALESCE(requested.admission_information, hu.admission_information) admission_information, "
-        + "COALESCE(requested.practical_information, hu.practical_information) practical_information "
-        + "FROM attraction JOIN attraction_translation hu ON hu.attraction_id = attraction.id AND hu.language_code = 'hu' "
-        + "LEFT JOIN attraction_translation requested ON requested.attraction_id = attraction.id AND requested.language_code = :language";
+        + "requested.name, requested.short_description, requested.detailed_description, "
+        + "requested.admission_information, requested.practical_information "
+        + "FROM attraction JOIN attraction_translation requested ON requested.attraction_id = attraction.id "
+        + "AND requested.language_code = :language";
   }
 
   private PublicAttractionRow mapPublicRow(java.sql.ResultSet rs, int row)
@@ -282,11 +281,9 @@ public class AttractionService {
   @Transactional(readOnly = true)
   public List<CollectionResponse> listCollections(String language) {
     return jdbc.sql(
-            "SELECT collection.slug, COALESCE(requested.name, hu.name) name, "
-                + "COALESCE(requested.short_description, hu.short_description) short_description "
+            "SELECT collection.slug, requested.name, requested.short_description "
                 + "FROM tourism_collection collection "
-                + "JOIN tourism_collection_translation hu ON hu.collection_id = collection.id AND hu.language_code = 'hu' "
-                + "LEFT JOIN tourism_collection_translation requested ON requested.collection_id = collection.id "
+                + "JOIN tourism_collection_translation requested ON requested.collection_id = collection.id "
                 + "AND requested.language_code = :language WHERE collection.active = TRUE ORDER BY collection.display_order")
         .param("language", language)
         .query(
@@ -367,7 +364,7 @@ public class AttractionService {
       BigDecimal latitude,
       BigDecimal longitude,
       String googleMapsUrl,
-      boolean active,
+      Boolean active,
       List<Translation> translations,
       List<String> collectionSlugs) {}
 

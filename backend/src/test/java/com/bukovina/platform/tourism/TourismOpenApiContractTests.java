@@ -19,7 +19,7 @@ class TourismOpenApiContractTests {
     assertTrue(paths.containsKey("/tourism/star-tours"));
     assertTrue(paths.containsKey("/admin/tourism/attractions"));
     assertTrue(paths.containsKey("/admin/tourism/star-tours"));
-    assertTrue(contract.contains("Hungarian fallback"));
+    assertTrue(contract.contains("requested translation"));
     assertTrue(contract.contains("published: { type: boolean }"));
     assertTrue(contract.contains("googleMapsUrl:"));
   }
