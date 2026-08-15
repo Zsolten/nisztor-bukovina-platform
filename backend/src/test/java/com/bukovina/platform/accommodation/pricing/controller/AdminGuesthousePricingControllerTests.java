@@ -34,7 +34,7 @@ class AdminGuesthousePricingControllerTests {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private JdbcTemplate jdbcTemplate;
-  @Autowired private ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Test
   void protectsGuesthousePricesFromAnonymousUsers() throws Exception {

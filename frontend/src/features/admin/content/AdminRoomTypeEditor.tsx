@@ -32,7 +32,6 @@ const EMPTY_TRANSLATIONS: AdminRoomTypeTranslation[] = ['hu', 'ro', 'en'].map((l
   language: language as RoomTypeLanguage,
   name: '',
   shortDescription: '',
-  detailedDescription: '',
 }))
 
 export default function AdminRoomTypeEditor({
@@ -83,8 +82,6 @@ export default function AdminRoomTypeEditor({
       code: '',
       quantity: 1,
       standardOccupancy: 2,
-      roomsWithExtraBed: 0,
-      extraBedsPerEligibleRoom: 0,
       active: true,
       displayOrder: roomTypes.length,
       translations: EMPTY_TRANSLATIONS.map((translation) => ({ ...translation })),
@@ -99,8 +96,6 @@ export default function AdminRoomTypeEditor({
         code: draft.code.trim(),
         quantity: draft.quantity,
         standardOccupancy: draft.standardOccupancy,
-        roomsWithExtraBed: draft.roomsWithExtraBed,
-        extraBedsPerEligibleRoom: draft.extraBedsPerEligibleRoom,
         active: draft.active,
         translations: draft.translations,
       }
@@ -273,11 +268,6 @@ function RoomTypeEditModal({
   const translation = translationFor(roomType, language)
   const hungarian = translationFor(roomType, 'hu')
   const validCode = /^[a-z0-9]+(?:_[a-z0-9]+)*$/.test(roomType.code)
-  const validExtraBeds =
-    roomType.roomsWithExtraBed <= roomType.quantity &&
-    (roomType.roomsWithExtraBed === 0
-      ? roomType.extraBedsPerEligibleRoom === 0
-      : roomType.extraBedsPerEligibleRoom > 0)
 
   function changeTranslation(
     field: keyof Omit<AdminRoomTypeTranslation, 'language'>,
@@ -307,13 +297,7 @@ function RoomTypeEditModal({
           id="admin-room-type-form"
           onSubmit={(event) => {
             event.preventDefault()
-            if (
-              hungarian.name.trim() &&
-              hungarian.shortDescription.trim() &&
-              validCode &&
-              validExtraBeds &&
-              !saving
-            )
+            if (hungarian.name.trim() && hungarian.shortDescription.trim() && validCode && !saving)
               onSave()
           }}
         >
@@ -361,33 +345,6 @@ function RoomTypeEditModal({
                 ))}
               </Form.Select>
             </Form.Group>
-            <Form.Group controlId="room-type-extra-count">
-              <Form.Label>Pótágyazható szobák száma</Form.Label>
-              <Form.Control
-                isInvalid={roomType.roomsWithExtraBed > roomType.quantity}
-                max={15}
-                min={0}
-                onChange={(event) =>
-                  onChange({ ...roomType, roomsWithExtraBed: Number(event.target.value) })
-                }
-                type="number"
-                value={roomType.roomsWithExtraBed}
-              />
-            </Form.Group>
-            <Form.Group controlId="room-type-extra-per-room">
-              <Form.Label>Pótágy / jogosult szoba</Form.Label>
-              <Form.Control
-                disabled={roomType.roomsWithExtraBed === 0}
-                isInvalid={!validExtraBeds}
-                max={4}
-                min={0}
-                onChange={(event) =>
-                  onChange({ ...roomType, extraBedsPerEligibleRoom: Number(event.target.value) })
-                }
-                type="number"
-                value={roomType.extraBedsPerEligibleRoom}
-              />
-            </Form.Group>
           </div>
 
           <div
@@ -433,15 +390,6 @@ function RoomTypeEditModal({
                 value={translation.shortDescription}
               />
             </Form.Group>
-            <Form.Group controlId="room-type-detailed-description">
-              <Form.Label>Részletes leírás (opcionális)</Form.Label>
-              <Form.Control
-                as="textarea"
-                onChange={(event) => changeTranslation('detailedDescription', event.target.value)}
-                rows={4}
-                value={translation.detailedDescription}
-              />
-            </Form.Group>
           </section>
         </Form>
       </Modal.Body>
@@ -451,11 +399,7 @@ function RoomTypeEditModal({
         </Button>
         <Button
           disabled={
-            saving ||
-            !hungarian.name.trim() ||
-            !hungarian.shortDescription.trim() ||
-            !validCode ||
-            !validExtraBeds
+            saving || !hungarian.name.trim() || !hungarian.shortDescription.trim() || !validCode
           }
           form="admin-room-type-form"
           type="submit"
@@ -478,7 +422,6 @@ function translationFor(roomType: AdminRoomType, language: RoomTypeLanguage) {
       language,
       name: '',
       shortDescription: '',
-      detailedDescription: '',
     }
   )
 }

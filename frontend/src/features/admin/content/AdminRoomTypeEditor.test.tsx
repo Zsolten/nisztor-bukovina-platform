@@ -10,8 +10,6 @@ const roomType = {
   code: 'double',
   quantity: 3,
   standardOccupancy: 2,
-  roomsWithExtraBed: 0,
-  extraBedsPerEligibleRoom: 0,
   active: true,
   displayOrder: 0,
   translations: [
@@ -19,10 +17,9 @@ const roomType = {
       language: 'hu' as const,
       name: 'Kétágyas szoba',
       shortDescription: 'Kényelmes szoba.',
-      detailedDescription: '',
     },
-    { language: 'ro' as const, name: '', shortDescription: '', detailedDescription: '' },
-    { language: 'en' as const, name: '', shortDescription: '', detailedDescription: '' },
+    { language: 'ro' as const, name: '', shortDescription: '' },
+    { language: 'en' as const, name: '', shortDescription: '' },
   ],
 }
 

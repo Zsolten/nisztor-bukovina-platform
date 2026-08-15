@@ -9,6 +9,7 @@ import com.bukovina.platform.accommodation.roomtype.dto.AdminRoomTypeUpdateReque
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -37,7 +38,7 @@ public class AdminRoomTypeService {
   @Transactional
   public AdminRoomTypeResponse create(UUID guesthouseId, AdminRoomTypeUpdateRequest request) {
     ensureGuesthouseExists(guesthouseId);
-    ValidRoomType valid = validate(request, null);
+    ValidRoomType valid = validate(request);
     if (codeExists(guesthouseId, valid.code(), null)) {
       throw new AdminRoomTypeException("ROOM_TYPE_CODE_ALREADY_EXISTS");
     }
@@ -47,14 +48,12 @@ public class AdminRoomTypeService {
             "INSERT INTO room_type (id, guesthouse_id, code, quantity, standard_occupancy, "
                 + "rooms_with_extra_bed, extra_beds_per_eligible_room, active, display_order) "
                 + "VALUES (:id, :guesthouseId, :code, :quantity, :standardOccupancy, "
-                + ":roomsWithExtraBed, :extraBedsPerEligibleRoom, :active, :displayOrder)")
+                + "0, 0, :active, :displayOrder)")
         .param("id", roomTypeId)
         .param("guesthouseId", guesthouseId)
         .param("code", valid.code())
         .param("quantity", valid.quantity())
         .param("standardOccupancy", valid.standardOccupancy())
-        .param("roomsWithExtraBed", valid.roomsWithExtraBed())
-        .param("extraBedsPerEligibleRoom", valid.extraBedsPerEligibleRoom())
         .param("active", valid.active())
         .param("displayOrder", nextDisplayOrder(guesthouseId))
         .update();
@@ -70,21 +69,18 @@ public class AdminRoomTypeService {
     if (!existing.guesthouseId().equals(guesthouseId)) {
       throw new AdminRoomTypeException("ROOM_TYPE_NOT_FOUND");
     }
-    ValidRoomType valid = validate(request, roomTypeId);
+    ValidRoomType valid = validate(request);
     if (!existing.code().equals(valid.code())) {
       throw validation("code", "IMMUTABLE");
     }
     jdbcClient
         .sql(
             "UPDATE room_type SET quantity = :quantity, standard_occupancy = :standardOccupancy, "
-                + "rooms_with_extra_bed = :roomsWithExtraBed, "
-                + "extra_beds_per_eligible_room = :extraBedsPerEligibleRoom, active = :active "
+                + "active = :active "
                 + "WHERE id = :id")
         .param("id", roomTypeId)
         .param("quantity", valid.quantity())
         .param("standardOccupancy", valid.standardOccupancy())
-        .param("roomsWithExtraBed", valid.roomsWithExtraBed())
-        .param("extraBedsPerEligibleRoom", valid.extraBedsPerEligibleRoom())
         .param("active", valid.active())
         .update();
     replaceTranslations(roomTypeId, valid.translations());
@@ -95,7 +91,8 @@ public class AdminRoomTypeService {
   public void reorder(UUID guesthouseId, AdminRoomTypeOrderUpdateRequest request) {
     ensureGuesthouseExists(guesthouseId);
     List<UUID> roomTypeIds = request.roomTypeIds();
-    if (roomTypeIds.size() != Set.copyOf(roomTypeIds).size()
+    if (roomTypeIds.stream().anyMatch(Objects::isNull)
+        || roomTypeIds.size() != Set.copyOf(roomTypeIds).size()
         || !Set.copyOf(roomTypeIds).equals(Set.copyOf(roomTypeIds(guesthouseId)))) {
       throw new AdminRoomTypeException("INVALID_ROOM_TYPE_ORDER");
     }
@@ -115,8 +112,6 @@ public class AdminRoomTypeService {
         roomType.code(),
         roomType.quantity(),
         roomType.standardOccupancy(),
-        roomType.roomsWithExtraBed(),
-        roomType.extraBedsPerEligibleRoom(),
         roomType.active(),
         roomType.displayOrder(),
         translationsFor(roomTypeId));
@@ -125,8 +120,8 @@ public class AdminRoomTypeService {
   private RoomTypeRow findRow(UUID roomTypeId) {
     return jdbcClient
         .sql(
-            "SELECT id, guesthouse_id, code, quantity, standard_occupancy, rooms_with_extra_bed, "
-                + "extra_beds_per_eligible_room, active, display_order FROM room_type WHERE id = :id")
+            "SELECT id, guesthouse_id, code, quantity, standard_occupancy, active, display_order "
+                + "FROM room_type WHERE id = :id")
         .param("id", roomTypeId)
         .query(
             (resultSet, rowNumber) ->
@@ -136,8 +131,6 @@ public class AdminRoomTypeService {
                     resultSet.getString("code"),
                     resultSet.getInt("quantity"),
                     resultSet.getInt("standard_occupancy"),
-                    resultSet.getInt("rooms_with_extra_bed"),
-                    resultSet.getInt("extra_beds_per_eligible_room"),
                     resultSet.getBoolean("active"),
                     resultSet.getInt("display_order")))
         .optional()
@@ -157,7 +150,7 @@ public class AdminRoomTypeService {
     Map<String, AdminRoomTypeTranslationResponse> translations = new LinkedHashMap<>();
     jdbcClient
         .sql(
-            "SELECT language_code, name, short_description, detailed_description "
+            "SELECT language_code, name, short_description "
                 + "FROM room_type_translation WHERE room_type_id = :roomTypeId")
         .param("roomTypeId", roomTypeId)
         .query(
@@ -165,19 +158,18 @@ public class AdminRoomTypeService {
                 new AdminRoomTypeTranslationResponse(
                     resultSet.getString("language_code"),
                     resultSet.getString("name"),
-                    resultSet.getString("short_description"),
-                    nullToEmpty(resultSet.getString("detailed_description"))))
+                    resultSet.getString("short_description")))
         .list()
         .forEach(translation -> translations.put(translation.language(), translation));
     return LANGUAGES.stream()
         .map(
             language ->
                 translations.getOrDefault(
-                    language, new AdminRoomTypeTranslationResponse(language, "", "", "")))
+                    language, new AdminRoomTypeTranslationResponse(language, "", "")))
         .toList();
   }
 
-  private ValidRoomType validate(AdminRoomTypeUpdateRequest request, UUID roomTypeId) {
+  private ValidRoomType validate(AdminRoomTypeUpdateRequest request) {
     Map<String, AdminRoomTypeTranslationUpdateRequest> translations = new LinkedHashMap<>();
     for (AdminRoomTypeTranslationUpdateRequest translation : request.translations()) {
       String language = translation.language().trim();
@@ -198,21 +190,10 @@ public class AdminRoomTypeService {
     if (blank(hungarian.shortDescription())) {
       throw validation("translations.hu.shortDescription", "REQUIRED");
     }
-    if (request.roomsWithExtraBed() > request.quantity()) {
-      throw validation("roomsWithExtraBed", "EXCEEDS_QUANTITY");
-    }
-    if (request.roomsWithExtraBed() == 0 && request.extraBedsPerEligibleRoom() != 0) {
-      throw validation("extraBedsPerEligibleRoom", "NO_ELIGIBLE_ROOM");
-    }
-    if (request.roomsWithExtraBed() > 0 && request.extraBedsPerEligibleRoom() == 0) {
-      throw validation("extraBedsPerEligibleRoom", "REQUIRED");
-    }
     return new ValidRoomType(
         request.code().trim(),
         request.quantity(),
         request.standardOccupancy(),
-        request.roomsWithExtraBed(),
-        request.extraBedsPerEligibleRoom(),
         request.active(),
         translations);
   }
@@ -230,13 +211,12 @@ public class AdminRoomTypeService {
       }
       jdbcClient
           .sql(
-              "INSERT INTO room_type_translation (room_type_id, language_code, name, short_description, detailed_description) "
-                  + "VALUES (:roomTypeId, :language, :name, :shortDescription, :detailedDescription)")
+              "INSERT INTO room_type_translation (room_type_id, language_code, name, short_description) "
+                  + "VALUES (:roomTypeId, :language, :name, :shortDescription)")
           .param("roomTypeId", roomTypeId)
           .param("language", language)
           .param("name", translation.name().trim())
           .param("shortDescription", translation.shortDescription().trim())
-          .param("detailedDescription", nullIfBlank(translation.detailedDescription()))
           .update();
     }
   }
@@ -287,20 +267,10 @@ public class AdminRoomTypeService {
     return value == null || value.isBlank();
   }
 
-  private String nullIfBlank(String value) {
-    return blank(value) ? null : value.trim();
-  }
-
-  private String nullToEmpty(String value) {
-    return value == null ? "" : value;
-  }
-
   private record ValidRoomType(
       String code,
       int quantity,
       int standardOccupancy,
-      int roomsWithExtraBed,
-      int extraBedsPerEligibleRoom,
       boolean active,
       Map<String, AdminRoomTypeTranslationUpdateRequest> translations) {}
 
@@ -310,8 +280,6 @@ public class AdminRoomTypeService {
       String code,
       int quantity,
       int standardOccupancy,
-      int roomsWithExtraBed,
-      int extraBedsPerEligibleRoom,
       boolean active,
       int displayOrder) {}
 }

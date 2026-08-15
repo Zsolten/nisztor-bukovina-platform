@@ -7,9 +7,6 @@ public record RoomTypeResponse(
     UUID id,
     String name,
     String shortDescription,
-    String detailedDescription,
     int quantity,
     int standardOccupancy,
-    int roomsWithExtraBed,
-    int extraBedsPerEligibleRoom,
     List<String> features) {}

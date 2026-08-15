@@ -8,8 +8,6 @@ public record AdminRoomTypeResponse(
     String code,
     int quantity,
     int standardOccupancy,
-    int roomsWithExtraBed,
-    int extraBedsPerEligibleRoom,
     boolean active,
     int displayOrder,
     List<AdminRoomTypeTranslationResponse> translations) {}

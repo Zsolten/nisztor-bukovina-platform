@@ -146,11 +146,8 @@ public class GuesthouseQueryService implements GuesthouseBookingQuery, Guesthous
         roomType.id(),
         roomType.name(),
         roomType.shortDescription(),
-        roomType.detailedDescription(),
         roomType.quantity(),
         roomType.standardOccupancy(),
-        roomType.roomsWithExtraBed(),
-        roomType.extraBedsPerEligibleRoom(),
         roomType.features());
   }
 

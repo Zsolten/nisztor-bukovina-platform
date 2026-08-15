@@ -801,11 +801,8 @@ components:
         - id
         - name
         - shortDescription
-        - detailedDescription
         - quantity
         - standardOccupancy
-        - roomsWithExtraBed
-        - extraBedsPerEligibleRoom
         - features
       properties:
         id:
@@ -815,20 +812,12 @@ components:
           type: string
         shortDescription:
           type: string
-        detailedDescription:
-          type: string
         quantity:
           type: integer
           minimum: 0
         standardOccupancy:
           type: integer
           minimum: 1
-        roomsWithExtraBed:
-          type: integer
-          minimum: 0
-        extraBedsPerEligibleRoom:
-          type: integer
-          minimum: 0
         features:
           type: array
           items:
@@ -1661,14 +1650,12 @@ components:
     AdminRoomType:
       type: object
       additionalProperties: false
-      required: [id, code, quantity, standardOccupancy, roomsWithExtraBed, extraBedsPerEligibleRoom, active, displayOrder, translations]
+      required: [id, code, quantity, standardOccupancy, active, displayOrder, translations]
       properties:
         id: { type: string, format: uuid }
         code: { type: string, pattern: '^[a-z0-9]+(?:_[a-z0-9]+)*$', maxLength: 80 }
         quantity: { type: integer, minimum: 0, maximum: 15 }
         standardOccupancy: { type: integer, minimum: 1, maximum: 4 }
-        roomsWithExtraBed: { type: integer, minimum: 0, maximum: 15 }
-        extraBedsPerEligibleRoom: { type: integer, minimum: 0, maximum: 4 }
         active: { type: boolean }
         displayOrder: { type: integer, minimum: 0 }
         translations:
@@ -1679,22 +1666,19 @@ components:
     AdminRoomTypeTranslation:
       type: object
       additionalProperties: false
-      required: [language, name, shortDescription, detailedDescription]
+      required: [language, name, shortDescription]
       properties:
         language: { type: string, enum: [hu, ro, en] }
         name: { type: string, maxLength: 160 }
         shortDescription: { type: string, maxLength: 1000 }
-        detailedDescription: { type: string, maxLength: 5000 }
     AdminRoomTypeUpdate:
       type: object
       additionalProperties: false
-      required: [code, quantity, standardOccupancy, roomsWithExtraBed, extraBedsPerEligibleRoom, active, translations]
+      required: [code, quantity, standardOccupancy, active, translations]
       properties:
         code: { type: string, pattern: '^[a-z0-9]+(?:_[a-z0-9]+)*$', minLength: 1, maxLength: 80 }
         quantity: { type: integer, minimum: 0, maximum: 15 }
         standardOccupancy: { type: integer, minimum: 1, maximum: 4 }
-        roomsWithExtraBed: { type: integer, minimum: 0, maximum: 15 }
-        extraBedsPerEligibleRoom: { type: integer, minimum: 0, maximum: 4 }
         active: { type: boolean }
         translations:
           type: array
