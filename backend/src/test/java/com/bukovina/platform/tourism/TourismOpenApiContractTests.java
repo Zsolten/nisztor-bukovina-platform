@@ -22,6 +22,7 @@ class TourismOpenApiContractTests {
     assertTrue(contract.contains("requested translation"));
     assertTrue(contract.contains("published: { type: boolean }"));
     assertTrue(contract.contains("googleMapsUrl:"));
+    assertTrue(contract.contains("DrivingDistanceCalculation:"));
     assertTrue(contract.contains("StarTourStop:"));
     assertTrue(contract.contains("stops:"));
   }

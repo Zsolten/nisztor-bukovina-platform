@@ -20,9 +20,16 @@ export interface AdminAttraction {
   active: boolean
   translations: AttractionTranslation[]
   collectionSlugs: string[]
+  distanceCalculation?: DistanceCalculation | null
 }
 
-export type AttractionUpdate = Omit<AdminAttraction, 'id'>
+export interface DistanceCalculation {
+  total: number
+  successful: number
+  failed: number
+}
+
+export type AttractionUpdate = Omit<AdminAttraction, 'id' | 'distanceCalculation'>
 
 export interface StarTourTranslation {
   language: TourismLanguage
