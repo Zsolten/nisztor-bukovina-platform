@@ -122,8 +122,11 @@ public class StarTourService {
   }
 
   private ValidStarTour validate(StarTourUpsertRequest request, UUID currentId) {
-    if (request == null || blank(request.slug()) || !SLUG.matcher(request.slug().trim()).matches())
+    if (request == null
+        || blank(request.slug())
+        || !SLUG.matcher(request.slug().trim()).matches()) {
       throw badRequest("INVALID_STAR_TOUR_SLUG");
+    }
     String slug = request.slug().trim();
     Integer duplicate =
         currentId == null
@@ -136,28 +139,36 @@ public class StarTourService {
                 .param("id", currentId)
                 .query(Integer.class)
                 .single();
-    if (duplicate > 0)
+    if (duplicate > 0) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "STAR_TOUR_SLUG_EXISTS");
-    if (blank(request.mapColor()) || !COLOR.matcher(request.mapColor()).matches())
+    }
+    if (blank(request.mapColor()) || !COLOR.matcher(request.mapColor()).matches()) {
       throw badRequest("INVALID_MAP_COLOR");
-    if (request.published() == null) throw badRequest("PUBLISHED_REQUIRED");
-    if (request.active() == null) throw badRequest("ACTIVE_REQUIRED");
+    }
+    if (request.published() == null) {
+      throw badRequest("PUBLISHED_REQUIRED");
+    }
+    if (request.active() == null) {
+      throw badRequest("ACTIVE_REQUIRED");
+    }
 
     Map<String, Translation> translations = new LinkedHashMap<>();
     if (request.translations() != null) {
       for (Translation translation : request.translations()) {
         if (translation == null
             || !LANGUAGES.contains(translation.language())
-            || translations.put(translation.language(), translation) != null)
+            || translations.put(translation.language(), translation) != null) {
           throw badRequest("INVALID_TRANSLATIONS");
+        }
       }
     }
     Translation hu = translations.get("hu");
     if (hu == null
         || blank(hu.name())
         || blank(hu.shortDescription())
-        || blank(hu.detailedDescription()))
+        || blank(hu.detailedDescription())) {
       throw badRequest("HUNGARIAN_STAR_TOUR_CONTENT_REQUIRED");
+    }
 
     List<String> tags =
         request.tags() == null
@@ -167,10 +178,14 @@ public class StarTourService {
                 .map(String::trim)
                 .distinct()
                 .toList();
-    if (tags.stream().anyMatch(tag -> tag.length() > 80)) throw badRequest("INVALID_STAR_TOUR_TAG");
+    if (tags.stream().anyMatch(tag -> tag.length() > 80)) {
+      throw badRequest("INVALID_STAR_TOUR_TAG");
+    }
     List<Image> images = request.images() == null ? List.of() : request.images();
     for (Image image : images) {
-      if (image == null || blank(image.imageUrl())) throw badRequest("INVALID_STAR_TOUR_IMAGE");
+      if (image == null || blank(image.imageUrl())) {
+        throw badRequest("INVALID_STAR_TOUR_IMAGE");
+      }
       validateHttpUrl(image.imageUrl());
     }
     return new ValidStarTour(
@@ -186,7 +201,9 @@ public class StarTourService {
   private void replaceChildren(UUID id, ValidStarTour valid) {
     jdbc.sql("DELETE FROM star_tour_translation WHERE star_tour_id = :id").param("id", id).update();
     for (Translation translation : valid.translations().values()) {
-      if (!"hu".equals(translation.language()) && blank(translation.name())) continue;
+      if (!"hu".equals(translation.language()) && blank(translation.name())) {
+        continue;
+      }
       jdbc.sql(
               "INSERT INTO star_tour_translation (star_tour_id, language_code, name, short_description, detailed_description) "
                   + "VALUES (:id, :language, :name, :short, :detailed)")
@@ -198,11 +215,12 @@ public class StarTourService {
           .update();
     }
     jdbc.sql("DELETE FROM star_tour_tag WHERE star_tour_id = :id").param("id", id).update();
-    for (String tag : valid.tags())
+    for (String tag : valid.tags()) {
       jdbc.sql("INSERT INTO star_tour_tag (star_tour_id, tag) VALUES (:id, :tag)")
           .param("id", id)
           .param("tag", tag)
           .update();
+    }
     jdbc.sql("DELETE FROM star_tour_image WHERE star_tour_id = :id").param("id", id).update();
     for (int index = 0; index < valid.images().size(); index++) {
       Image image = valid.images().get(index);
@@ -214,13 +232,14 @@ public class StarTourService {
           .param("url", image.imageUrl().trim())
           .param("position", index)
           .update();
-      if (!blank(image.altText()))
+      if (!blank(image.altText())) {
         jdbc.sql(
                 "INSERT INTO star_tour_image_translation (image_id, language_code, alt_text) "
                     + "VALUES (:imageId, 'hu', :altText)")
             .param("imageId", imageId)
             .param("altText", image.altText().trim())
             .update();
+      }
     }
   }
 
@@ -294,21 +313,49 @@ public class StarTourService {
         row.detailedDescription(),
         row.mapColor(),
         tagsFor(row.id()),
-        imagesFor(row.id(), language));
+        imagesFor(row.id(), language),
+        stopsFor(row.id(), language));
+  }
+
+  private List<Stop> stopsFor(UUID id, String language) {
+    return jdbc.sql(
+            "SELECT attraction.slug, translation.name, attraction.latitude, attraction.longitude, "
+                + "attraction.google_maps_url, assignment.optional_stop "
+                + "FROM star_tour_attraction assignment "
+                + "JOIN attraction ON attraction.id = assignment.attraction_id AND attraction.active = TRUE "
+                + "JOIN attraction_translation translation ON translation.attraction_id = attraction.id "
+                + "AND translation.language_code = :language "
+                + "WHERE assignment.star_tour_id = :id ORDER BY assignment.display_order")
+        .param("language", language)
+        .param("id", id)
+        .query(
+            (rs, row) ->
+                new Stop(
+                    rs.getString("slug"),
+                    rs.getString("name"),
+                    rs.getBigDecimal("latitude"),
+                    rs.getBigDecimal("longitude"),
+                    rs.getString("google_maps_url"),
+                    rs.getBoolean("optional_stop")))
+        .list();
   }
 
   private void ensureExists(UUID id) {
     if (!jdbc.sql("SELECT EXISTS(SELECT 1 FROM star_tour WHERE id = :id)")
         .param("id", id)
         .query(Boolean.class)
-        .single()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "STAR_TOUR_NOT_FOUND");
+        .single()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "STAR_TOUR_NOT_FOUND");
+    }
   }
 
   private static void validateHttpUrl(String value) {
     try {
       URI uri = URI.create(value.trim());
       if (!("http".equals(uri.getScheme()) || "https".equals(uri.getScheme()))
-          || uri.getHost() == null) throw badRequest("INVALID_STAR_TOUR_IMAGE");
+          || uri.getHost() == null) {
+        throw badRequest("INVALID_STAR_TOUR_IMAGE");
+      }
     } catch (IllegalArgumentException exception) {
       throw badRequest("INVALID_STAR_TOUR_IMAGE");
     }
@@ -330,6 +377,14 @@ public class StarTourService {
       String language, String name, String shortDescription, String detailedDescription) {}
 
   public record Image(String imageUrl, String altText) {}
+
+  public record Stop(
+      String slug,
+      String name,
+      java.math.BigDecimal latitude,
+      java.math.BigDecimal longitude,
+      String googleMapsUrl,
+      boolean optional) {}
 
   public record StarTourUpsertRequest(
       String slug,
@@ -357,7 +412,8 @@ public class StarTourService {
       String detailedDescription,
       String mapColor,
       List<String> tags,
-      List<Image> images) {}
+      List<Image> images,
+      List<Stop> stops) {}
 
   private record TourRow(
       UUID id, String slug, String mapColor, boolean published, boolean active) {}

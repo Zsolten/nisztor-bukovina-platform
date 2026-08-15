@@ -41,9 +41,24 @@ class TourismCatalogueControllerTests {
     mockMvc
         .perform(get("/api/tourism/attractions").param("lang", "hu"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(9))
+        .andExpect(jsonPath("$.length()").value(10))
         .andExpect(jsonPath("$[?(@.slug == 'paring-hegyseg')].name").value("Páring-hegység"))
         .andExpect(jsonPath("$[0].active").doesNotExist());
+    mockMvc
+        .perform(get("/api/tourism/star-tours").param("lang", "hu"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(2));
+    mockMvc
+        .perform(get("/api/tourism/star-tours/paring-es-hatszegi-medence").param("lang", "hu"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.stops.length()").value(6))
+        .andExpect(jsonPath("$.stops[3].optional").value(false))
+        .andExpect(jsonPath("$.stops[4].optional").value(true))
+        .andExpect(jsonPath("$.stops[5].optional").value(true));
+    mockMvc
+        .perform(get("/api/tourism/star-tours").param("lang", "en"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(0));
   }
 
   @Test

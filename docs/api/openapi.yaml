@@ -2045,6 +2045,18 @@ components:
       properties:
         imageUrl: { type: string, format: uri }
         altText: { type: string }
+    StarTourStop:
+      type: object
+      required: [slug, name, latitude, longitude, googleMapsUrl, optional]
+      properties:
+        slug: { type: string }
+        name: { type: string }
+        latitude: { type: number }
+        longitude: { type: number }
+        googleMapsUrl: { type: string, format: uri }
+        optional:
+          type: boolean
+          description: True when the stop is only recommended if the schedule allows it.
     StarTourUpdate:
       type: object
       required: [slug, mapColor, published, active, translations, tags, images]
@@ -2064,7 +2076,7 @@ components:
         - { $ref: '#/components/schemas/StarTourUpdate' }
     StarTourPublic:
       type: object
-      required: [slug, name, shortDescription, detailedDescription, mapColor, tags, images]
+      required: [slug, name, shortDescription, detailedDescription, mapColor, tags, images, stops]
       properties:
         slug: { type: string }
         name: { type: string }
@@ -2073,3 +2085,7 @@ components:
         mapColor: { type: string }
         tags: { type: array, items: { type: string } }
         images: { type: array, items: { $ref: '#/components/schemas/StarTourImage' } }
+        stops:
+          type: array
+          description: Ordered stops. Driving distance and duration will be added separately.
+          items: { $ref: '#/components/schemas/StarTourStop' }
