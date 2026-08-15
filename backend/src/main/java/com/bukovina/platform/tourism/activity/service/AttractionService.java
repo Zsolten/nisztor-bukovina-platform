@@ -167,18 +167,23 @@ public class AttractionService {
                 .param("id", currentId)
                 .query(Integer.class)
                 .single();
-    if (duplicate > 0)
+    if (duplicate > 0) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "ATTRACTION_SLUG_EXISTS");
+    }
     if (request.latitude() == null
         || request.latitude().compareTo(BigDecimal.valueOf(-90)) < 0
-        || request.latitude().compareTo(BigDecimal.valueOf(90)) > 0)
+        || request.latitude().compareTo(BigDecimal.valueOf(90)) > 0) {
       throw badRequest("INVALID_LATITUDE");
+    }
     if (request.longitude() == null
         || request.longitude().compareTo(BigDecimal.valueOf(-180)) < 0
-        || request.longitude().compareTo(BigDecimal.valueOf(180)) > 0)
+        || request.longitude().compareTo(BigDecimal.valueOf(180)) > 0) {
       throw badRequest("INVALID_LONGITUDE");
+    }
     validateHttpUrl(request.googleMapsUrl(), "INVALID_GOOGLE_MAPS_URL");
-    if (request.active() == null) throw badRequest("ACTIVE_REQUIRED");
+    if (request.active() == null) {
+      throw badRequest("ACTIVE_REQUIRED");
+    }
 
     Map<String, Translation> translations = translations(request.translations());
     Translation hu = translations.get("hu");
@@ -198,7 +203,9 @@ public class AttractionService {
               .param("slug", collectionSlug)
               .query(Boolean.class)
               .single();
-      if (!exists) throw badRequest("UNKNOWN_TOURISM_COLLECTION");
+      if (!exists) {
+        throw badRequest("UNKNOWN_TOURISM_COLLECTION");
+      }
     }
     return new ValidAttraction(
         slug,
@@ -211,13 +218,16 @@ public class AttractionService {
   }
 
   private Map<String, Translation> translations(List<Translation> input) {
-    if (input == null) throw badRequest("HUNGARIAN_ATTRACTION_CONTENT_REQUIRED");
+    if (input == null) {
+      throw badRequest("HUNGARIAN_ATTRACTION_CONTENT_REQUIRED");
+    }
     Map<String, Translation> result = new LinkedHashMap<>();
     for (Translation translation : input) {
       if (translation == null
           || !LANGUAGES.contains(translation.language())
-          || result.put(translation.language(), translation) != null)
+          || result.put(translation.language(), translation) != null) {
         throw badRequest("INVALID_TRANSLATIONS");
+      }
     }
     return result;
   }
@@ -227,7 +237,9 @@ public class AttractionService {
         .param("id", id)
         .update();
     for (Translation translation : valid.translations().values()) {
-      if (!"hu".equals(translation.language()) && blank(translation.name())) continue;
+      if (!"hu".equals(translation.language()) && blank(translation.name())) {
+        continue;
+      }
       jdbc.sql(
               "INSERT INTO attraction_translation (attraction_id, language_code, name, short_description, "
                   + "detailed_description, admission_information, practical_information) "
@@ -322,14 +334,18 @@ public class AttractionService {
     if (!jdbc.sql("SELECT EXISTS(SELECT 1 FROM attraction WHERE id = :id)")
         .param("id", id)
         .query(Boolean.class)
-        .single()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ATTRACTION_NOT_FOUND");
+        .single()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ATTRACTION_NOT_FOUND");
+    }
   }
 
   private static void validateHttpUrl(String value, String error) {
     try {
       URI uri = URI.create(value == null ? "" : value.trim());
       if (!("https".equals(uri.getScheme()) || "http".equals(uri.getScheme()))
-          || uri.getHost() == null) throw badRequest(error);
+          || uri.getHost() == null) {
+        throw badRequest(error);
+      }
     } catch (IllegalArgumentException exception) {
       throw badRequest(error);
     }
