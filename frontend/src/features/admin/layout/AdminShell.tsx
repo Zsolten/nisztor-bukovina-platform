@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button, Container, Nav, Navbar, Offcanvas } from 'react-bootstrap'
-import { CalendarDays, FileText, LogOut } from 'lucide-react'
+import { CalendarDays, FileText, LogOut, MapPinned } from 'lucide-react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAdminAuth } from '../auth/adminAuthContext'
 
@@ -58,6 +58,10 @@ export default function AdminShell() {
                 <Nav.Link as={NavLink} onClick={() => setNavigationOpen(false)} to="/admin/content">
                   <FileText aria-hidden="true" size={18} />
                   Tartalmak
+                </Nav.Link>
+                <Nav.Link as={NavLink} onClick={() => setNavigationOpen(false)} to="/admin/tourism">
+                  <MapPinned aria-hidden="true" size={18} />
+                  Turizmus
                 </Nav.Link>
               </Nav>
               <Button

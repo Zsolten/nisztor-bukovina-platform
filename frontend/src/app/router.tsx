@@ -5,6 +5,7 @@ import AdminBookingDetail from '../features/admin/bookings/AdminBookingDetail'
 import AdminBookingQueue from '../features/admin/bookings/AdminBookingQueue'
 import AdminLoginPage from '../features/admin/auth/AdminLoginPage'
 import AdminGuesthouseContentEditor from '../features/admin/content/AdminGuesthouseContentEditor'
+import AdminTourismPage from '../features/admin/tourism/AdminTourismPage'
 import ProtectedAdminRoute from '../features/admin/auth/ProtectedAdminRoute'
 import AdminShell from '../features/admin/layout/AdminShell'
 import BookingPage from '../features/booking/BookingPage'
@@ -44,6 +45,10 @@ export const appRoutes: RouteObject[] = [
           {
             path: 'content',
             element: <AdminGuesthouseContentEditor />,
+          },
+          {
+            path: 'tourism',
+            element: <AdminTourismPage />,
           },
         ],
       },
