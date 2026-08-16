@@ -7,7 +7,14 @@ import {
   Search,
   SlidersHorizontal,
 } from 'lucide-react'
-import { useEffect, useMemo, useState, type CSSProperties } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { useOutletContext } from 'react-router-dom'
 import type { LanguageOutletContext } from '../../app/LanguageLayout'
@@ -26,9 +33,7 @@ import { categoryForAttraction, type AttractionCategory } from './tourismCategor
 
 type TourismView = 'tours' | 'attractions'
 type DetailTarget =
-  | { type: 'tour'; value: PublicStarTour }
-  | { type: 'attraction'; value: PublicAttraction }
-  | null
+  { type: 'tour'; value: PublicStarTour } | { type: 'attraction'; value: PublicAttraction } | null
 
 const FAVORITES_STORAGE_KEY = 'favoriteStarTours'
 const TOUR_IMAGE_BY_SLUG: Record<string, string> = {
@@ -89,6 +94,8 @@ export default function TourismMapPage() {
   const [detailTarget, setDetailTarget] = useState<DetailTarget>(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
+  const tourListRef = useRef<HTMLDivElement>(null)
+  const swipeStartRef = useRef<{ slug: string; y: number } | null>(null)
 
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim() ?? ''
   const mapId = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID?.trim()
@@ -156,6 +163,44 @@ export default function TourismMapPage() {
       )
       return next
     })
+  }
+
+  function handleTourPointerDown(event: ReactPointerEvent, slug: string) {
+    swipeStartRef.current = { slug, y: event.clientY }
+  }
+
+  function handleTourPointerUp(event: ReactPointerEvent, tour: PublicStarTour) {
+    const start = swipeStartRef.current
+    swipeStartRef.current = null
+    if (start?.slug === tour.slug && start.y - event.clientY >= 48) {
+      setDetailTarget({ type: 'tour', value: tour })
+    }
+  }
+
+  function handleTourListScroll() {
+    const list = tourListRef.current
+    if (!list) return
+    const center = list.scrollLeft + list.clientWidth / 2
+    const cards = Array.from(list.querySelectorAll<HTMLElement>('[data-tour-slug]'))
+    const closest = cards.reduce<HTMLElement | null>((current, card) => {
+      if (!current) return card
+      const cardCenter = card.offsetLeft + card.offsetWidth / 2
+      const currentCenter = current.offsetLeft + current.offsetWidth / 2
+      return Math.abs(cardCenter - center) < Math.abs(currentCenter - center) ? card : current
+    }, null)
+    if (closest?.dataset.tourSlug) {
+      setSelectedTourSlug((current) =>
+        current === closest.dataset.tourSlug ? current : (closest.dataset.tourSlug ?? current),
+      )
+    }
+  }
+
+  function scrollToTour(slug: string) {
+    setSelectedTourSlug(slug)
+    const card = Array.from(tourListRef.current?.children ?? []).find(
+      (element) => element instanceof HTMLElement && element.dataset.tourSlug === slug,
+    )
+    card?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
   }
 
   const mapAttractions = view === 'tours' ? attractions : filteredAttractions
@@ -248,72 +293,101 @@ export default function TourismMapPage() {
         {loadError && <p className="tourism-state tourism-state-error">{t('tourism.error')}</p>}
 
         {!loading && !loadError && view === 'tours' && (
-          <div className="tourism-tour-list" aria-live="polite">
-            {filteredTours.map((tour) => {
-              const selected = tour.slug === selectedTourSlug
-              const image = tourImage(tour)
-              const previewStops =
-                tour.stops.length > 3
-                  ? [tour.stops[0], null, tour.stops.at(-1)!]
-                  : tour.stops
-              return (
-                <article
-                  key={tour.slug}
-                  className={`tourism-tour-card${selected ? ' selected' : ''}`}
-                  style={{ '--tour-color': tour.mapColor } as CSSProperties}
-                >
-                  <button
-                    className="tourism-tour-select"
-                    type="button"
-                    aria-label={`${tour.name} ${t('tourism.selectTour')}`}
-                    onClick={() => setSelectedTourSlug(tour.slug)}
+          <div className="tourism-tour-carousel">
+            <div
+              ref={tourListRef}
+              className="tourism-tour-list"
+              aria-live="polite"
+              onScroll={handleTourListScroll}
+            >
+              {filteredTours.map((tour) => {
+                const selected = tour.slug === selectedTourSlug
+                const image = tourImage(tour)
+                const previewStops =
+                  tour.stops.length > 3 ? [tour.stops[0], null, tour.stops.at(-1)!] : tour.stops
+                return (
+                  <article
+                    key={tour.slug}
+                    data-tour-slug={tour.slug}
+                    className={`tourism-tour-card${selected ? ' selected' : ''}`}
+                    style={{ '--tour-color': tour.mapColor } as CSSProperties}
+                    onPointerDown={(event) => handleTourPointerDown(event, tour.slug)}
+                    onPointerUp={(event) => handleTourPointerUp(event, tour)}
+                    onPointerCancel={() => {
+                      swipeStartRef.current = null
+                    }}
                   >
-                    {selected && <span aria-hidden="true">✓</span>}
-                  </button>
-                  {image && <img src={image} alt={tour.images[0]?.altText || ''} />}
-                  <div className="tourism-tour-copy">
-                    <span className="tourism-route-swatch" aria-hidden="true" />
-                    <h2>{tour.name}</h2>
-                    <p className="tourism-tour-meta">
-                      {formatDistance(tour.totals.travelDistanceMeters)} ·{' '}
-                      {formatDuration(tour.totals.totalDurationSeconds)}
-                    </p>
-                    <ol className="tourism-tour-stops">
-                      {previewStops.map((stop, index) =>
-                        stop ? (
-                          <li key={stop.slug}>
-                            <span>{index === previewStops.length - 1 ? tour.stops.length : 1}</span>
-                            {stop.name}
-                          </li>
-                        ) : (
-                          <li key="more" className="tourism-tour-stops-more">
-                            <span aria-hidden="true">⋮</span>
-                            {t('tourism.intermediateStops', { count: tour.stops.length - 2 })}
-                          </li>
-                        ),
-                      )}
-                    </ol>
-                  </div>
+                    <button
+                      className="tourism-tour-select"
+                      type="button"
+                      aria-label={`${tour.name} ${t('tourism.selectTour')}`}
+                      onClick={() => scrollToTour(tour.slug)}
+                    >
+                      {selected && <span aria-hidden="true">✓</span>}
+                    </button>
+                    {image && <img src={image} alt={tour.images[0]?.altText || ''} />}
+                    <div className="tourism-tour-copy">
+                      <span className="tourism-route-swatch" aria-hidden="true" />
+                      <h2>{tour.name}</h2>
+                      <p className="tourism-tour-meta">
+                        {formatDistance(tour.totals.travelDistanceMeters)} ·{' '}
+                        {formatDuration(tour.totals.totalDurationSeconds)}
+                      </p>
+                      <ol className="tourism-tour-stops">
+                        {previewStops.map((stop, index) =>
+                          stop ? (
+                            <li key={stop.slug}>
+                              <span>
+                                {index === previewStops.length - 1 ? tour.stops.length : 1}
+                              </span>
+                              {stop.name}
+                            </li>
+                          ) : (
+                            <li key="more" className="tourism-tour-stops-more">
+                              <span aria-hidden="true">⋮</span>
+                              {t('tourism.intermediateStops', { count: tour.stops.length - 2 })}
+                            </li>
+                          ),
+                        )}
+                      </ol>
+                    </div>
+                    <button
+                      className={`tourism-favorite${favorites.includes(tour.slug) ? ' active' : ''}`}
+                      type="button"
+                      aria-label={t('tourism.favorite', { name: tour.name })}
+                      aria-pressed={favorites.includes(tour.slug)}
+                      onClick={() => toggleFavorite(tour.slug)}
+                    >
+                      <Heart aria-hidden="true" fill="currentColor" size={25} />
+                    </button>
+                    <button
+                      type="button"
+                      className="tourism-tour-cta"
+                      onClick={() => setDetailTarget({ type: 'tour', value: tour })}
+                    >
+                      {t('tourism.showTour')}
+                    </button>
+                  </article>
+                )
+              })}
+              {filteredTours.length === 0 && (
+                <p className="tourism-state">{t('tourism.noTours')}</p>
+              )}
+            </div>
+            {filteredTours.length > 1 && (
+              <div className="tourism-tour-pagination" aria-label={t('tourism.tourPagination')}>
+                {filteredTours.map((tour) => (
                   <button
-                    className={`tourism-favorite${favorites.includes(tour.slug) ? ' active' : ''}`}
+                    key={tour.slug}
                     type="button"
-                    aria-label={t('tourism.favorite', { name: tour.name })}
-                    aria-pressed={favorites.includes(tour.slug)}
-                    onClick={() => toggleFavorite(tour.slug)}
-                  >
-                    <Heart aria-hidden="true" fill="currentColor" size={25} />
-                  </button>
-                  <button
-                    type="button"
-                    className="tourism-tour-cta"
-                    onClick={() => setDetailTarget({ type: 'tour', value: tour })}
-                  >
-                    {t('tourism.showTour')}
-                  </button>
-                </article>
-              )
-            })}
-            {filteredTours.length === 0 && <p className="tourism-state">{t('tourism.noTours')}</p>}
+                    className={tour.slug === selectedTourSlug ? 'active' : ''}
+                    aria-label={t('tourism.selectTourPagination', { name: tour.name })}
+                    aria-current={tour.slug === selectedTourSlug ? 'true' : undefined}
+                    onClick={() => scrollToTour(tour.slug)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -393,13 +467,11 @@ export default function TourismMapPage() {
           <strong>{t('tourism.mapCaptionTitle')}</strong>
           <span>{t('tourism.mapCaptionText')}</span>
         </div>
-        {view === 'tours' &&
-          selectedTour &&
-          !selectedRoute && (
-            <p className="tourism-route-status">
-              {t(`tourism.routeStatus.${selectedTour.routeStatus}`)}
-            </p>
-          )}
+        {view === 'tours' && selectedTour && !selectedRoute && (
+          <p className="tourism-route-status">
+            {t(`tourism.routeStatus.${selectedTour.routeStatus}`)}
+          </p>
+        )}
       </section>
       <TourismDetailsModal detail={detailTarget} onHide={() => setDetailTarget(null)} />
     </main>

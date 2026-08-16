@@ -152,13 +152,17 @@
   margin-top: 1.5rem;
 }
 
+.tourism-tour-pagination {
+  display: none;
+}
+
 .tourism-tour-card {
   --tour-color: #{$brick};
   position: relative;
   display: grid;
   min-height: 132px;
   overflow: hidden;
-  padding: 0.85rem 2.8rem 0.85rem 2.9rem;
+  padding: 0.85rem 2.8rem 3.15rem 1.1rem;
   grid-template-columns: 96px minmax(0, 1fr);
   gap: 0.9rem;
   border: 1px solid var(--line);
@@ -178,6 +182,23 @@
 
 .tourism-tour-card.selected {
   border-color: var(--tour-color);
+}
+
+.tourism-tour-card.selected::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  border-radius: 10px 0 0 10px;
+  background: var(--tour-color);
+  content: '';
+  pointer-events: none;
+}
+
+.tourism-tour-card > img,
+.tourism-tour-copy {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .tourism-tour-card > img {
@@ -275,18 +296,17 @@
 
 .tourism-tour-select {
   position: absolute;
-  inset: 0 auto 0 0;
-  display: grid;
-  width: 34px;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
   border: 0;
-  background: color-mix(in srgb, var(--tour-color) 90%, #40261f);
-  color: white;
+  background: transparent;
+  color: transparent;
   cursor: pointer;
-  place-items: center;
 }
 
 .tourism-tour-select span {
-  font-size: 1.15rem;
+  display: none;
 }
 
 .tourism-favorite {
@@ -303,6 +323,7 @@
   color: transparent;
   cursor: pointer;
   filter: drop-shadow(0 0 0 var(--ink));
+  z-index: 3;
 }
 
 .tourism-favorite.active {
@@ -311,7 +332,23 @@
 }
 
 .tourism-tour-cta {
-  display: none;
+  position: absolute;
+  z-index: 3;
+  right: 0.85rem;
+  bottom: 0.75rem;
+  display: inline-flex;
+  min-height: 28px;
+  padding: 0;
+  align-items: center;
+  gap: 0.25rem;
+  border: 0;
+  background: transparent;
+  color: var(--forest-dark);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.25rem;
+  cursor: pointer;
 }
 
 .tourism-details-modal .modal-content {
@@ -680,6 +717,24 @@
   transform: rotate(-45deg) scale(1.12);
 }
 
+.tourism-map-base-marker {
+  position: relative;
+  display: grid;
+  width: 50px;
+  height: 50px;
+  place-items: center;
+  border: 3px solid white;
+  border-radius: 50% 50% 50% 5px;
+  background: var(--brick);
+  color: white;
+  box-shadow: 0 6px 18px rgba(123, 53, 33, 0.42);
+  transform: rotate(-45deg);
+}
+
+.tourism-map-base-marker > svg {
+  transform: rotate(45deg);
+}
+
 .tourism-map-popup-category {
   display: inline-flex;
   align-items: center;
@@ -735,8 +790,20 @@
   .tourism-page {
     display: flex;
     min-height: 100dvh;
-    padding-top: 78px;
+    overflow-x: hidden;
+    padding-top: 58px;
     flex-direction: column;
+  }
+
+  .site-header.site-header-tourism {
+    position: absolute;
+    min-height: 58px;
+    padding: 0.25rem 0.75rem;
+  }
+
+  .site-header.site-header-tourism .brand-logo {
+    width: 40px;
+    height: 40px;
   }
 
   .tourism-sidebar {
@@ -818,14 +885,25 @@
     left: 1.25rem;
   }
 
-  .tourism-tour-list {
+  .tourism-tour-carousel {
     z-index: 30;
     order: 7;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    margin-top: -6.1rem;
+    padding-bottom: 1.25rem;
+  }
+
+  .tourism-tour-list {
     display: flex;
     overflow-x: auto;
-    margin: -6.1rem 0 0;
-    padding: 0 1.25rem 2.5rem;
-    gap: 0.8rem;
+    overflow-y: hidden;
+    margin: 0;
+    padding: 0 1.25rem;
+    gap: 0.85rem;
+    overscroll-behavior-inline: contain;
+    scroll-padding-inline: 1.25rem;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
   }
@@ -835,14 +913,18 @@
   }
 
   .tourism-tour-card {
-    min-width: min(86vw, 610px);
-    min-height: 260px;
-    padding: 1rem 3.1rem 4.7rem 1rem;
+    width: calc(100vw - 4.25rem);
+    min-width: calc(100vw - 4.25rem);
+    max-width: 610px;
+    height: 280px;
+    min-height: 280px;
     flex: 0 0 auto;
+    padding: 1rem 3.1rem 4.7rem 1rem;
     grid-template-columns: minmax(110px, 34%) minmax(0, 1fr);
     border-radius: 14px;
-    scroll-snap-align: center;
     box-shadow: 0 18px 34px rgba(39, 36, 31, 0.2);
+    scroll-snap-align: center;
+    touch-action: pan-x;
   }
 
   .tourism-tour-card > img {
@@ -853,6 +935,10 @@
 
   .tourism-tour-copy h2 {
     font-size: clamp(1.15rem, 4.5vw, 1.55rem);
+  }
+
+  .tourism-tour-copy {
+    position: static;
   }
 
   .tourism-tour-meta {
@@ -871,10 +957,6 @@
     font-size: 0.68rem;
   }
 
-  .tourism-tour-select {
-    display: none;
-  }
-
   .tourism-favorite {
     top: 1rem;
     right: 1rem;
@@ -885,7 +967,6 @@
     right: 1rem;
     bottom: 1rem;
     left: 1rem;
-    display: block;
     display: grid;
     min-height: 48px;
     place-items: center;
@@ -895,6 +976,32 @@
     color: white;
     cursor: pointer;
     text-decoration: none;
+  }
+
+  .tourism-tour-pagination {
+    display: flex;
+    margin-top: 0.9rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+  }
+
+  .tourism-tour-pagination button {
+    width: 10px;
+    height: 10px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(20, 58, 46, 0.28);
+    cursor: pointer;
+    transition:
+      background-color 160ms ease,
+      transform 160ms ease;
+  }
+
+  .tourism-tour-pagination button.active {
+    background: var(--forest-dark);
+    transform: scale(1.15);
   }
 
   .tourism-attraction-section {
@@ -914,16 +1021,33 @@
   .tourism-details-modal .modal-body {
     padding: 1.25rem;
   }
+
+  .tourism-details-modal {
+    padding: 0;
+  }
+
+  .tourism-details-modal .modal-dialog {
+    width: 100%;
+    max-width: none;
+    min-height: 100dvh;
+    margin: 0;
+  }
+
+  .tourism-details-modal .modal-content {
+    min-height: 100dvh;
+    border: 0;
+    border-radius: 0;
+  }
 }
 
 @media (max-width: 480px) {
   .tourism-tour-card {
-    min-width: 89vw;
-    min-height: 242px;
+    height: 280px;
+    min-height: 280px;
   }
 
   .tourism-tour-card > img {
-    height: 148px;
+    height: 128px;
   }
 
   .tourism-map-caption {

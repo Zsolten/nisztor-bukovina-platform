@@ -1,11 +1,9 @@
 import { AdvancedMarker, APIProvider, InfoWindow, Map, useMap } from '@vis.gl/react-google-maps'
+import { House } from 'lucide-react'
 import { useEffect, useMemo, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Language } from '../../i18n/languages'
-import type {
-  PublicAttraction,
-  PublicStarTourRoute,
-} from '../../shared/api/tourism'
+import type { PublicAttraction, PublicStarTourRoute } from '../../shared/api/tourism'
 import AttractionCategoryIcon from './AttractionCategoryIcon'
 import { categoryForAttraction } from './tourismCategories'
 
@@ -55,7 +53,10 @@ function decodePolyline(encoded: string): google.maps.LatLngLiteral[] {
   return path
 }
 
-function RoutePolylines({ routes, selectedRoute }: Pick<TourismMapProps, 'routes' | 'selectedRoute'>) {
+function RoutePolylines({
+  routes,
+  selectedRoute,
+}: Pick<TourismMapProps, 'routes' | 'selectedRoute'>) {
   const map = useMap()
 
   useEffect(() => {
@@ -117,7 +118,10 @@ function RoutePolylines({ routes, selectedRoute }: Pick<TourismMapProps, 'routes
   return null
 }
 
-function MapViewport({ attractions, selectedRoute }: Pick<TourismMapProps, 'attractions' | 'selectedRoute'>) {
+function MapViewport({
+  attractions,
+  selectedRoute,
+}: Pick<TourismMapProps, 'attractions' | 'selectedRoute'>) {
   const map = useMap()
 
   useEffect(() => {
@@ -149,11 +153,23 @@ function MapContent({
     () => new Set(selectedRoute?.stops.map((stop) => stop.slug) ?? []),
     [selectedRoute?.stops],
   )
+  const guesthouseBase = selectedRoute?.base ?? routes[0]?.route.base
 
   return (
     <>
       <MapViewport attractions={attractions} selectedRoute={selectedRoute} />
       <RoutePolylines routes={routes} selectedRoute={selectedRoute} />
+      {guesthouseBase && (
+        <AdvancedMarker
+          position={{ lat: Number(guesthouseBase.latitude), lng: Number(guesthouseBase.longitude) }}
+          title={t('tourism.guesthouseBase')}
+          zIndex={40}
+        >
+          <span className="tourism-map-base-marker">
+            <House aria-hidden="true" size={22} />
+          </span>
+        </AdvancedMarker>
+      )}
       {attractions.map((attraction) => {
         const active = routeStops.has(attraction.slug)
         const category = categoryForAttraction(attraction)
@@ -171,8 +187,8 @@ function MapContent({
                 active
                   ? ({
                       '--marker-accent':
-                        routes.find(({ route }) => route.tourSlug === selectedRoute?.tourSlug)?.color ??
-                        '#a84930',
+                        routes.find(({ route }) => route.tourSlug === selectedRoute?.tourSlug)
+                          ?.color ?? '#a84930',
                     } as CSSProperties)
                   : undefined
               }

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -117,10 +117,7 @@ describe('TourismMapPage', () => {
 
     expect(await screen.findByText('Maros mente és Gyulafehérvár')).toBeVisible()
     await waitFor(() =>
-      expect(fetch).toHaveBeenCalledWith(
-        '/api/tourism/star-tours/routes',
-        expect.any(Object),
-      ),
+      expect(fetch).toHaveBeenCalledWith('/api/tourism/star-tours/routes', expect.any(Object)),
     )
 
     await user.click(screen.getByRole('tab', { name: 'Látnivalók' }))
@@ -154,5 +151,25 @@ describe('TourismMapPage', () => {
     expect(JSON.parse(window.localStorage.getItem('favoriteStarTours') ?? '[]')).toEqual([
       expect.objectContaining({ tourId: 'maros-mente-es-gyulafehervar' }),
     ])
+  })
+
+  it('opens tour details when the mobile card is swiped upward', async () => {
+    const router = createMemoryRouter(appRoutes, { initialEntries: ['/hu/star-tours'] })
+    render(
+      <AppProviders>
+        <RouterProvider router={router} />
+      </AppProviders>,
+    )
+
+    const heading = await screen.findByRole('heading', {
+      name: 'Maros mente és Gyulafehérvár',
+    })
+    const card = heading.closest('article')
+    expect(card).not.toBeNull()
+
+    fireEvent.pointerDown(card!, { clientY: 320 })
+    fireEvent.pointerUp(card!, { clientY: 240 })
+
+    expect(await screen.findByRole('dialog')).toHaveTextContent('A túra részletes bemutatása.')
   })
 })

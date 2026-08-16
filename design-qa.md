@@ -106,6 +106,60 @@ final result: blocked
 
 ---
 
+# Tourism mobile carousel follow-up QA
+
+## Evidence
+
+- Source visual truth:
+  - `C:\Users\nisto\Downloads\csillagtura_phone_mockup_2.png` (top section, 852 x 506 pixels).
+  - `C:\Users\nisto\Downloads\csillagtura_phone_mockup.png` (map and carousel, 852 x 1536 pixels).
+- Browser-rendered implementation:
+  - `frontend/.design-qa/tourism-mobile-top.png`.
+  - `frontend/.design-qa/tourism-mobile-map-carousel.png`.
+- Route: `http://localhost:5173/hu/star-tours`.
+- Viewport: 426 x 768 CSS pixels, device scale factor 1.
+- Density normalization: the 852-pixel-wide source mockups were evaluated as 2x captures of a 426 CSS-pixel mobile layout. The implementation captures are 426 pixels wide at 1x.
+- State: Hungarian tour view with two published tours, both cached routes, all attraction pins, the guesthouse pin, and the second tour selected.
+- Full-view comparison: each source image and its corresponding implementation capture were emitted together in the same browser comparison result.
+- Focused interaction checks: pagination selected and centered the second card; a real upward drag on the selected card opened the full-screen details dialog; the dialog measured 426 x 768 CSS pixels.
+
+## Findings
+
+- No actionable P0/P1/P2 difference remains in the requested mobile carousel behavior.
+- [P3] The Google basemap palette and label density differ from the illustrated source map.
+  - Evidence: the implementation uses the configured Dynamic Maps basemap while the mockup uses a muted editorial map treatment.
+  - Impact: route and pin contrast remain clear, but the overall map tone is less parchment-like.
+  - Follow-up: apply a muted cloud map style to the configured Map ID when the visual styling ticket is opened.
+
+## Required fidelity surfaces
+
+- Fonts and typography: the existing serif display and compact sans-serif UI hierarchy are preserved; mobile title wrapping is intentional at real phone width.
+- Spacing and layout rhythm: the top section follows the mockup order; the map occupies a fixed mobile region; cards are equal-height, snap horizontally, and expose the next card edge.
+- Colors and visual tokens: forest, paper, brick, route colors, selected border, and route glow remain consistent with the product tokens.
+- Image quality and asset fidelity: tour images come from the existing repository/API content and use a stable cropped card slot; no placeholder drawing was introduced.
+- Copy and content: Hungarian API content is shown without fallback translation; intermediate stops use the compact omitted-middle presentation.
+
+## Comparison history
+
+1. Initial implementation stacked mobile cards vertically and hid the tourism header.
+2. Added a horizontal snap carousel, fixed card height, compact mobile header, pagination dots, and upward-swipe details.
+3. First visual comparison found an oversized card and overlapping stop text because the absolutely positioned list was anchored to the copy column.
+4. Reduced the card width to reveal the neighboring card, made the header scroll away, anchored stops to the card, and rebalanced the card to a fixed 280-pixel height.
+5. Post-fix evidence measured two 358 x 280 cards, carousel `scrollWidth` 770 over `clientWidth` 411, no document-level horizontal overflow, and a full-screen 426 x 768 details dialog.
+
+## Implementation checklist
+
+- Horizontal rightward card scrolling: passed.
+- Fixed and equal mobile card heights: passed.
+- Minimal header that leaves the viewport while scrolling: passed.
+- Pagination selection and card centering: passed.
+- Upward drag opens full-screen tour details: passed.
+- Mobile page horizontal overflow: passed.
+
+final result: passed
+
+---
+
 # Tourism map follow-up QA
 
 ## Evidence
@@ -141,3 +195,11 @@ final result: blocked
 3. Add tour gallery images in admin, then recheck desktop/mobile details.
 
 final result: blocked
+
+---
+
+# Latest tourism mobile QA status
+
+The earlier runtime blocker is resolved: the local backend now serves the cached route endpoint, both Hungarian tours render, the Dynamic Map loads, and the mobile carousel follow-up above completed successfully.
+
+final result: passed
