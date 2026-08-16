@@ -1,5 +1,6 @@
 import { AdvancedMarker, APIProvider, InfoWindow, Map, useMap } from '@vis.gl/react-google-maps'
 import { useEffect, useMemo, type CSSProperties } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Language } from '../../i18n/languages'
 import type {
   PublicAttraction,
@@ -17,6 +18,7 @@ interface TourismMapProps {
   selectedRoute: PublicStarTourRoute | null
   routes: Array<{ route: PublicStarTourRoute; color: string }>
   onSelectAttraction: (attraction: PublicAttraction | null) => void
+  onOpenAttractionDetails: (attraction: PublicAttraction) => void
 }
 
 const DEFAULT_CENTER = { lat: 45.75, lng: 23.12 }
@@ -140,7 +142,9 @@ function MapContent({
   selectedRoute,
   routes,
   onSelectAttraction,
+  onOpenAttractionDetails,
 }: Omit<TourismMapProps, 'apiKey' | 'mapId' | 'language'>) {
+  const { t } = useTranslation()
   const routeStops = useMemo(
     () => new Set(selectedRoute?.stops.map((stop) => stop.slug) ?? []),
     [selectedRoute?.stops],
@@ -198,9 +202,14 @@ function MapContent({
         >
           <div className="tourism-map-popup">
             <p>{selectedAttraction.shortDescription}</p>
-            <a href={selectedAttraction.googleMapsUrl} target="_blank" rel="noreferrer">
-              Megnyitás Google Térképen
-            </a>
+            <div className="tourism-map-popup-actions">
+              <a href={selectedAttraction.googleMapsUrl} target="_blank" rel="noreferrer">
+                {t('tourism.openOnMap')}
+              </a>
+              <button type="button" onClick={() => onOpenAttractionDetails(selectedAttraction)}>
+                {t('tourism.details')}
+              </button>
+            </div>
           </div>
         </InfoWindow>
       )}

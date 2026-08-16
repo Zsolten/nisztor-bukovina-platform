@@ -131,6 +131,9 @@ describe('TourismMapPage', () => {
     await user.click(screen.getByRole('button', { name: 'Vár' }))
     expect(screen.getByText('Déva vára')).toBeVisible()
     expect(screen.queryByText('Páring-hegység')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Részletek' }))
+    expect(await screen.findByRole('dialog')).toHaveTextContent('Déva várának részletes története.')
   })
 
   it('stores favorites without persisting full tour content', async () => {

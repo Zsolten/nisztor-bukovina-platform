@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useOutletContext } from 'react-router-dom'
+import { useOutletContext } from 'react-router-dom'
 import type { LanguageOutletContext } from '../../app/LanguageLayout'
 import {
   listPublicCachedStarTourRoutes,
@@ -20,10 +20,15 @@ import {
   type PublicStarTourRoute,
 } from '../../shared/api/tourism'
 import AttractionCategoryIcon from './AttractionCategoryIcon'
+import TourismDetailsModal from './TourismDetailsModal'
 import TourismMap from './TourismMap'
 import { categoryForAttraction, type AttractionCategory } from './tourismCategories'
 
 type TourismView = 'tours' | 'attractions'
+type DetailTarget =
+  | { type: 'tour'; value: PublicStarTour }
+  | { type: 'attraction'; value: PublicAttraction }
+  | null
 
 const FAVORITES_STORAGE_KEY = 'favoriteStarTours'
 const TOUR_IMAGE_BY_SLUG: Record<string, string> = {
@@ -81,7 +86,7 @@ export default function TourismMapPage() {
   const [selectedAttraction, setSelectedAttraction] = useState<PublicAttraction | null>(null)
   const [routes, setRoutes] = useState<PublicStarTourRoute[]>([])
   const [favorites, setFavorites] = useState<string[]>(readFavorites)
-  const [expandedAttraction, setExpandedAttraction] = useState<string | null>(null)
+  const [detailTarget, setDetailTarget] = useState<DetailTarget>(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
 
@@ -154,12 +159,16 @@ export default function TourismMapPage() {
   }
 
   const mapAttractions = view === 'tours' ? attractions : filteredAttractions
-  const mapRoutes = routes
-    .map((route) => {
-      const tour = tours.find((item) => item.slug === route.tourSlug)
-      return tour ? { route, color: tour.mapColor } : null
-    })
-    .filter((route): route is { route: PublicStarTourRoute; color: string } => route !== null)
+  const mapRoutes = useMemo(
+    () =>
+      routes
+        .map((route) => {
+          const tour = tours.find((item) => item.slug === route.tourSlug)
+          return tour ? { route, color: tour.mapColor } : null
+        })
+        .filter((route): route is { route: PublicStarTourRoute; color: string } => route !== null),
+    [routes, tours],
+  )
 
   return (
     <main id="main-content" className="tourism-page">
@@ -294,12 +303,13 @@ export default function TourismMapPage() {
                   >
                     <Heart aria-hidden="true" fill="currentColor" size={25} />
                   </button>
-                  <Link
+                  <button
+                    type="button"
                     className="tourism-tour-cta"
-                    to={`/${language}/star-tours/${encodeURIComponent(tour.slug)}`}
+                    onClick={() => setDetailTarget({ type: 'tour', value: tour })}
                   >
                     {t('tourism.showTour')}
-                  </Link>
+                  </button>
                 </article>
               )
             })}
@@ -315,12 +325,11 @@ export default function TourismMapPage() {
             </div>
             <div className="tourism-attraction-list">
               {filteredAttractions.map((attraction) => {
-                const expanded = expandedAttraction === attraction.slug
                 const image = ATTRACTION_IMAGE_BY_SLUG[attraction.slug]
                 return (
                   <article
                     key={attraction.slug}
-                    className={`tourism-attraction-card${image ? ' has-image' : ''}${expanded ? ' expanded' : ''}`}
+                    className={`tourism-attraction-card${image ? ' has-image' : ''}`}
                   >
                     {image && <img src={image} alt="" />}
                     <div className="tourism-attraction-copy">
@@ -332,16 +341,13 @@ export default function TourismMapPage() {
                         {t(`tourism.categories.${categoryForAttraction(attraction)}`)}
                       </p>
                       <h3>{attraction.name}</h3>
-                      <p>
-                        {expanded ? attraction.detailedDescription : attraction.shortDescription}
-                      </p>
+                      <p>{attraction.shortDescription}</p>
                       <div className="tourism-attraction-actions">
                         <button
                           type="button"
-                          aria-expanded={expanded}
-                          onClick={() => setExpandedAttraction(expanded ? null : attraction.slug)}
+                          onClick={() => setDetailTarget({ type: 'attraction', value: attraction })}
                         >
-                          {expanded ? t('tourism.less') : t('tourism.details')}
+                          {t('tourism.details')}
                           <ChevronRight aria-hidden="true" size={18} />
                         </button>
                         <a href={attraction.googleMapsUrl} target="_blank" rel="noreferrer">
@@ -378,6 +384,9 @@ export default function TourismMapPage() {
             selectedRoute={view === 'tours' ? selectedRoute : null}
             routes={view === 'tours' ? mapRoutes : []}
             onSelectAttraction={setSelectedAttraction}
+            onOpenAttractionDetails={(attraction) =>
+              setDetailTarget({ type: 'attraction', value: attraction })
+            }
           />
         )}
         <div className="tourism-map-caption">
@@ -392,6 +401,7 @@ export default function TourismMapPage() {
             </p>
           )}
       </section>
+      <TourismDetailsModal detail={detailTarget} onHide={() => setDetailTarget(null)} />
     </main>
   )
 }
