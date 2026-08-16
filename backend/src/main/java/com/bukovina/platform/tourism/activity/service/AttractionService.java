@@ -80,7 +80,8 @@ public class AttractionService {
         .update();
     replaceChildren(id, valid);
     boolean coordinatesChanged = coordinatesChanged(existing, valid);
-    if (coordinatesChanged) {
+    boolean routeInputsChanged = coordinatesChanged || existing.active() != valid.active();
+    if (routeInputsChanged) {
       routeCacheInvalidator.invalidateForAttraction(id);
     }
     CalculationSummary calculation =

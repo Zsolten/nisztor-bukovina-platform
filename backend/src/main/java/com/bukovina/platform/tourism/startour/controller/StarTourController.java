@@ -6,6 +6,7 @@ import com.bukovina.platform.tourism.startour.service.StarTourService;
 import com.bukovina.platform.tourism.startour.service.StarTourService.StarTourPublicResponse;
 import com.bukovina.platform.tourism.startour.service.StarTourService.StarTourResponse;
 import com.bukovina.platform.tourism.startour.service.StarTourService.StarTourUpsertRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Pattern;
 import java.util.List;
 import java.util.UUID;
@@ -37,12 +38,22 @@ public class StarTourController {
   @PostMapping("/api/admin/tourism/star-tours")
   @ResponseStatus(HttpStatus.CREATED)
   StarTourResponse create(@RequestBody StarTourUpsertRequest request) {
-    return service.create(request);
+    StarTourResponse saved = service.create(request);
+    routeService.recalculateForAdmin(saved.id());
+    return service.getAdmin(saved.id());
   }
 
   @PutMapping("/api/admin/tourism/star-tours/{id}")
   StarTourResponse update(@PathVariable UUID id, @RequestBody StarTourUpsertRequest request) {
-    return service.update(id, request);
+    service.update(id, request);
+    routeService.recalculateForAdmin(id);
+    return service.getAdmin(id);
+  }
+
+  @PostMapping("/api/admin/tourism/star-tours/{id}/route/recalculate")
+  StarTourResponse recalculateRoute(@PathVariable UUID id) {
+    routeService.recalculateForAdmin(id);
+    return service.getAdmin(id);
   }
 
   @GetMapping("/api/tourism/star-tours")
@@ -54,8 +65,9 @@ public class StarTourController {
   @GetMapping("/api/tourism/star-tours/{slug}/route")
   StarTourRouteResponse getPublicRoute(
       @PathVariable String slug,
-      @RequestParam(name = "optionalStopSlug", required = false) List<String> optionalStopSlugs) {
-    return routeService.getPublicRoute(slug, optionalStopSlugs);
+      @RequestParam(name = "optionalStopSlug", required = false) List<String> optionalStopSlugs,
+      HttpServletRequest request) {
+    return routeService.getPublicRoute(slug, optionalStopSlugs, request.getRemoteAddr());
   }
 
   @GetMapping("/api/tourism/star-tours/{slug}")

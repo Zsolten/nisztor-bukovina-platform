@@ -52,9 +52,13 @@ export interface AdminStarTour {
   translations: StarTourTranslation[]
   tags: string[]
   images: StarTourImage[]
+  routeStatus: StarTourRouteStatus
+  routeFailureReason?: string | null
 }
 
-export type StarTourUpdate = Omit<AdminStarTour, 'id'>
+export type StarTourRouteStatus = 'READY' | 'MISSING' | 'STALE' | 'CALCULATING' | 'FAILED'
+
+export type StarTourUpdate = Omit<AdminStarTour, 'id' | 'routeStatus' | 'routeFailureReason'>
 
 async function request<T>(authorizedFetch: AuthorizedFetch, path: string, init?: RequestInit) {
   const response = await authorizedFetch(path, init)
@@ -118,3 +122,10 @@ export const saveStarTour = (
     json(id ? 'PUT' : 'POST', payload),
   )
 }
+
+export const recalculateStarTourRoute = (authorizedFetch: AuthorizedFetch, id: string) =>
+  request<AdminStarTour>(
+    authorizedFetch,
+    `/api/admin/tourism/star-tours/${id}/route/recalculate`,
+    json('POST', undefined),
+  )

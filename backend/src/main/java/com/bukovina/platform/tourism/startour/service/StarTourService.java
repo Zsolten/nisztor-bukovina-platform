@@ -1,5 +1,6 @@
 package com.bukovina.platform.tourism.startour.service;
 
+import com.bukovina.platform.tourism.startour.service.StarTourRouteService.RouteStatus;
 import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -19,9 +20,11 @@ public class StarTourService {
   private static final Pattern SLUG = Pattern.compile("^[a-z0-9]+(?:-[a-z0-9]+)*$");
   private static final Pattern COLOR = Pattern.compile("^#[0-9A-Fa-f]{6}$");
   private final JdbcClient jdbc;
+  private final StarTourRouteService routeService;
 
-  public StarTourService(JdbcClient jdbc) {
+  public StarTourService(JdbcClient jdbc, StarTourRouteService routeService) {
     this.jdbc = jdbc;
+    this.routeService = routeService;
   }
 
   @Transactional(readOnly = true)
@@ -66,6 +69,11 @@ public class StarTourService {
         .param("active", valid.active())
         .update();
     replaceChildren(id, valid);
+    return findAdmin(id);
+  }
+
+  @Transactional(readOnly = true)
+  public StarTourResponse getAdmin(UUID id) {
     return findAdmin(id);
   }
 
@@ -118,7 +126,9 @@ public class StarTourService {
         row.active(),
         translationsFor(id),
         tagsFor(id),
-        adminImagesFor(id));
+        adminImagesFor(id),
+        routeService.statusFor(id),
+        routeService.failureReasonFor(id));
   }
 
   private ValidStarTour validate(StarTourUpsertRequest request, UUID currentId) {
@@ -314,7 +324,8 @@ public class StarTourService {
         row.mapColor(),
         tagsFor(row.id()),
         imagesFor(row.id(), language),
-        stopsFor(row.id(), language));
+        stopsFor(row.id(), language),
+        routeService.statusFor(row.id()));
   }
 
   private List<Stop> stopsFor(UUID id, String language) {
@@ -403,7 +414,9 @@ public class StarTourService {
       boolean active,
       List<Translation> translations,
       List<String> tags,
-      List<Image> images) {}
+      List<Image> images,
+      RouteStatus routeStatus,
+      String routeFailureReason) {}
 
   public record StarTourPublicResponse(
       String slug,
@@ -413,7 +426,8 @@ public class StarTourService {
       String mapColor,
       List<String> tags,
       List<Image> images,
-      List<Stop> stops) {}
+      List<Stop> stops,
+      RouteStatus routeStatus) {}
 
   private record TourRow(
       UUID id, String slug, String mapColor, boolean published, boolean active) {}

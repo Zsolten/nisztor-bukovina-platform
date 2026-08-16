@@ -1,6 +1,8 @@
 package com.bukovina.platform.tourism;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -13,6 +15,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,11 +24,17 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-@SpringBootTest(properties = "DB_PASSWORD=test-password")
+@SpringBootTest(
+    properties = {
+      "DB_PASSWORD=test-password",
+      "tourism.routing.star-tour.rate-limit.enabled=false"
+    })
 @AutoConfigureMockMvc
 @Import({
   PostgreSqlTestContainerConfiguration.class,
@@ -41,11 +50,17 @@ class StarTourRouteControllerTests {
   @Autowired private StarTourRouteCacheInvalidator cacheInvalidator;
   @Autowired private JdbcClient jdbc;
 
+  @BeforeEach
+  void resetProvider() {
+    provider.reset();
+  }
+
   @Test
   void calculatesEachOptionalStopCombinationOnceAndInvalidatesAffectedRoutes() throws Exception {
     mockMvc
         .perform(get("/api/tourism/star-tours/{slug}/route", TOUR_SLUG))
         .andExpect(status().isOk())
+        .andExpect(jsonPath("$.routeStatus").value("READY"))
         .andExpect(jsonPath("$.cached").value(false))
         .andExpect(jsonPath("$.base.latitude").value(45.8232811))
         .andExpect(jsonPath("$.stops.length()").value(4))
@@ -89,11 +104,12 @@ class StarTourRouteControllerTests {
 
   @Test
   void storesAFailedCalculationAndDoesNotCallGoogleForMoreThanTenStops() throws Exception {
+    int callsBeforeFailure = provider.calls.get();
     provider.fail.set(true);
     mockMvc
         .perform(get("/api/tourism/star-tours/{slug}/route", "maros-mente-es-gyulafehervar"))
-        .andExpect(status().isBadGateway())
-        .andExpect(jsonPath("$.code").value("STAR_TOUR_ROUTE_CALCULATION_FAILED"));
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.routeStatus").value("FAILED"));
     org.junit.jupiter.api.Assertions.assertEquals(
         "FAILED",
         jdbc.sql(
@@ -103,6 +119,12 @@ class StarTourRouteControllerTests {
             .param("slug", "maros-mente-es-gyulafehervar")
             .query(String.class)
             .single());
+    mockMvc
+        .perform(get("/api/tourism/star-tours/{slug}/route", "maros-mente-es-gyulafehervar"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.routeStatus").value("FAILED"))
+        .andExpect(jsonPath("$.cached").value(true));
+    org.junit.jupiter.api.Assertions.assertEquals(callsBeforeFailure + 1, provider.calls.get());
     provider.fail.set(false);
 
     for (int index = 0; index < 7; index++) {
@@ -129,6 +151,47 @@ class StarTourRouteControllerTests {
     org.junit.jupiter.api.Assertions.assertEquals(callsBeforeLimitCheck, provider.calls.get());
   }
 
+  @Test
+  @WithMockUser(roles = "ADMIN")
+  void recalculatesTheDefaultRouteOnTourSaveAndOnTheExplicitAdminAction() throws Exception {
+    mockMvc
+        .perform(
+            put("/api/admin/tourism/star-tours/{id}", "1cb58299-6d38-5e68-a571-594b1c6bd5dd")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(tourUpdateRequest()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.routeStatus").value("READY"));
+    org.junit.jupiter.api.Assertions.assertEquals(1, provider.calls.get());
+
+    mockMvc
+        .perform(
+            post(
+                "/api/admin/tourism/star-tours/{id}/route/recalculate",
+                "1cb58299-6d38-5e68-a571-594b1c6bd5dd"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.routeStatus").value("READY"));
+    org.junit.jupiter.api.Assertions.assertEquals(2, provider.calls.get());
+  }
+
+  private static String tourUpdateRequest() {
+    return """
+        {
+          "slug": "paring-es-hatszegi-medence",
+          "mapColor": "#C65D3B",
+          "published": true,
+          "active": true,
+          "tags": ["egynapos"],
+          "images": [],
+          "translations": [{
+            "language": "hu",
+            "name": "Páring és a Hátszegi-medence",
+            "shortDescription": "Frissített rövid leírás.",
+            "detailedDescription": "Frissített hosszú leírás."
+          }]
+        }
+        """;
+  }
+
   @TestConfiguration(proxyBeanMethods = false)
   static class RouteProviderConfiguration {
     @Bean
@@ -141,6 +204,11 @@ class StarTourRouteControllerTests {
   static class TestDrivingRouteProvider implements DrivingRouteProvider {
     private final AtomicInteger calls = new AtomicInteger();
     private final AtomicBoolean fail = new AtomicBoolean();
+
+    private void reset() {
+      calls.set(0);
+      fail.set(false);
+    }
 
     @Override
     public List<RouteLeg> calculate(

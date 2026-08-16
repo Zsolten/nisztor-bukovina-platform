@@ -3,8 +3,13 @@ package com.bukovina.platform.tourism.startour.service;
 import com.bukovina.platform.tourism.routing.DrivingRouteProvider;
 import com.bukovina.platform.tourism.routing.DrivingRouteProvider.RouteLeg;
 import com.bukovina.platform.tourism.routing.DrivingRouteProvider.RoutePoint;
+import com.bukovina.platform.tourism.routing.StarTourRouteCalculationProperties;
+import com.bukovina.platform.tourism.routing.StarTourRouteRateLimiter;
 import com.bukovina.platform.tourism.routing.TourismRouteBaseProperties;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -24,54 +29,185 @@ public class StarTourRouteService {
   private final JdbcClient jdbc;
   private final DrivingRouteProvider provider;
   private final TourismRouteBaseProperties base;
+  private final StarTourRouteCalculationProperties properties;
+  private final StarTourRouteRateLimiter rateLimiter;
   private final TransactionTemplate transactionTemplate;
 
   public StarTourRouteService(
       JdbcClient jdbc,
       DrivingRouteProvider provider,
       TourismRouteBaseProperties base,
+      StarTourRouteCalculationProperties properties,
+      StarTourRouteRateLimiter rateLimiter,
       TransactionTemplate transactionTemplate) {
     this.jdbc = jdbc;
     this.provider = provider;
     this.base = base;
+    this.properties = properties;
+    this.rateLimiter = rateLimiter;
     this.transactionTemplate = transactionTemplate;
   }
 
-  /**
-   * Returns the cached round trip for a selected optional-stop combination, calculating it once if
-   * necessary. The guesthouse is always both the origin and destination.
-   */
   public StarTourRouteResponse getPublicRoute(
-      String tourSlug, List<String> requestedOptionalSlugs) {
+      String tourSlug, List<String> requestedOptionalSlugs, String clientIp) {
     UUID tourId = findPublishedTourId(tourSlug);
-    List<TourStop> availableStops = stopsFor(tourId);
-    List<TourStop> selectedStops = selectStops(availableStops, requestedOptionalSlugs);
-    if (selectedStops.size() > MAX_INTERMEDIATE_STOPS) {
-      throw badRequest("STAR_TOUR_STOP_LIMIT_EXCEEDED");
+    RouteDefinition definition = definition(tourId, requestedOptionalSlugs);
+    return calculateIfNeeded(tourId, tourSlug, definition, false, clientIp);
+  }
+
+  /** Recalculates the required-stop route after an administrator saves a tour. */
+  public RouteStatus recalculateForAdmin(UUID tourId) {
+    ensureTourExists(tourId);
+    RouteDefinition definition = definition(tourId, List.of());
+    if (definition.stops().isEmpty()) {
+      return RouteStatus.MISSING;
+    }
+    return calculateIfNeeded(tourId, null, definition, true, null).routeStatus();
+  }
+
+  /** Returns the default-route status without making a Google request. */
+  public RouteStatus statusFor(UUID tourId) {
+    RouteDefinition definition = definition(tourId, List.of());
+    if (definition.stops().isEmpty()) {
+      return RouteStatus.MISSING;
+    }
+    Variant variant = findVariant(tourId, definition.fingerprint());
+    if (variant == null) {
+      return hasAnyVariant(tourId) ? RouteStatus.STALE : RouteStatus.MISSING;
+    }
+    return switch (variant.status()) {
+      case "PENDING" -> pendingExpired(variant) ? RouteStatus.STALE : RouteStatus.CALCULATING;
+      case "FAILED" -> RouteStatus.FAILED;
+      case "SUCCESS" ->
+          storedLegs(variant.id(), definition.stops().size() + 1) == null
+              ? RouteStatus.STALE
+              : RouteStatus.READY;
+      default -> RouteStatus.STALE;
+    };
+  }
+
+  public String failureReasonFor(UUID tourId) {
+    RouteDefinition definition = definition(tourId, List.of());
+    Variant variant = findVariant(tourId, definition.fingerprint());
+    return variant != null && "FAILED".equals(variant.status()) ? variant.failureReason() : null;
+  }
+
+  private StarTourRouteResponse calculateIfNeeded(
+      UUID tourId, String tourSlug, RouteDefinition definition, boolean force, String clientIp) {
+    if (definition.stops().isEmpty()) {
+      return response(tourSlug, definition, RouteStatus.MISSING, List.of(), true, null, null);
+    }
+    Variant existing = findVariant(tourId, definition.fingerprint());
+    List<RouteLeg> cached =
+        existing == null ? null : storedLegs(existing.id(), definition.stops().size() + 1);
+    if (!force && existing != null && "SUCCESS".equals(existing.status()) && cached != null) {
+      return response(tourSlug, definition, RouteStatus.READY, cached, true, null, null);
+    }
+    if (!force
+        && existing != null
+        && "PENDING".equals(existing.status())
+        && !pendingExpired(existing)) {
+      return response(
+          tourSlug,
+          definition,
+          RouteStatus.CALCULATING,
+          List.of(),
+          true,
+          null,
+          existing.calculatedAt());
+    }
+    if (!force && existing != null && "FAILED".equals(existing.status()) && retryActive(existing)) {
+      return response(
+          tourSlug,
+          definition,
+          RouteStatus.FAILED,
+          List.of(),
+          true,
+          existing.failureReason(),
+          existing.retryAfter());
+    }
+    if (!force) {
+      rateLimiter.consumeCalculation(clientIp);
     }
 
-    String selectionKey = selectionKey(selectedStops);
-    StoredRoute cached = findStored(tourId, selectionKey);
-    if (cached != null) {
-      return response(tourSlug, selectedStops, cached.legs(), true);
+    Claim claim = claimCalculation(tourId, definition, force);
+    if (claim == Claim.CALCULATING) {
+      Variant pending = findVariant(tourId, definition.fingerprint());
+      return response(
+          tourSlug,
+          definition,
+          RouteStatus.CALCULATING,
+          List.of(),
+          true,
+          null,
+          pending == null ? null : pending.calculatedAt());
+    }
+    if (claim == Claim.READY) {
+      Variant ready = findVariant(tourId, definition.fingerprint());
+      List<RouteLeg> legs =
+          ready == null ? null : storedLegs(ready.id(), definition.stops().size() + 1);
+      if (legs != null) {
+        return response(tourSlug, definition, RouteStatus.READY, legs, true, null, null);
+      }
+      claim = claimCalculation(tourId, definition, true);
+      if (claim != Claim.OWNER) {
+        return response(tourSlug, definition, RouteStatus.CALCULATING, List.of(), true, null, null);
+      }
+    }
+    if (claim == Claim.FAILED) {
+      Variant failed = findVariant(tourId, definition.fingerprint());
+      return response(
+          tourSlug,
+          definition,
+          RouteStatus.FAILED,
+          List.of(),
+          true,
+          failed == null ? null : failed.failureReason(),
+          failed == null ? null : failed.retryAfter());
     }
 
-    List<RouteLeg> legs;
     try {
-      legs =
+      List<RouteLeg> legs =
           provider.calculate(
               new RoutePoint(base.latitude(), base.longitude()),
-              selectedStops.stream().map(TourStop::toRoutePoint).toList(),
+              definition.stops().stream().map(TourStop::toRoutePoint).toList(),
               new RoutePoint(base.latitude(), base.longitude()));
-      validateLegs(legs, selectedStops.size() + 1);
+      validateLegs(legs, definition.stops().size() + 1);
+      storeSuccess(tourId, definition, legs);
+      return response(tourSlug, definition, RouteStatus.READY, legs, false, null, null);
     } catch (RuntimeException exception) {
-      storeFailure(tourId, selectionKey, reason(exception));
-      throw new ResponseStatusException(
-          HttpStatus.BAD_GATEWAY, "STAR_TOUR_ROUTE_CALCULATION_FAILED", exception);
+      OffsetDateTime retryAfter = OffsetDateTime.now().plus(properties.failureCooldown());
+      String failureReason = reason(exception);
+      storeFailure(tourId, definition, failureReason, retryAfter);
+      return response(
+          tourSlug, definition, RouteStatus.FAILED, List.of(), false, failureReason, retryAfter);
     }
+  }
 
-    storeSuccess(tourId, selectionKey, legs);
-    return response(tourSlug, selectedStops, legs, false);
+  private Claim claimCalculation(UUID tourId, RouteDefinition definition, boolean force) {
+    return transactionTemplate.execute(
+        ignored -> {
+          Variant variant = findVariant(tourId, definition.fingerprint());
+          if (variant == null) {
+            if (insertPending(tourId, definition) == 1) {
+              return Claim.OWNER;
+            }
+            variant = findVariant(tourId, definition.fingerprint());
+            if (variant == null) {
+              throw new IllegalStateException("STAR_TOUR_ROUTE_CLAIM_FAILED");
+            }
+          }
+          if ("PENDING".equals(variant.status()) && !pendingExpired(variant)) {
+            return Claim.CALCULATING;
+          }
+          if (!force && "SUCCESS".equals(variant.status())) {
+            return Claim.READY;
+          }
+          if (!force && "FAILED".equals(variant.status()) && retryActive(variant)) {
+            return Claim.FAILED;
+          }
+          return markPending(variant.id()) == 1 ? Claim.OWNER : Claim.CALCULATING;
+        });
   }
 
   private UUID findPublishedTourId(String slug) {
@@ -84,10 +220,28 @@ public class StarTourRouteService {
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "STAR_TOUR_NOT_FOUND"));
   }
 
+  private void ensureTourExists(UUID tourId) {
+    if (!jdbc.sql("SELECT EXISTS(SELECT 1 FROM star_tour WHERE id = :tourId)")
+        .param("tourId", tourId)
+        .query(Boolean.class)
+        .single()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "STAR_TOUR_NOT_FOUND");
+    }
+  }
+
+  private RouteDefinition definition(UUID tourId, List<String> requestedOptionalSlugs) {
+    List<TourStop> selectedStops = selectStops(stopsFor(tourId), requestedOptionalSlugs);
+    if (selectedStops.size() > MAX_INTERMEDIATE_STOPS) {
+      throw badRequest("STAR_TOUR_STOP_LIMIT_EXCEEDED");
+    }
+    return new RouteDefinition(
+        selectedStops, selectionKey(selectedStops), fingerprint(selectedStops));
+  }
+
   private List<TourStop> stopsFor(UUID tourId) {
     return jdbc.sql(
             "SELECT attraction.id, attraction.slug, attraction.latitude, attraction.longitude, "
-                + "assignment.optional_stop "
+                + "assignment.display_order, assignment.optional_stop "
                 + "FROM star_tour_attraction assignment JOIN attraction ON attraction.id = assignment.attraction_id "
                 + "WHERE assignment.star_tour_id = :tourId AND attraction.active = TRUE "
                 + "ORDER BY assignment.display_order")
@@ -99,6 +253,7 @@ public class StarTourRouteService {
                     rs.getString("slug"),
                     rs.getBigDecimal("latitude"),
                     rs.getBigDecimal("longitude"),
+                    rs.getInt("display_order"),
                     rs.getBoolean("optional_stop")))
         .list();
   }
@@ -126,6 +281,43 @@ public class StarTourRouteService {
         .toList();
   }
 
+  private String fingerprint(List<TourStop> selectedStops) {
+    StringBuilder input =
+        new StringBuilder("v2|base|")
+            .append(decimal(base.latitude()))
+            .append('|')
+            .append(decimal(base.longitude()));
+    for (TourStop stop : selectedStops) {
+      input
+          .append("|stop|")
+          .append(stop.displayOrder())
+          .append('|')
+          .append(stop.id())
+          .append('|')
+          .append(decimal(stop.latitude()))
+          .append('|')
+          .append(decimal(stop.longitude()))
+          .append('|')
+          .append(stop.optional());
+    }
+    try {
+      byte[] digest =
+          MessageDigest.getInstance("SHA-256")
+              .digest(input.toString().getBytes(StandardCharsets.UTF_8));
+      StringBuilder hex = new StringBuilder(64);
+      for (byte value : digest) {
+        hex.append(String.format("%02x", value));
+      }
+      return hex.toString();
+    } catch (NoSuchAlgorithmException exception) {
+      throw new IllegalStateException("SHA_256_NOT_AVAILABLE", exception);
+    }
+  }
+
+  private static String decimal(BigDecimal value) {
+    return value.stripTrailingZeros().toPlainString();
+  }
+
   private static String selectionKey(List<TourStop> selectedStops) {
     return selectedStops.stream()
         .filter(TourStop::optional)
@@ -135,19 +327,34 @@ public class StarTourRouteService {
         .orElse("");
   }
 
-  private StoredRoute findStored(UUID tourId, String selectionKey) {
-    UUID variantId =
-        jdbc.sql(
-                "SELECT id FROM star_tour_route_variant WHERE star_tour_id = :tourId "
-                    + "AND selection_key = :selectionKey AND calculation_status = 'SUCCESS'")
-            .param("tourId", tourId)
-            .param("selectionKey", selectionKey)
-            .query(UUID.class)
-            .optional()
-            .orElse(null);
-    if (variantId == null) {
-      return null;
-    }
+  private Variant findVariant(UUID tourId, String fingerprint) {
+    return jdbc.sql(
+            "SELECT id, calculation_status, calculated_at, failure_reason, retry_after "
+                + "FROM star_tour_route_variant WHERE star_tour_id = :tourId "
+                + "AND route_fingerprint = :fingerprint")
+        .param("tourId", tourId)
+        .param("fingerprint", fingerprint)
+        .query(
+            (rs, row) ->
+                new Variant(
+                    rs.getObject("id", UUID.class),
+                    rs.getString("calculation_status"),
+                    rs.getObject("calculated_at", OffsetDateTime.class),
+                    rs.getString("failure_reason"),
+                    rs.getObject("retry_after", OffsetDateTime.class)))
+        .optional()
+        .orElse(null);
+  }
+
+  private boolean hasAnyVariant(UUID tourId) {
+    return jdbc.sql(
+            "SELECT EXISTS(SELECT 1 FROM star_tour_route_variant WHERE star_tour_id = :tourId)")
+        .param("tourId", tourId)
+        .query(Boolean.class)
+        .single();
+  }
+
+  private List<RouteLeg> storedLegs(UUID variantId, int expectedCount) {
     List<RouteLeg> legs =
         jdbc.sql(
                 "SELECT distance_meters, duration_seconds, encoded_polyline FROM star_tour_route_leg "
@@ -160,13 +367,52 @@ public class StarTourRouteService {
                         rs.getInt("duration_seconds"),
                         rs.getString("encoded_polyline")))
             .list();
-    return new StoredRoute(legs);
+    try {
+      validateLegs(legs, expectedCount);
+      return legs;
+    } catch (RuntimeException exception) {
+      return null;
+    }
   }
 
-  private void storeSuccess(UUID tourId, String selectionKey, List<RouteLeg> legs) {
+  private int insertPending(UUID tourId, RouteDefinition definition) {
+    return jdbc.sql(
+            "INSERT INTO star_tour_route_variant (id, star_tour_id, selection_key, route_fingerprint, "
+                + "calculation_status, source, calculated_at) VALUES (:id, :tourId, :selectionKey, "
+                + ":fingerprint, 'PENDING', :source, :calculatedAt) "
+                + "ON CONFLICT (star_tour_id, route_fingerprint) DO NOTHING")
+        .param("id", UUID.randomUUID())
+        .param("tourId", tourId)
+        .param("selectionKey", definition.selectionKey())
+        .param("fingerprint", definition.fingerprint())
+        .param("source", SOURCE)
+        .param("calculatedAt", OffsetDateTime.now())
+        .update();
+  }
+
+  private int markPending(UUID variantId) {
+    return jdbc.sql(
+            "UPDATE star_tour_route_variant SET calculation_status = 'PENDING', source = :source, "
+                + "calculated_at = :calculatedAt, failure_reason = NULL, retry_after = NULL WHERE id = :id "
+                + "AND (calculation_status <> 'PENDING' OR calculated_at < :pendingBefore)")
+        .param("source", SOURCE)
+        .param("calculatedAt", OffsetDateTime.now())
+        .param("pendingBefore", OffsetDateTime.now().minus(properties.pendingTimeout()))
+        .param("id", variantId)
+        .update();
+  }
+
+  private void storeSuccess(UUID tourId, RouteDefinition definition, List<RouteLeg> legs) {
     transactionTemplate.executeWithoutResult(
         ignored -> {
-          UUID variantId = upsertVariant(tourId, selectionKey, "SUCCESS", null);
+          UUID variantId = variantId(tourId, definition.fingerprint());
+          jdbc.sql(
+                  "UPDATE star_tour_route_variant SET calculation_status = 'SUCCESS', source = :source, "
+                      + "calculated_at = :calculatedAt, failure_reason = NULL, retry_after = NULL WHERE id = :id")
+              .param("source", SOURCE)
+              .param("calculatedAt", OffsetDateTime.now())
+              .param("id", variantId)
+              .update();
           jdbc.sql("DELETE FROM star_tour_route_leg WHERE route_variant_id = :variantId")
               .param("variantId", variantId)
               .update();
@@ -188,34 +434,43 @@ public class StarTourRouteService {
         });
   }
 
-  private void storeFailure(UUID tourId, String selectionKey, String failureReason) {
+  private void storeFailure(
+      UUID tourId, RouteDefinition definition, String failureReason, OffsetDateTime retryAfter) {
     transactionTemplate.executeWithoutResult(
         ignored -> {
-          UUID variantId = upsertVariant(tourId, selectionKey, "FAILED", failureReason);
+          UUID variantId = variantId(tourId, definition.fingerprint());
+          jdbc.sql(
+                  "UPDATE star_tour_route_variant SET calculation_status = 'FAILED', source = :source, "
+                      + "calculated_at = :calculatedAt, failure_reason = :failureReason, retry_after = :retryAfter "
+                      + "WHERE id = :id")
+              .param("source", SOURCE)
+              .param("calculatedAt", OffsetDateTime.now())
+              .param("failureReason", failureReason)
+              .param("retryAfter", retryAfter)
+              .param("id", variantId)
+              .update();
           jdbc.sql("DELETE FROM star_tour_route_leg WHERE route_variant_id = :variantId")
               .param("variantId", variantId)
               .update();
         });
   }
 
-  private UUID upsertVariant(
-      UUID tourId, String selectionKey, String status, String failureReason) {
+  private UUID variantId(UUID tourId, String fingerprint) {
     return jdbc.sql(
-            "INSERT INTO star_tour_route_variant (id, star_tour_id, selection_key, calculation_status, "
-                + "source, calculated_at, failure_reason) VALUES (:id, :tourId, :selectionKey, :status, "
-                + ":source, :calculatedAt, :failureReason) ON CONFLICT (star_tour_id, selection_key) "
-                + "DO UPDATE SET calculation_status = EXCLUDED.calculation_status, source = EXCLUDED.source, "
-                + "calculated_at = EXCLUDED.calculated_at, failure_reason = EXCLUDED.failure_reason "
-                + "RETURNING id")
-        .param("id", UUID.randomUUID())
+            "SELECT id FROM star_tour_route_variant WHERE star_tour_id = :tourId "
+                + "AND route_fingerprint = :fingerprint")
         .param("tourId", tourId)
-        .param("selectionKey", selectionKey)
-        .param("status", status)
-        .param("source", SOURCE)
-        .param("calculatedAt", OffsetDateTime.now())
-        .param("failureReason", failureReason)
+        .param("fingerprint", fingerprint)
         .query(UUID.class)
         .single();
+  }
+
+  private boolean pendingExpired(Variant variant) {
+    return !variant.calculatedAt().plus(properties.pendingTimeout()).isAfter(OffsetDateTime.now());
+  }
+
+  private static boolean retryActive(Variant variant) {
+    return variant.retryAfter() != null && variant.retryAfter().isAfter(OffsetDateTime.now());
   }
 
   private static void validateLegs(List<RouteLeg> legs, int expectedCount) {
@@ -233,7 +488,13 @@ public class StarTourRouteService {
   }
 
   private StarTourRouteResponse response(
-      String tourSlug, List<TourStop> selectedStops, List<RouteLeg> legs, boolean cached) {
+      String tourSlug,
+      RouteDefinition definition,
+      RouteStatus status,
+      List<RouteLeg> legs,
+      boolean cached,
+      String failureReason,
+      OffsetDateTime retryAfter) {
     List<LegResponse> legResponses =
         java.util.stream.IntStream.range(0, legs.size())
             .mapToObj(
@@ -250,19 +511,22 @@ public class StarTourRouteService {
             .toList();
     return new StarTourRouteResponse(
         tourSlug,
+        status,
         cached,
         new BaseStop(base.latitude(), base.longitude()),
-        java.util.stream.IntStream.range(0, selectedStops.size())
+        java.util.stream.IntStream.range(0, definition.stops().size())
             .mapToObj(
                 index -> {
-                  TourStop stop = selectedStops.get(index);
+                  TourStop stop = definition.stops().get(index);
                   return new StopResponse(
                       index + 1, stop.slug(), stop.latitude(), stop.longitude(), stop.optional());
                 })
             .toList(),
         legResponses,
         legs.stream().mapToInt(RouteLeg::distanceMeters).sum(),
-        legs.stream().mapToInt(RouteLeg::durationSeconds).sum());
+        legs.stream().mapToInt(RouteLeg::durationSeconds).sum(),
+        failureReason,
+        retryAfter);
   }
 
   private static String reason(RuntimeException exception) {
@@ -275,14 +539,25 @@ public class StarTourRouteService {
     return new ResponseStatusException(HttpStatus.BAD_REQUEST, reason);
   }
 
+  public enum RouteStatus {
+    READY,
+    MISSING,
+    STALE,
+    CALCULATING,
+    FAILED
+  }
+
   public record StarTourRouteResponse(
       String tourSlug,
+      RouteStatus routeStatus,
       boolean cached,
       BaseStop base,
       List<StopResponse> stops,
       List<LegResponse> legs,
       int totalDistanceMeters,
-      int totalDurationSeconds) {}
+      int totalDurationSeconds,
+      String failureReason,
+      OffsetDateTime retryAfter) {}
 
   public record BaseStop(BigDecimal latitude, BigDecimal longitude) {}
 
@@ -301,10 +576,29 @@ public class StarTourRouteService {
       int durationSeconds,
       String encodedPolyline) {}
 
-  private record StoredRoute(List<RouteLeg> legs) {}
+  private enum Claim {
+    OWNER,
+    READY,
+    CALCULATING,
+    FAILED
+  }
+
+  private record RouteDefinition(List<TourStop> stops, String selectionKey, String fingerprint) {}
+
+  private record Variant(
+      UUID id,
+      String status,
+      OffsetDateTime calculatedAt,
+      String failureReason,
+      OffsetDateTime retryAfter) {}
 
   private record TourStop(
-      UUID id, String slug, BigDecimal latitude, BigDecimal longitude, boolean optional) {
+      UUID id,
+      String slug,
+      BigDecimal latitude,
+      BigDecimal longitude,
+      int displayOrder,
+      boolean optional) {
     private RoutePoint toRoutePoint() {
       return new RoutePoint(latitude, longitude);
     }
