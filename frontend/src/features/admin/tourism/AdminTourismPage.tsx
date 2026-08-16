@@ -286,7 +286,11 @@ export default function AdminTourismPage() {
       if (clearAttractionSelection) setAttractionToAdd('')
     } catch (reason) {
       const message = reason instanceof Error ? reason.message : 'A megállók mentése nem sikerült'
-      if (message === 'INVALID_STAR_TOUR_STOPS') reportDuplicateStop()
+      if (
+        message === 'INVALID_STAR_TOUR_STOPS' ||
+        message === 'ATTRACTION_ALREADY_ASSIGNED_AS_OPTIONAL_STOP'
+      )
+        reportDuplicateStop()
       else setError(message)
     } finally {
       setSavingStops(false)
