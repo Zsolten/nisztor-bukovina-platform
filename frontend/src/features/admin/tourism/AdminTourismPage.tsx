@@ -837,11 +837,7 @@ export default function AdminTourismPage() {
           </Modal.Body>
         )}
         <Modal.Footer>
-          <Button
-            variant="outline-secondary"
-            disabled={savingStops}
-            onClick={closeStopEditor}
-          >
+          <Button variant="outline-secondary" disabled={savingStops} onClick={closeStopEditor}>
             Bezárás
           </Button>
         </Modal.Footer>
