@@ -248,7 +248,18 @@ export default function AdminTourismPage() {
     }
   }
 
-  async function saveStops(stops: AdminStarTourStop[]) {
+  function closeStopEditor() {
+    setStopPlan(null)
+    setStopTour(null)
+    setAttractionToAdd('')
+  }
+
+  function reportDuplicateStop() {
+    closeStopEditor()
+    setError('A kiválasztott látnivaló már szerepel ebben a túrában.')
+  }
+
+  async function saveStops(stops: AdminStarTourStop[], clearAttractionSelection = false) {
     if (!stopPlan || !stopTour) return
     setSavingStops(true)
     setError('')
@@ -272,8 +283,11 @@ export default function AdminTourismPage() {
       setStopTour((current) =>
         current ? { ...current, published: saved.published, totals: saved.totals } : current,
       )
+      if (clearAttractionSelection) setAttractionToAdd('')
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'A megállók mentése nem sikerült')
+      const message = reason instanceof Error ? reason.message : 'A megállók mentése nem sikerült'
+      if (message === 'INVALID_STAR_TOUR_STOPS') reportDuplicateStop()
+      else setError(message)
     } finally {
       setSavingStops(false)
     }
@@ -295,19 +309,26 @@ export default function AdminTourismPage() {
 
   function addStop() {
     if (!stopPlan || !attractionToAdd) return
+    if (stopPlan.assignedAttractionIds.includes(attractionToAdd)) {
+      reportDuplicateStop()
+      return
+    }
     const attraction = attractions.find((item) => item.id === attractionToAdd)
     if (!attraction) return
-    void saveStops([
-      ...stopPlan.stops,
-      {
-        attractionId: attraction.id,
-        slug: attraction.slug,
-        name: huAttraction(attraction).name,
-        recommendedVisitDurationMinutes: attraction.recommendedVisitDurationMinutes,
-        plannedVisitDurationMinutes: null,
-        effectiveVisitDurationMinutes: attraction.recommendedVisitDurationMinutes,
-      },
-    ])
+    void saveStops(
+      [
+        ...stopPlan.stops,
+        {
+          attractionId: attraction.id,
+          slug: attraction.slug,
+          name: huAttraction(attraction).name,
+          recommendedVisitDurationMinutes: attraction.recommendedVisitDurationMinutes,
+          plannedVisitDurationMinutes: null,
+          effectiveVisitDurationMinutes: attraction.recommendedVisitDurationMinutes,
+        },
+      ],
+      true,
+    )
   }
 
   function updateStopDuration(index: number, value: string) {
@@ -646,10 +667,7 @@ export default function AdminTourismPage() {
       <Modal
         show={Boolean(stopPlan && stopTour)}
         onHide={() => {
-          if (!savingStops) {
-            setStopPlan(null)
-            setStopTour(null)
-          }
+          if (!savingStops) closeStopEditor()
         }}
         size="xl"
       >
@@ -811,10 +829,7 @@ export default function AdminTourismPage() {
           <Button
             variant="outline-secondary"
             disabled={savingStops}
-            onClick={() => {
-              setStopPlan(null)
-              setStopTour(null)
-            }}
+            onClick={closeStopEditor}
           >
             Bezárás
           </Button>
