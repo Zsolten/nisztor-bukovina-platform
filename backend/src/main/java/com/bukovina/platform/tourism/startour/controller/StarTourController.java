@@ -1,5 +1,7 @@
 package com.bukovina.platform.tourism.startour.controller;
 
+import com.bukovina.platform.tourism.startour.service.StarTourRouteService;
+import com.bukovina.platform.tourism.startour.service.StarTourRouteService.StarTourRouteResponse;
 import com.bukovina.platform.tourism.startour.service.StarTourService;
 import com.bukovina.platform.tourism.startour.service.StarTourService.StarTourPublicResponse;
 import com.bukovina.platform.tourism.startour.service.StarTourService.StarTourResponse;
@@ -20,9 +22,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class StarTourController {
   private final StarTourService service;
+  private final StarTourRouteService routeService;
 
-  public StarTourController(StarTourService service) {
+  public StarTourController(StarTourService service, StarTourRouteService routeService) {
     this.service = service;
+    this.routeService = routeService;
   }
 
   @GetMapping("/api/admin/tourism/star-tours")
@@ -45,6 +49,13 @@ public class StarTourController {
   List<StarTourPublicResponse> listPublic(
       @RequestParam(defaultValue = "hu") @Pattern(regexp = "hu|ro|en") String lang) {
     return service.listPublic(lang);
+  }
+
+  @GetMapping("/api/tourism/star-tours/{slug}/route")
+  StarTourRouteResponse getPublicRoute(
+      @PathVariable String slug,
+      @RequestParam(name = "optionalStopSlug", required = false) List<String> optionalStopSlugs) {
+    return routeService.getPublicRoute(slug, optionalStopSlugs);
   }
 
   @GetMapping("/api/tourism/star-tours/{slug}")

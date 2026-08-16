@@ -2,6 +2,7 @@ package com.bukovina.platform.tourism.activity.service;
 
 import com.bukovina.platform.tourism.routing.DrivingDistanceMatrixService;
 import com.bukovina.platform.tourism.routing.DrivingDistanceMatrixService.CalculationSummary;
+import com.bukovina.platform.tourism.routing.StarTourRouteCacheInvalidator;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.LinkedHashMap;
@@ -23,10 +24,15 @@ public class AttractionService {
   private static final Pattern SLUG = Pattern.compile("^[a-z0-9]+(?:-[a-z0-9]+)*$");
   private final JdbcClient jdbc;
   private final DrivingDistanceMatrixService drivingDistanceMatrix;
+  private final StarTourRouteCacheInvalidator routeCacheInvalidator;
 
-  public AttractionService(JdbcClient jdbc, DrivingDistanceMatrixService drivingDistanceMatrix) {
+  public AttractionService(
+      JdbcClient jdbc,
+      DrivingDistanceMatrixService drivingDistanceMatrix,
+      StarTourRouteCacheInvalidator routeCacheInvalidator) {
     this.jdbc = jdbc;
     this.drivingDistanceMatrix = drivingDistanceMatrix;
+    this.routeCacheInvalidator = routeCacheInvalidator;
   }
 
   @Transactional(readOnly = true)
@@ -73,10 +79,12 @@ public class AttractionService {
         .param("active", valid.active())
         .update();
     replaceChildren(id, valid);
+    boolean coordinatesChanged = coordinatesChanged(existing, valid);
+    if (coordinatesChanged) {
+      routeCacheInvalidator.invalidateForAttraction(id);
+    }
     CalculationSummary calculation =
-        coordinatesChanged(existing, valid)
-            ? drivingDistanceMatrix.recalculateAffectedPairs(id)
-            : null;
+        coordinatesChanged ? drivingDistanceMatrix.recalculateAffectedPairs(id) : null;
     return findAdmin(id, calculation);
   }
 
