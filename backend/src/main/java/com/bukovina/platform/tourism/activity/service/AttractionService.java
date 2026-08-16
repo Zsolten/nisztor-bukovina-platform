@@ -311,18 +311,43 @@ public class AttractionService {
           .param("practical", nullable(translation.practicalInformation()))
           .update();
     }
+    Map<String, Integer> existingCollectionOrders = new LinkedHashMap<>();
+    jdbc.sql(
+            "SELECT collection.slug, assignment.display_order FROM attraction_collection assignment "
+                + "JOIN tourism_collection collection ON collection.id = assignment.collection_id "
+                + "WHERE assignment.attraction_id = :id")
+        .param("id", id)
+        .query((rs, row) -> Map.entry(rs.getString("slug"), rs.getInt("display_order")))
+        .list()
+        .forEach(entry -> existingCollectionOrders.put(entry.getKey(), entry.getValue()));
     jdbc.sql("DELETE FROM attraction_collection WHERE attraction_id = :id")
         .param("id", id)
         .update();
-    for (int index = 0; index < valid.collectionSlugs().size(); index++) {
+    for (String collectionSlug : valid.collectionSlugs()) {
+      Integer existingDisplayOrder = existingCollectionOrders.get(collectionSlug);
+      int displayOrder =
+          existingDisplayOrder == null
+              ? nextAttractionOrderInCollection(collectionSlug)
+              : existingDisplayOrder;
       jdbc.sql(
               "INSERT INTO attraction_collection (attraction_id, collection_id, display_order) "
                   + "SELECT :id, id, :displayOrder FROM tourism_collection WHERE slug = :slug")
           .param("id", id)
-          .param("displayOrder", index)
-          .param("slug", valid.collectionSlugs().get(index))
+          .param("displayOrder", displayOrder)
+          .param("slug", collectionSlug)
           .update();
     }
+  }
+
+  private int nextAttractionOrderInCollection(String collectionSlug) {
+    return jdbc.sql(
+            "SELECT COALESCE(MAX(assignment.display_order), 0) + 10 "
+                + "FROM attraction_collection assignment "
+                + "JOIN tourism_collection collection ON collection.id = assignment.collection_id "
+                + "WHERE collection.slug = :slug")
+        .param("slug", collectionSlug)
+        .query(Integer.class)
+        .single();
   }
 
   private String publicSelect() {
