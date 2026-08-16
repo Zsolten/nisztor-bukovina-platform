@@ -53,29 +53,64 @@ function decodePolyline(encoded: string): google.maps.LatLngLiteral[] {
   return path
 }
 
-function RoutePolylines({ routes }: Pick<TourismMapProps, 'routes'>) {
+function RoutePolylines({ routes, selectedRoute }: Pick<TourismMapProps, 'routes' | 'selectedRoute'>) {
   const map = useMap()
 
   useEffect(() => {
     if (!map || routes.length === 0) return
 
-    const polylines = routes.flatMap(({ route, color }) =>
-      route.legs.map(
-        (leg) =>
-        new google.maps.Polyline({
-          map,
-          path: decodePolyline(leg.encodedPolyline),
-          strokeColor: color,
-          strokeOpacity: 0.95,
-          strokeWeight: 5,
-          clickable: false,
-          zIndex: 10,
-        }),
-      ),
-    )
+    const polylines = routes.flatMap(({ route, color }) => {
+      const selected = route.tourSlug === selectedRoute?.tourSlug
+      return route.legs.flatMap((leg) => {
+        const path = decodePolyline(leg.encodedPolyline)
+        if (!selected) {
+          return [
+            new google.maps.Polyline({
+              map,
+              path,
+              strokeColor: color,
+              strokeOpacity: 0.55,
+              strokeWeight: 4,
+              clickable: false,
+              zIndex: 10,
+            }),
+          ]
+        }
+
+        return [
+          new google.maps.Polyline({
+            map,
+            path,
+            strokeColor: '#fffaf0',
+            strokeOpacity: 0.8,
+            strokeWeight: 15,
+            clickable: false,
+            zIndex: 30,
+          }),
+          new google.maps.Polyline({
+            map,
+            path,
+            strokeColor: color,
+            strokeOpacity: 0.45,
+            strokeWeight: 9,
+            clickable: false,
+            zIndex: 31,
+          }),
+          new google.maps.Polyline({
+            map,
+            path,
+            strokeColor: color,
+            strokeOpacity: 1,
+            strokeWeight: 6,
+            clickable: false,
+            zIndex: 32,
+          }),
+        ]
+      })
+    })
 
     return () => polylines.forEach((polyline) => polyline.setMap(null))
-  }, [map, routes])
+  }, [map, routes, selectedRoute?.tourSlug])
 
   return null
 }
@@ -114,7 +149,7 @@ function MapContent({
   return (
     <>
       <MapViewport attractions={attractions} selectedRoute={selectedRoute} />
-      <RoutePolylines routes={routes} />
+      <RoutePolylines routes={routes} selectedRoute={selectedRoute} />
       {attractions.map((attraction) => {
         const active = routeStops.has(attraction.slug)
         const category = categoryForAttraction(attraction)
