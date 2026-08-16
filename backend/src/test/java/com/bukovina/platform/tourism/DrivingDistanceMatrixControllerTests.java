@@ -112,6 +112,7 @@ class DrivingDistanceMatrixControllerTests {
           "slug": "matrix-tesztpont",
           "latitude": %s,
           "longitude": 23.1,
+          "recommendedVisitDurationMinutes": 60,
           "googleMapsUrl": "https://maps.google.com/?q=45,23.1",
           "active": true,
           "collectionSlugs": [],

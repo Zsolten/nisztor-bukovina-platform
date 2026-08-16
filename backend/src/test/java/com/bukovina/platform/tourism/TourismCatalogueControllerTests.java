@@ -45,6 +45,10 @@ class TourismCatalogueControllerTests {
         .andExpect(jsonPath("$[?(@.slug == 'paring-hegyseg')].name").value("Páring-hegység"))
         .andExpect(jsonPath("$[0].active").doesNotExist());
     mockMvc
+        .perform(get("/api/tourism/attractions/paring-hegyseg").param("lang", "hu"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.recommendedVisitDurationMinutes").value(120));
+    mockMvc
         .perform(get("/api/tourism/star-tours").param("lang", "hu"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(2));
@@ -84,6 +88,14 @@ class TourismCatalogueControllerTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(attractionRequest(45).replace("\"active\": true,", "")))
         .andExpect(status().isBadRequest());
+    mockMvc
+        .perform(
+            post("/api/admin/tourism/attractions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    attractionRequest(45).replace("\"recommendedVisitDurationMinutes\": 90,", "")))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_RECOMMENDED_VISIT_DURATION"));
     mockMvc
         .perform(
             post("/api/admin/tourism/star-tours")
@@ -137,6 +149,7 @@ class TourismCatalogueControllerTests {
           "latitude": %d,
           "longitude": 23.1,
           "googleMapsUrl": "https://maps.google.com/?q=91,23.1",
+          "recommendedVisitDurationMinutes": 90,
           "active": true,
           "collectionSlugs": [],
           "translations": [{

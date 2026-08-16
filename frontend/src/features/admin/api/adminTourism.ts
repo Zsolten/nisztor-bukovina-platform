@@ -17,6 +17,7 @@ export interface AdminAttraction {
   latitude: number
   longitude: number
   googleMapsUrl: string
+  recommendedVisitDurationMinutes: number
   active: boolean
   translations: AttractionTranslation[]
   collectionSlugs: string[]
@@ -52,9 +53,13 @@ export interface AdminStarTour {
   translations: StarTourTranslation[]
   tags: string[]
   images: StarTourImage[]
+  routeStatus: StarTourRouteStatus
+  routeFailureReason?: string | null
 }
 
-export type StarTourUpdate = Omit<AdminStarTour, 'id'>
+export type StarTourRouteStatus = 'READY' | 'MISSING' | 'STALE' | 'CALCULATING' | 'FAILED'
+
+export type StarTourUpdate = Omit<AdminStarTour, 'id' | 'routeStatus' | 'routeFailureReason'>
 
 async function request<T>(authorizedFetch: AuthorizedFetch, path: string, init?: RequestInit) {
   const response = await authorizedFetch(path, init)
@@ -84,6 +89,7 @@ export const saveAttraction = (
     latitude: attraction.latitude,
     longitude: attraction.longitude,
     googleMapsUrl: attraction.googleMapsUrl,
+    recommendedVisitDurationMinutes: attraction.recommendedVisitDurationMinutes,
     active: attraction.active,
     translations: attraction.translations,
     collectionSlugs: attraction.collectionSlugs,
@@ -118,3 +124,10 @@ export const saveStarTour = (
     json(id ? 'PUT' : 'POST', payload),
   )
 }
+
+export const recalculateStarTourRoute = (authorizedFetch: AuthorizedFetch, id: string) =>
+  request<AdminStarTour>(
+    authorizedFetch,
+    `/api/admin/tourism/star-tours/${id}/route/recalculate`,
+    json('POST', undefined),
+  )

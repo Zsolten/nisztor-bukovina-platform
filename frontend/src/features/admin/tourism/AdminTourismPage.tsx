@@ -16,6 +16,7 @@ import { MapPinned, Pencil, Plus, Route } from 'lucide-react'
 import {
   fetchAttractions,
   fetchStarTours,
+  recalculateStarTourRoute,
   saveAttraction,
   saveStarTour,
   type AdminAttraction,
@@ -23,6 +24,7 @@ import {
   type AttractionTranslation,
   type AttractionUpdate,
   type StarTourTranslation,
+  type StarTourRouteStatus,
   type StarTourUpdate,
 } from '../api/adminTourism'
 import { useAdminAuth } from '../auth/adminAuthContext'
@@ -32,6 +34,7 @@ const emptyAttraction = (): AttractionUpdate => ({
   latitude: 45.5,
   longitude: 23.2,
   googleMapsUrl: '',
+  recommendedVisitDurationMinutes: 60,
   active: true,
   collectionSlugs: [],
   translations: [
@@ -82,6 +85,7 @@ export default function AdminTourismPage() {
   const [tourDraft, setTourDraft] = useState<StarTourUpdate | null>(null)
   const [tourId, setTourId] = useState<string>()
   const [saving, setSaving] = useState(false)
+  const [recalculatingTourId, setRecalculatingTourId] = useState<string>()
 
   useEffect(() => {
     const controller = new AbortController()
@@ -173,6 +177,9 @@ export default function AdminTourismPage() {
       const saved = await saveStarTour(authorizedFetch, tourDraft, tourId)
       setTours((current) => [saved, ...current.filter((item) => item.id !== saved.id)])
       setTourDraft(null)
+      setSuccess(
+        `Csillagtúra mentve. ${routeStatusMessage(saved.routeStatus, saved.routeFailureReason)}`,
+      )
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Mentési hiba')
     } finally {
@@ -192,6 +199,23 @@ export default function AdminTourismPage() {
     setTours((current) =>
       current.map((candidate) => (candidate.id === saved.id ? saved : candidate)),
     )
+  }
+
+  async function recalculateTour(item: AdminStarTour) {
+    setRecalculatingTourId(item.id)
+    setError('')
+    setSuccess('')
+    try {
+      const saved = await recalculateStarTourRoute(authorizedFetch, item.id)
+      setTours((current) =>
+        current.map((candidate) => (candidate.id === saved.id ? saved : candidate)),
+      )
+      setSuccess(routeStatusMessage(saved.routeStatus, saved.routeFailureReason))
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Útvonalszámítási hiba')
+    } finally {
+      setRecalculatingTourId(undefined)
+    }
   }
 
   return (
@@ -232,6 +256,10 @@ export default function AdminTourismPage() {
                         </Badge>
                       </div>
                       <Card.Text>{huAttraction(item).shortDescription}</Card.Text>
+                      <small>
+                        Ajánlott látogatási idő:{' '}
+                        {formatDuration(item.recommendedVisitDurationMinutes)}
+                      </small>
                       <small>
                         {item.latitude}, {item.longitude}
                       </small>
@@ -279,8 +307,19 @@ export default function AdminTourismPage() {
                         </Badge>
                       </div>
                       <Card.Text>{huTour(item).shortDescription}</Card.Text>
+                      <Badge bg={routeStatusVariant(item.routeStatus)}>
+                        {routeStatusLabel(item.routeStatus)}
+                      </Badge>
                     </Card.Body>
                     <Card.Footer>
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        disabled={recalculatingTourId === item.id}
+                        onClick={() => void recalculateTour(item)}
+                      >
+                        {recalculatingTourId === item.id ? 'Számítás…' : 'Útvonal újraszámítása'}
+                      </Button>
                       <Button
                         size="sm"
                         variant="outline-secondary"
@@ -377,6 +416,26 @@ export default function AdminTourismPage() {
                 </Col>
               </Row>
               <Row className="g-3">
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>Ajánlott látogatási idő (perc)</Form.Label>
+                    <Form.Control
+                      required
+                      type="number"
+                      min={5}
+                      max={720}
+                      step={5}
+                      value={attractionDraft.recommendedVisitDurationMinutes}
+                      onChange={(e) =>
+                        setAttractionDraft({
+                          ...attractionDraft,
+                          recommendedVisitDurationMinutes: Number(e.target.value),
+                        })
+                      }
+                    />
+                    <Form.Text>A csillagtúrák ezt használják alapértelmezettként.</Form.Text>
+                  </Form.Group>
+                </Col>
                 <Col md={6}>
                   <Form.Group>
                     <Form.Label>Szélesség</Form.Label>
@@ -588,6 +647,42 @@ export default function AdminTourismPage() {
       </Modal>
     </section>
   )
+}
+
+function routeStatusLabel(status: StarTourRouteStatus) {
+  return {
+    READY: 'Útvonal kész',
+    MISSING: 'Nincs útvonal',
+    STALE: 'Újraszámítás szükséges',
+    CALCULATING: 'Számítás folyamatban',
+    FAILED: 'Útvonalhiba',
+  }[status]
+}
+
+function formatDuration(minutes: number) {
+  const hours = Math.floor(minutes / 60)
+  const remainingMinutes = minutes % 60
+  if (hours === 0) return `${remainingMinutes} perc`
+  if (remainingMinutes === 0) return `${hours} óra`
+  return `${hours} óra ${remainingMinutes} perc`
+}
+
+function routeStatusVariant(status: StarTourRouteStatus) {
+  return {
+    READY: 'success',
+    MISSING: 'secondary',
+    STALE: 'warning',
+    CALCULATING: 'info',
+    FAILED: 'danger',
+  }[status]
+}
+
+function routeStatusMessage(status: StarTourRouteStatus, failureReason?: string | null) {
+  if (status === 'READY') return 'Az útvonal kiszámolva és kirajzolható.'
+  if (status === 'MISSING') return 'A túra mentve, de nincs elegendő aktív megálló az útvonalhoz.'
+  if (status === 'CALCULATING') return 'Az útvonal számítása folyamatban van.'
+  if (status === 'STALE') return 'A túra mentve, az útvonal újraszámítása szükséges.'
+  return `A túra mentve, de az útvonal nem rajzolható ki${failureReason ? `: ${failureReason}` : '.'}`
 }
 
 function CatalogueHeader({ title, onAdd }: { title: string; onAdd: () => void }) {

@@ -114,6 +114,7 @@
       "external_id": "paring-hegység",
       "slug": "paring-hegység",
       "category_key": "nature",
+      "recommended_visit_duration_minutes": 120,
       "collection_keys": ["hunyadiak-hagyateka-hatszegi-medence"],
       "coordinates": {
         "latitude": 45.3935791,
@@ -147,6 +148,7 @@
       "external_id": "veka-szurdok",
       "slug": "veka-szurdok",
       "category_key": "nature",
+      "recommended_visit_duration_minutes": 30,
       "collection_keys": ["hunyadiak-hagyateka-hatszegi-medence"],
       "coordinates": {
         "latitude": 45.5333,
@@ -180,6 +182,7 @@
       "external_id": "boli-barlang",
       "slug": "boli-barlang",
       "category_key": "cave",
+      "recommended_visit_duration_minutes": 60,
       "collection_keys": ["hunyadiak-hagyateka-hatszegi-medence"],
       "coordinates": {
         "latitude": 45.5719,
@@ -213,6 +216,7 @@
       "external_id": "vajdahunyadi-kastely",
       "slug": "vajdahunyadi-kastely",
       "category_key": "castle",
+      "recommended_visit_duration_minutes": 90,
       "collection_keys": ["hunyadiak-hagyateka-hatszegi-medence"],
       "coordinates": {
         "latitude": 45.7489,
@@ -246,6 +250,7 @@
       "external_id": "oraljaboldogfalvi-reformatus-templom",
       "slug": "oraljaboldogfalvi-reformatus-templom",
       "category_key": "church",
+      "recommended_visit_duration_minutes": 30,
       "collection_keys": ["hunyadiak-hagyateka-hatszegi-medence"],
       "coordinates": {
         "latitude": 45.590558,
@@ -279,6 +284,7 @@
       "external_id": "demsusi-kotemplom",
       "slug": "demsusi-kotemplom",
       "category_key": "church",
+      "recommended_visit_duration_minutes": 30,
       "collection_keys": ["hunyadiak-hagyateka-hatszegi-medence"],
       "coordinates": {
         "latitude": 45.5819122,
@@ -312,6 +318,7 @@
       "external_id": "deva-vara",
       "slug": "deva-vara",
       "category_key": "castle",
+      "recommended_visit_duration_minutes": 120,
       "collection_keys": ["maros-mente"],
       "coordinates": {
         "latitude": 45.8763,
@@ -345,6 +352,7 @@
       "external_id": "algyogyfurdo",
       "slug": "algyogyfurdo",
       "category_key": "nature",
+      "recommended_visit_duration_minutes": 120,
       "collection_keys": ["maros-mente"],
       "coordinates": {
         "latitude": 45.9219,
@@ -378,6 +386,7 @@
       "external_id": "gyulafehervar",
       "slug": "gyulafehervar",
       "category_key": "castle",
+      "recommended_visit_duration_minutes": 120,
       "collection_keys": ["maros-mente"],
       "coordinates": {
         "latitude": 46.0733,

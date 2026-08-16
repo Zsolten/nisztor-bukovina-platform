@@ -2,6 +2,7 @@ package com.bukovina.platform.tourism.activity.service;
 
 import com.bukovina.platform.tourism.routing.DrivingDistanceMatrixService;
 import com.bukovina.platform.tourism.routing.DrivingDistanceMatrixService.CalculationSummary;
+import com.bukovina.platform.tourism.routing.StarTourRouteCacheInvalidator;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.LinkedHashMap;
@@ -21,12 +22,19 @@ public class AttractionService {
 
   private static final Set<String> LANGUAGES = Set.of("hu", "ro", "en");
   private static final Pattern SLUG = Pattern.compile("^[a-z0-9]+(?:-[a-z0-9]+)*$");
+  private static final int MIN_RECOMMENDED_VISIT_DURATION_MINUTES = 5;
+  private static final int MAX_RECOMMENDED_VISIT_DURATION_MINUTES = 720;
   private final JdbcClient jdbc;
   private final DrivingDistanceMatrixService drivingDistanceMatrix;
+  private final StarTourRouteCacheInvalidator routeCacheInvalidator;
 
-  public AttractionService(JdbcClient jdbc, DrivingDistanceMatrixService drivingDistanceMatrix) {
+  public AttractionService(
+      JdbcClient jdbc,
+      DrivingDistanceMatrixService drivingDistanceMatrix,
+      StarTourRouteCacheInvalidator routeCacheInvalidator) {
     this.jdbc = jdbc;
     this.drivingDistanceMatrix = drivingDistanceMatrix;
+    this.routeCacheInvalidator = routeCacheInvalidator;
   }
 
   @Transactional(readOnly = true)
@@ -45,13 +53,15 @@ public class AttractionService {
     ValidAttraction valid = validate(request, null);
     UUID id = UUID.randomUUID();
     jdbc.sql(
-            "INSERT INTO attraction (id, slug, latitude, longitude, google_maps_url, active) "
-                + "VALUES (:id, :slug, :latitude, :longitude, :mapsUrl, :active)")
+            "INSERT INTO attraction (id, slug, latitude, longitude, google_maps_url, "
+                + "recommended_visit_duration_minutes, active) "
+                + "VALUES (:id, :slug, :latitude, :longitude, :mapsUrl, :recommendedVisitDurationMinutes, :active)")
         .param("id", id)
         .param("slug", valid.slug())
         .param("latitude", valid.latitude())
         .param("longitude", valid.longitude())
         .param("mapsUrl", valid.googleMapsUrl())
+        .param("recommendedVisitDurationMinutes", valid.recommendedVisitDurationMinutes())
         .param("active", valid.active())
         .update();
     replaceChildren(id, valid);
@@ -64,19 +74,24 @@ public class AttractionService {
     ValidAttraction valid = validate(request, id);
     jdbc.sql(
             "UPDATE attraction SET slug = :slug, latitude = :latitude, longitude = :longitude, "
-                + "google_maps_url = :mapsUrl, active = :active, updated_at = CURRENT_TIMESTAMP WHERE id = :id")
+                + "google_maps_url = :mapsUrl, recommended_visit_duration_minutes = :recommendedVisitDurationMinutes, "
+                + "active = :active, updated_at = CURRENT_TIMESTAMP WHERE id = :id")
         .param("id", id)
         .param("slug", valid.slug())
         .param("latitude", valid.latitude())
         .param("longitude", valid.longitude())
         .param("mapsUrl", valid.googleMapsUrl())
+        .param("recommendedVisitDurationMinutes", valid.recommendedVisitDurationMinutes())
         .param("active", valid.active())
         .update();
     replaceChildren(id, valid);
+    boolean coordinatesChanged = coordinatesChanged(existing, valid);
+    boolean routeInputsChanged = coordinatesChanged || existing.active() != valid.active();
+    if (routeInputsChanged) {
+      routeCacheInvalidator.invalidateForAttraction(id);
+    }
     CalculationSummary calculation =
-        coordinatesChanged(existing, valid)
-            ? drivingDistanceMatrix.recalculateAffectedPairs(id)
-            : null;
+        coordinatesChanged ? drivingDistanceMatrix.recalculateAffectedPairs(id) : null;
     return findAdmin(id, calculation);
   }
 
@@ -136,6 +151,7 @@ public class AttractionService {
         row.latitude(),
         row.longitude(),
         row.googleMapsUrl(),
+        row.recommendedVisitDurationMinutes(),
         row.active(),
         translations,
         collections,
@@ -144,7 +160,7 @@ public class AttractionService {
 
   private AttractionRow findRow(UUID id) {
     return jdbc.sql(
-            "SELECT id, slug, latitude, longitude, google_maps_url, active "
+            "SELECT id, slug, latitude, longitude, google_maps_url, recommended_visit_duration_minutes, active "
                 + "FROM attraction WHERE id = :id")
         .param("id", id)
         .query(
@@ -155,6 +171,7 @@ public class AttractionService {
                     rs.getBigDecimal("latitude"),
                     rs.getBigDecimal("longitude"),
                     rs.getString("google_maps_url"),
+                    rs.getInt("recommended_visit_duration_minutes"),
                     rs.getBoolean("active")))
         .optional()
         .orElseThrow(
@@ -193,6 +210,11 @@ public class AttractionService {
       throw badRequest("INVALID_LONGITUDE");
     }
     validateHttpUrl(request.googleMapsUrl(), "INVALID_GOOGLE_MAPS_URL");
+    if (request.recommendedVisitDurationMinutes() == null
+        || request.recommendedVisitDurationMinutes() < MIN_RECOMMENDED_VISIT_DURATION_MINUTES
+        || request.recommendedVisitDurationMinutes() > MAX_RECOMMENDED_VISIT_DURATION_MINUTES) {
+      throw badRequest("INVALID_RECOMMENDED_VISIT_DURATION");
+    }
     if (request.active() == null) {
       throw badRequest("ACTIVE_REQUIRED");
     }
@@ -224,6 +246,7 @@ public class AttractionService {
         request.latitude(),
         request.longitude(),
         request.googleMapsUrl().trim(),
+        request.recommendedVisitDurationMinutes(),
         request.active(),
         translations,
         collectionSlugs);
@@ -281,6 +304,7 @@ public class AttractionService {
 
   private String publicSelect() {
     return "SELECT attraction.id, attraction.slug, attraction.latitude, attraction.longitude, attraction.google_maps_url, "
+        + "attraction.recommended_visit_duration_minutes, "
         + "requested.name, requested.short_description, requested.detailed_description, "
         + "requested.admission_information, requested.practical_information "
         + "FROM attraction JOIN attraction_translation requested ON requested.attraction_id = attraction.id "
@@ -299,7 +323,8 @@ public class AttractionService {
         rs.getString("practical_information"),
         rs.getBigDecimal("latitude"),
         rs.getBigDecimal("longitude"),
-        rs.getString("google_maps_url"));
+        rs.getString("google_maps_url"),
+        rs.getInt("recommended_visit_duration_minutes"));
   }
 
   @Transactional(readOnly = true)
@@ -328,6 +353,7 @@ public class AttractionService {
         row.latitude(),
         row.longitude(),
         row.googleMapsUrl(),
+        row.recommendedVisitDurationMinutes(),
         collectionSlugsFor(row.id()));
   }
 
@@ -388,6 +414,7 @@ public class AttractionService {
       BigDecimal latitude,
       BigDecimal longitude,
       String googleMapsUrl,
+      Integer recommendedVisitDurationMinutes,
       Boolean active,
       List<Translation> translations,
       List<String> collectionSlugs) {}
@@ -398,6 +425,7 @@ public class AttractionService {
       BigDecimal latitude,
       BigDecimal longitude,
       String googleMapsUrl,
+      int recommendedVisitDurationMinutes,
       boolean active,
       List<Translation> translations,
       List<String> collectionSlugs,
@@ -413,6 +441,7 @@ public class AttractionService {
       BigDecimal latitude,
       BigDecimal longitude,
       String googleMapsUrl,
+      int recommendedVisitDurationMinutes,
       List<String> collectionSlugs) {}
 
   public record CollectionResponse(String slug, String name, String shortDescription) {}
@@ -423,6 +452,7 @@ public class AttractionService {
       BigDecimal latitude,
       BigDecimal longitude,
       String googleMapsUrl,
+      int recommendedVisitDurationMinutes,
       boolean active) {}
 
   private record PublicAttractionRow(
@@ -435,13 +465,15 @@ public class AttractionService {
       String practicalInformation,
       BigDecimal latitude,
       BigDecimal longitude,
-      String googleMapsUrl) {}
+      String googleMapsUrl,
+      int recommendedVisitDurationMinutes) {}
 
   private record ValidAttraction(
       String slug,
       BigDecimal latitude,
       BigDecimal longitude,
       String googleMapsUrl,
+      int recommendedVisitDurationMinutes,
       boolean active,
       Map<String, Translation> translations,
       List<String> collectionSlugs) {}

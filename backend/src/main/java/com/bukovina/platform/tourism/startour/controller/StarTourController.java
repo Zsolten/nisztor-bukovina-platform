@@ -1,9 +1,12 @@
 package com.bukovina.platform.tourism.startour.controller;
 
+import com.bukovina.platform.tourism.startour.service.StarTourRouteService;
+import com.bukovina.platform.tourism.startour.service.StarTourRouteService.StarTourRouteResponse;
 import com.bukovina.platform.tourism.startour.service.StarTourService;
 import com.bukovina.platform.tourism.startour.service.StarTourService.StarTourPublicResponse;
 import com.bukovina.platform.tourism.startour.service.StarTourService.StarTourResponse;
 import com.bukovina.platform.tourism.startour.service.StarTourService.StarTourUpsertRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Pattern;
 import java.util.List;
 import java.util.UUID;
@@ -20,9 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class StarTourController {
   private final StarTourService service;
+  private final StarTourRouteService routeService;
 
-  public StarTourController(StarTourService service) {
+  public StarTourController(StarTourService service, StarTourRouteService routeService) {
     this.service = service;
+    this.routeService = routeService;
   }
 
   @GetMapping("/api/admin/tourism/star-tours")
@@ -33,18 +38,36 @@ public class StarTourController {
   @PostMapping("/api/admin/tourism/star-tours")
   @ResponseStatus(HttpStatus.CREATED)
   StarTourResponse create(@RequestBody StarTourUpsertRequest request) {
-    return service.create(request);
+    StarTourResponse saved = service.create(request);
+    routeService.recalculateForAdmin(saved.id());
+    return service.getAdmin(saved.id());
   }
 
   @PutMapping("/api/admin/tourism/star-tours/{id}")
   StarTourResponse update(@PathVariable UUID id, @RequestBody StarTourUpsertRequest request) {
-    return service.update(id, request);
+    service.update(id, request);
+    routeService.recalculateForAdmin(id);
+    return service.getAdmin(id);
+  }
+
+  @PostMapping("/api/admin/tourism/star-tours/{id}/route/recalculate")
+  StarTourResponse recalculateRoute(@PathVariable UUID id) {
+    routeService.recalculateForAdmin(id);
+    return service.getAdmin(id);
   }
 
   @GetMapping("/api/tourism/star-tours")
   List<StarTourPublicResponse> listPublic(
       @RequestParam(defaultValue = "hu") @Pattern(regexp = "hu|ro|en") String lang) {
     return service.listPublic(lang);
+  }
+
+  @GetMapping("/api/tourism/star-tours/{slug}/route")
+  StarTourRouteResponse getPublicRoute(
+      @PathVariable String slug,
+      @RequestParam(name = "optionalStopSlug", required = false) List<String> optionalStopSlugs,
+      HttpServletRequest request) {
+    return routeService.getPublicRoute(slug, optionalStopSlugs, request.getRemoteAddr());
   }
 
   @GetMapping("/api/tourism/star-tours/{slug}")
