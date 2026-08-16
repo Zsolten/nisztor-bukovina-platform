@@ -856,6 +856,35 @@ paths:
         '401': { description: Administrator authentication is missing or invalid. }
         '404': { description: Star tour not found. }
         '409': { description: Slug already exists. }
+  /admin/tourism/star-tours/{id}/stops:
+    get:
+      operationId: getAdminStarTourStops
+      tags: [Administration, Tourism]
+      security: [{ AdminBearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Ordered core stops and their matrix-derived itinerary totals.
+          content: { application/json: { schema: { $ref: '#/components/schemas/AdminStarTourStopPlan' } } }
+        '401': { description: Administrator authentication is missing or invalid. }
+        '404': { description: Star tour not found. }
+    put:
+      operationId: replaceAdminStarTourStops
+      tags: [Administration, Tourism]
+      security: [{ AdminBearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/StarTourStopPlanUpdate' } } }
+      responses:
+        '200':
+          description: Saved ordered core stops and their matrix-derived itinerary totals.
+          content: { application/json: { schema: { $ref: '#/components/schemas/AdminStarTourStopPlan' } } }
+        '400': { description: Stop assignment or duration is invalid. }
+        '401': { description: Administrator authentication is missing or invalid. }
+        '404': { description: Star tour not found. }
 components:
   securitySchemes:
     AdminBearerAuth:
@@ -2060,7 +2089,7 @@ components:
         altText: { type: string }
     StarTourStop:
       type: object
-      required: [slug, name, latitude, longitude, googleMapsUrl, optional]
+      required: [slug, name, latitude, longitude, googleMapsUrl, optional, visitDurationMinutes]
       properties:
         slug: { type: string }
         name: { type: string }
@@ -2070,6 +2099,64 @@ components:
         optional:
           type: boolean
           description: True when the stop is only recommended if the schedule allows it.
+        visitDurationMinutes: { type: integer, minimum: 5, maximum: 720 }
+    StarTourStopAssignment:
+      type: object
+      required: [attractionId]
+      properties:
+        attractionId: { type: string, format: uuid }
+        plannedVisitDurationMinutes:
+          type: [integer, 'null']
+          minimum: 5
+          maximum: 720
+          description: Optional tour-specific override; otherwise the attraction recommendation applies.
+    StarTourStopPlanUpdate:
+      type: object
+      required: [stops]
+      properties:
+        stops:
+          type: array
+          maxItems: 10
+          items: { $ref: '#/components/schemas/StarTourStopAssignment' }
+    AdminStarTourStop:
+      type: object
+      required: [attractionId, slug, name, recommendedVisitDurationMinutes, effectiveVisitDurationMinutes]
+      properties:
+        attractionId: { type: string, format: uuid }
+        slug: { type: string }
+        name: { type: string }
+        recommendedVisitDurationMinutes: { type: integer, minimum: 5, maximum: 720 }
+        plannedVisitDurationMinutes: { type: [integer, 'null'], minimum: 5, maximum: 720 }
+        effectiveVisitDurationMinutes: { type: integer, minimum: 5, maximum: 720 }
+    StarTourMatrixLeg:
+      type: object
+      required: [fromSlug, toSlug, status]
+      properties:
+        fromSlug: { type: string }
+        toSlug: { type: string }
+        distanceMeters: { type: [integer, 'null'], minimum: 0 }
+        durationSeconds: { type: [integer, 'null'], minimum: 0 }
+        status: { type: string, enum: [SUCCESS, PENDING, FAILED, MISSING] }
+        failureReason: { type: [string, 'null'] }
+    StarTourTotals:
+      type: object
+      required: [visitDurationMinutes, routeDataComplete, routeLegs]
+      properties:
+        travelDistanceMeters: { type: [integer, 'null'], minimum: 0 }
+        travelDurationSeconds: { type: [integer, 'null'], minimum: 0 }
+        visitDurationMinutes: { type: integer, minimum: 0 }
+        totalDurationSeconds: { type: [integer, 'null'], minimum: 0 }
+        routeDataComplete: { type: boolean }
+        routeLegs: { type: array, items: { $ref: '#/components/schemas/StarTourMatrixLeg' } }
+    AdminStarTourStopPlan:
+      type: object
+      required: [tourId, published, stops, assignedAttractionIds, totals]
+      properties:
+        tourId: { type: string, format: uuid }
+        published: { type: boolean }
+        stops: { type: array, items: { $ref: '#/components/schemas/AdminStarTourStop' } }
+        assignedAttractionIds: { type: array, items: { type: string, format: uuid } }
+        totals: { $ref: '#/components/schemas/StarTourTotals' }
     StarTourUpdate:
       type: object
       required: [slug, mapColor, published, active, translations, tags, images]
@@ -2087,9 +2174,13 @@ components:
           required: [id]
           properties: { id: { type: string, format: uuid } }
         - { $ref: '#/components/schemas/StarTourUpdate' }
+        - type: object
+          required: [totals]
+          properties:
+            totals: { $ref: '#/components/schemas/StarTourTotals' }
     StarTourPublic:
       type: object
-      required: [slug, name, shortDescription, detailedDescription, mapColor, tags, images, stops]
+      required: [slug, name, shortDescription, detailedDescription, mapColor, tags, images, stops, totals]
       properties:
         slug: { type: string }
         name: { type: string }
@@ -2100,5 +2191,6 @@ components:
         images: { type: array, items: { $ref: '#/components/schemas/StarTourImage' } }
         stops:
           type: array
-          description: Ordered stops. Driving distance and duration will be added separately.
+          description: Ordered stops.
           items: { $ref: '#/components/schemas/StarTourStop' }
+        totals: { $ref: '#/components/schemas/StarTourTotals' }

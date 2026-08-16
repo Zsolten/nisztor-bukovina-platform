@@ -6,6 +6,9 @@ import com.bukovina.platform.tourism.startour.service.StarTourService;
 import com.bukovina.platform.tourism.startour.service.StarTourService.StarTourPublicResponse;
 import com.bukovina.platform.tourism.startour.service.StarTourService.StarTourResponse;
 import com.bukovina.platform.tourism.startour.service.StarTourService.StarTourUpsertRequest;
+import com.bukovina.platform.tourism.startour.service.StarTourStopService;
+import com.bukovina.platform.tourism.startour.service.StarTourStopService.StopPlanResponse;
+import com.bukovina.platform.tourism.startour.service.StarTourStopService.StopPlanUpdate;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Pattern;
 import java.util.List;
@@ -24,10 +27,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class StarTourController {
   private final StarTourService service;
   private final StarTourRouteService routeService;
+  private final StarTourStopService stopService;
 
-  public StarTourController(StarTourService service, StarTourRouteService routeService) {
+  public StarTourController(
+      StarTourService service, StarTourRouteService routeService, StarTourStopService stopService) {
     this.service = service;
     this.routeService = routeService;
+    this.stopService = stopService;
   }
 
   @GetMapping("/api/admin/tourism/star-tours")
@@ -54,6 +60,16 @@ public class StarTourController {
   StarTourResponse recalculateRoute(@PathVariable UUID id) {
     routeService.recalculateForAdmin(id);
     return service.getAdmin(id);
+  }
+
+  @GetMapping("/api/admin/tourism/star-tours/{id}/stops")
+  StopPlanResponse getStops(@PathVariable UUID id) {
+    return stopService.getPlan(id);
+  }
+
+  @PutMapping("/api/admin/tourism/star-tours/{id}/stops")
+  StopPlanResponse updateStops(@PathVariable UUID id, @RequestBody StopPlanUpdate request) {
+    return stopService.replaceCoreStops(id, request);
   }
 
   @GetMapping("/api/tourism/star-tours")
