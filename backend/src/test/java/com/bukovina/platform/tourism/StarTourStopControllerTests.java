@@ -93,6 +93,45 @@ class StarTourStopControllerTests {
         .andExpect(jsonPath("$.totals.totalDurationSeconds").value(12_300));
   }
 
+  @Test
+  @WithMockUser(roles = "ADMIN")
+  void keepsOptionalStopOrdersStableAcrossRepeatedCoreStopSaves() throws Exception {
+    UUID tourId =
+        jdbc.sql("SELECT id FROM star_tour WHERE slug = 'paring-es-hatszegi-medence'")
+            .query(UUID.class)
+            .single();
+    String plan =
+        fourStopPlan(
+            attractionId("paring-hegyseg"),
+            attractionId("veka-szurdok"),
+            attractionId("boli-barlang"),
+            attractionId("vajdahunyadi-kastely"));
+
+    saveStopPlan(tourId, plan);
+    assertEquals(List.of(4, 5), optionalStopOrders(tourId));
+
+    saveStopPlan(tourId, plan);
+    assertEquals(List.of(4, 5), optionalStopOrders(tourId));
+  }
+
+  private void saveStopPlan(UUID tourId, String plan) throws Exception {
+    mockMvc
+        .perform(
+            put("/api/admin/tourism/star-tours/{id}/stops", tourId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(plan))
+        .andExpect(status().isOk());
+  }
+
+  private List<Integer> optionalStopOrders(UUID tourId) {
+    return jdbc.sql(
+            "SELECT display_order FROM star_tour_attraction WHERE star_tour_id = :tourId "
+                + "AND optional_stop = TRUE ORDER BY display_order")
+        .param("tourId", tourId)
+        .query(Integer.class)
+        .list();
+  }
+
   private void insertDraftTour(UUID tourId) {
     jdbc.sql(
             "INSERT INTO star_tour (id, slug, map_color, published, active) "
@@ -164,5 +203,19 @@ class StarTourStopControllerTests {
         }
         """
         .formatted(first, second, third);
+  }
+
+  private String fourStopPlan(UUID first, UUID second, UUID third, UUID fourth) {
+    return """
+        {
+          "stops": [
+            {"attractionId": "%s", "plannedVisitDurationMinutes": null},
+            {"attractionId": "%s", "plannedVisitDurationMinutes": null},
+            {"attractionId": "%s", "plannedVisitDurationMinutes": null},
+            {"attractionId": "%s", "plannedVisitDurationMinutes": null}
+          ]
+        }
+        """
+        .formatted(first, second, third, fourth);
   }
 }

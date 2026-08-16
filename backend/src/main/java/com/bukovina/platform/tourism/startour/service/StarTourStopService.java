@@ -35,7 +35,9 @@ public class StarTourStopService {
     List<ValidStop> stops = validate(request);
 
     jdbc.sql(
-            "UPDATE star_tour_attraction SET display_order = display_order + 1000 "
+            "UPDATE star_tour_attraction SET display_order = display_order + "
+                + "(SELECT COALESCE(MAX(display_order), 0) + 1 FROM star_tour_attraction "
+                + "WHERE star_tour_id = :tourId) "
                 + "WHERE star_tour_id = :tourId AND optional_stop = TRUE")
         .param("tourId", tourId)
         .update();
@@ -55,8 +57,13 @@ public class StarTourStopService {
           .update();
     }
     jdbc.sql(
-            "UPDATE star_tour_attraction SET display_order = display_order - 1000 + :coreStopCount "
-                + "WHERE star_tour_id = :tourId AND optional_stop = TRUE")
+            "WITH ordered_optional AS ("
+                + "SELECT attraction_id, ROW_NUMBER() OVER (ORDER BY display_order, attraction_id) - 1 AS optional_index "
+                + "FROM star_tour_attraction WHERE star_tour_id = :tourId AND optional_stop = TRUE) "
+                + "UPDATE star_tour_attraction assignment "
+                + "SET display_order = :coreStopCount + ordered_optional.optional_index "
+                + "FROM ordered_optional WHERE assignment.star_tour_id = :tourId "
+                + "AND assignment.attraction_id = ordered_optional.attraction_id")
         .param("tourId", tourId)
         .param("coreStopCount", stops.size())
         .update();
