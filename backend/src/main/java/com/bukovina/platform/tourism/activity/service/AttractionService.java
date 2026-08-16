@@ -11,15 +11,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AttractionService {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(AttractionService.class);
   private static final Set<String> LANGUAGES = Set.of("hu", "ro", "en");
   private static final Pattern SLUG = Pattern.compile("^[a-z0-9]+(?:-[a-z0-9]+)*$");
   private static final int MIN_RECOMMENDED_VISIT_DURATION_MINUTES = 5;
@@ -27,14 +32,17 @@ public class AttractionService {
   private final JdbcClient jdbc;
   private final DrivingDistanceMatrixService drivingDistanceMatrix;
   private final StarTourRouteCacheInvalidator routeCacheInvalidator;
+  private final TransactionTemplate transactionTemplate;
 
   public AttractionService(
       JdbcClient jdbc,
       DrivingDistanceMatrixService drivingDistanceMatrix,
-      StarTourRouteCacheInvalidator routeCacheInvalidator) {
+      StarTourRouteCacheInvalidator routeCacheInvalidator,
+      PlatformTransactionManager transactionManager) {
     this.jdbc = jdbc;
     this.drivingDistanceMatrix = drivingDistanceMatrix;
     this.routeCacheInvalidator = routeCacheInvalidator;
+    this.transactionTemplate = new TransactionTemplate(transactionManager);
   }
 
   @Transactional(readOnly = true)
@@ -48,51 +56,66 @@ public class AttractionService {
         .toList();
   }
 
-  @Transactional
   public AttractionResponse create(AttractionUpsertRequest request) {
     ValidAttraction valid = validate(request, null);
     UUID id = UUID.randomUUID();
-    jdbc.sql(
-            "INSERT INTO attraction (id, slug, latitude, longitude, google_maps_url, "
-                + "recommended_visit_duration_minutes, active) "
-                + "VALUES (:id, :slug, :latitude, :longitude, :mapsUrl, :recommendedVisitDurationMinutes, :active)")
-        .param("id", id)
-        .param("slug", valid.slug())
-        .param("latitude", valid.latitude())
-        .param("longitude", valid.longitude())
-        .param("mapsUrl", valid.googleMapsUrl())
-        .param("recommendedVisitDurationMinutes", valid.recommendedVisitDurationMinutes())
-        .param("active", valid.active())
-        .update();
-    replaceChildren(id, valid);
-    return findAdmin(id, drivingDistanceMatrix.recalculateAffectedPairs(id));
+    transactionTemplate.executeWithoutResult(
+        status -> {
+          jdbc.sql(
+                  "INSERT INTO attraction (id, slug, latitude, longitude, google_maps_url, "
+                      + "recommended_visit_duration_minutes, active) "
+                      + "VALUES (:id, :slug, :latitude, :longitude, :mapsUrl, :recommendedVisitDurationMinutes, :active)")
+              .param("id", id)
+              .param("slug", valid.slug())
+              .param("latitude", valid.latitude())
+              .param("longitude", valid.longitude())
+              .param("mapsUrl", valid.googleMapsUrl())
+              .param("recommendedVisitDurationMinutes", valid.recommendedVisitDurationMinutes())
+              .param("active", valid.active())
+              .update();
+          replaceChildren(id, valid);
+        });
+    return findAdmin(id, recalculateDistances(id));
   }
 
-  @Transactional
   public AttractionResponse update(UUID id, AttractionUpsertRequest request) {
     AttractionRow existing = findRow(id);
     ValidAttraction valid = validate(request, id);
-    jdbc.sql(
-            "UPDATE attraction SET slug = :slug, latitude = :latitude, longitude = :longitude, "
-                + "google_maps_url = :mapsUrl, recommended_visit_duration_minutes = :recommendedVisitDurationMinutes, "
-                + "active = :active, updated_at = CURRENT_TIMESTAMP WHERE id = :id")
-        .param("id", id)
-        .param("slug", valid.slug())
-        .param("latitude", valid.latitude())
-        .param("longitude", valid.longitude())
-        .param("mapsUrl", valid.googleMapsUrl())
-        .param("recommendedVisitDurationMinutes", valid.recommendedVisitDurationMinutes())
-        .param("active", valid.active())
-        .update();
-    replaceChildren(id, valid);
     boolean coordinatesChanged = coordinatesChanged(existing, valid);
     boolean routeInputsChanged = coordinatesChanged || existing.active() != valid.active();
-    if (routeInputsChanged) {
-      routeCacheInvalidator.invalidateForAttraction(id);
-    }
-    CalculationSummary calculation =
-        coordinatesChanged ? drivingDistanceMatrix.recalculateAffectedPairs(id) : null;
+    transactionTemplate.executeWithoutResult(
+        status -> {
+          jdbc.sql(
+                  "UPDATE attraction SET slug = :slug, latitude = :latitude, longitude = :longitude, "
+                      + "google_maps_url = :mapsUrl, recommended_visit_duration_minutes = :recommendedVisitDurationMinutes, "
+                      + "active = :active, updated_at = CURRENT_TIMESTAMP WHERE id = :id")
+              .param("id", id)
+              .param("slug", valid.slug())
+              .param("latitude", valid.latitude())
+              .param("longitude", valid.longitude())
+              .param("mapsUrl", valid.googleMapsUrl())
+              .param("recommendedVisitDurationMinutes", valid.recommendedVisitDurationMinutes())
+              .param("active", valid.active())
+              .update();
+          replaceChildren(id, valid);
+          if (routeInputsChanged) {
+            routeCacheInvalidator.invalidateForAttraction(id);
+          }
+        });
+    CalculationSummary calculation = coordinatesChanged ? recalculateDistances(id) : null;
     return findAdmin(id, calculation);
+  }
+
+  private CalculationSummary recalculateDistances(UUID attractionId) {
+    try {
+      return drivingDistanceMatrix.recalculateAffectedPairs(attractionId);
+    } catch (RuntimeException exception) {
+      LOGGER.warn(
+          "Attraction {} was saved, but its driving-distance pairs could not be recalculated",
+          attractionId,
+          exception);
+      return null;
+    }
   }
 
   @Transactional(readOnly = true)
@@ -288,18 +311,43 @@ public class AttractionService {
           .param("practical", nullable(translation.practicalInformation()))
           .update();
     }
+    Map<String, Integer> existingCollectionOrders = new LinkedHashMap<>();
+    jdbc.sql(
+            "SELECT collection.slug, assignment.display_order FROM attraction_collection assignment "
+                + "JOIN tourism_collection collection ON collection.id = assignment.collection_id "
+                + "WHERE assignment.attraction_id = :id")
+        .param("id", id)
+        .query((rs, row) -> Map.entry(rs.getString("slug"), rs.getInt("display_order")))
+        .list()
+        .forEach(entry -> existingCollectionOrders.put(entry.getKey(), entry.getValue()));
     jdbc.sql("DELETE FROM attraction_collection WHERE attraction_id = :id")
         .param("id", id)
         .update();
-    for (int index = 0; index < valid.collectionSlugs().size(); index++) {
+    for (String collectionSlug : valid.collectionSlugs()) {
+      Integer existingDisplayOrder = existingCollectionOrders.get(collectionSlug);
+      int displayOrder =
+          existingDisplayOrder == null
+              ? nextAttractionOrderInCollection(collectionSlug)
+              : existingDisplayOrder;
       jdbc.sql(
               "INSERT INTO attraction_collection (attraction_id, collection_id, display_order) "
                   + "SELECT :id, id, :displayOrder FROM tourism_collection WHERE slug = :slug")
           .param("id", id)
-          .param("displayOrder", index)
-          .param("slug", valid.collectionSlugs().get(index))
+          .param("displayOrder", displayOrder)
+          .param("slug", collectionSlug)
           .update();
     }
+  }
+
+  private int nextAttractionOrderInCollection(String collectionSlug) {
+    return jdbc.sql(
+            "SELECT COALESCE(MAX(assignment.display_order), 0) + 10 "
+                + "FROM attraction_collection assignment "
+                + "JOIN tourism_collection collection ON collection.id = assignment.collection_id "
+                + "WHERE collection.slug = :slug")
+        .param("slug", collectionSlug)
+        .query(Integer.class)
+        .single();
   }
 
   private String publicSelect() {

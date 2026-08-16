@@ -67,7 +67,7 @@ class TourismCatalogueControllerTests {
 
   @Test
   @WithMockUser(roles = "ADMIN")
-  void validatesCoordinatesAndKeepsDraftToursOutOfThePublicCatalogue() throws Exception {
+  void validatesCoordinatesAndKeepsUnroutableDraftToursOutOfThePublicCatalogue() throws Exception {
     mockMvc
         .perform(
             post("/api/admin/tourism/attractions")
@@ -129,17 +129,14 @@ class TourismCatalogueControllerTests {
             put("/api/admin/tourism/star-tours/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(tourRequest(true)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.published").value(true));
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("STAR_TOUR_ROUTE_DATA_INCOMPLETE"));
     mockMvc
         .perform(get("/api/tourism/star-tours/teszt-korut").param("lang", "ro"))
         .andExpect(status().isNotFound());
     mockMvc
         .perform(get("/api/tourism/star-tours/teszt-korut").param("lang", "hu"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.name").value("Teszt körút"))
-        .andExpect(jsonPath("$.published").doesNotExist())
-        .andExpect(jsonPath("$.active").doesNotExist());
+        .andExpect(status().isNotFound());
   }
 
   private String attractionRequest(int latitude) {

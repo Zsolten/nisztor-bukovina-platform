@@ -21,10 +21,13 @@ public class StarTourService {
   private static final Pattern COLOR = Pattern.compile("^#[0-9A-Fa-f]{6}$");
   private final JdbcClient jdbc;
   private final StarTourRouteService routeService;
+  private final StarTourStopService stopService;
 
-  public StarTourService(JdbcClient jdbc, StarTourRouteService routeService) {
+  public StarTourService(
+      JdbcClient jdbc, StarTourRouteService routeService, StarTourStopService stopService) {
     this.jdbc = jdbc;
     this.routeService = routeService;
+    this.stopService = stopService;
   }
 
   @Transactional(readOnly = true)
@@ -41,6 +44,9 @@ public class StarTourService {
   @Transactional
   public StarTourResponse create(StarTourUpsertRequest request) {
     ValidStarTour valid = validate(request, null);
+    if (valid.published()) {
+      throw badRequest("STAR_TOUR_STOPS_REQUIRED");
+    }
     UUID id = UUID.randomUUID();
     jdbc.sql(
             "INSERT INTO star_tour (id, slug, map_color, published, active) "
@@ -57,8 +63,11 @@ public class StarTourService {
 
   @Transactional
   public StarTourResponse update(UUID id, StarTourUpsertRequest request) {
-    ensureExists(id);
+    boolean wasPublished = publishedState(id);
     ValidStarTour valid = validate(request, id);
+    if (!wasPublished && valid.published()) {
+      stopService.requirePublishable(id);
+    }
     jdbc.sql(
             "UPDATE star_tour SET slug = :slug, map_color = :color, published = :published, "
                 + "active = :active, updated_at = CURRENT_TIMESTAMP WHERE id = :id")
@@ -127,6 +136,7 @@ public class StarTourService {
         translationsFor(id),
         tagsFor(id),
         adminImagesFor(id),
+        stopService.totalsFor(id),
         routeService.statusFor(id),
         routeService.failureReasonFor(id));
   }
@@ -325,13 +335,16 @@ public class StarTourService {
         tagsFor(row.id()),
         imagesFor(row.id(), language),
         stopsFor(row.id(), language),
+        stopService.totalsFor(row.id()),
         routeService.statusFor(row.id()));
   }
 
   private List<Stop> stopsFor(UUID id, String language) {
     return jdbc.sql(
             "SELECT attraction.slug, translation.name, attraction.latitude, attraction.longitude, "
-                + "attraction.google_maps_url, assignment.optional_stop "
+                + "attraction.google_maps_url, assignment.optional_stop, "
+                + "COALESCE(assignment.planned_visit_duration_minutes, attraction.recommended_visit_duration_minutes) "
+                + "AS visit_duration_minutes "
                 + "FROM star_tour_attraction assignment "
                 + "JOIN attraction ON attraction.id = assignment.attraction_id AND attraction.active = TRUE "
                 + "JOIN attraction_translation translation ON translation.attraction_id = attraction.id "
@@ -347,17 +360,18 @@ public class StarTourService {
                     rs.getBigDecimal("latitude"),
                     rs.getBigDecimal("longitude"),
                     rs.getString("google_maps_url"),
-                    rs.getBoolean("optional_stop")))
+                    rs.getBoolean("optional_stop"),
+                    rs.getInt("visit_duration_minutes")))
         .list();
   }
 
-  private void ensureExists(UUID id) {
-    if (!jdbc.sql("SELECT EXISTS(SELECT 1 FROM star_tour WHERE id = :id)")
+  private boolean publishedState(UUID id) {
+    return jdbc.sql("SELECT published FROM star_tour WHERE id = :id")
         .param("id", id)
         .query(Boolean.class)
-        .single()) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "STAR_TOUR_NOT_FOUND");
-    }
+        .optional()
+        .orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "STAR_TOUR_NOT_FOUND"));
   }
 
   private static void validateHttpUrl(String value) {
@@ -395,7 +409,8 @@ public class StarTourService {
       java.math.BigDecimal latitude,
       java.math.BigDecimal longitude,
       String googleMapsUrl,
-      boolean optional) {}
+      boolean optional,
+      int visitDurationMinutes) {}
 
   public record StarTourUpsertRequest(
       String slug,
@@ -415,6 +430,7 @@ public class StarTourService {
       List<Translation> translations,
       List<String> tags,
       List<Image> images,
+      StarTourStopService.TourTotals totals,
       RouteStatus routeStatus,
       String routeFailureReason) {}
 
@@ -427,6 +443,7 @@ public class StarTourService {
       List<String> tags,
       List<Image> images,
       List<Stop> stops,
+      StarTourStopService.TourTotals totals,
       RouteStatus routeStatus) {}
 
   private record TourRow(
