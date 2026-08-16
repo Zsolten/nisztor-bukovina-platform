@@ -1,23 +1,19 @@
 package com.bukovina.platform.tourism.routing;
 
-import java.io.IOException;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 @Service
 class GoogleRoutesDrivingDistanceProvider implements DrivingDistanceProvider {

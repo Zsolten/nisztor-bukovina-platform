@@ -98,7 +98,11 @@ export const saveAttraction = (
 export const fetchStarTours = (authorizedFetch: AuthorizedFetch, signal?: AbortSignal) =>
   request<AdminStarTour[]>(authorizedFetch, '/api/admin/tourism/star-tours', { signal })
 
-export const saveStarTour = (authorizedFetch: AuthorizedFetch, tour: StarTourUpdate, id?: string) => {
+export const saveStarTour = (
+  authorizedFetch: AuthorizedFetch,
+  tour: StarTourUpdate,
+  id?: string,
+) => {
   const payload: StarTourUpdate = {
     slug: tour.slug,
     mapColor: tour.mapColor,
