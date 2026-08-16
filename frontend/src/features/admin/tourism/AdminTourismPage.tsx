@@ -177,7 +177,9 @@ export default function AdminTourismPage() {
       const saved = await saveStarTour(authorizedFetch, tourDraft, tourId)
       setTours((current) => [saved, ...current.filter((item) => item.id !== saved.id)])
       setTourDraft(null)
-      setSuccess(`Csillagtúra mentve. ${routeStatusMessage(saved.routeStatus, saved.routeFailureReason)}`)
+      setSuccess(
+        `Csillagtúra mentve. ${routeStatusMessage(saved.routeStatus, saved.routeFailureReason)}`,
+      )
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Mentési hiba')
     } finally {
@@ -255,7 +257,8 @@ export default function AdminTourismPage() {
                       </div>
                       <Card.Text>{huAttraction(item).shortDescription}</Card.Text>
                       <small>
-                        Ajánlott látogatási idő: {formatDuration(item.recommendedVisitDurationMinutes)}
+                        Ajánlott látogatási idő:{' '}
+                        {formatDuration(item.recommendedVisitDurationMinutes)}
                       </small>
                       <small>
                         {item.latitude}, {item.longitude}
