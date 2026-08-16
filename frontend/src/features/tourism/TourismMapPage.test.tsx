@@ -98,7 +98,7 @@ describe('TourismMapPage', () => {
       'fetch',
       vi.fn((input: RequestInfo | URL) => {
         const url = String(input)
-        if (url.endsWith('/route')) return Promise.resolve(okJson(route))
+        if (url.endsWith('/routes')) return Promise.resolve(okJson([route]))
         if (url.includes('/star-tours')) return Promise.resolve(okJson(tours))
         if (url.includes('/attractions')) return Promise.resolve(okJson(attractions))
         return Promise.resolve(okJson([]))
@@ -118,7 +118,7 @@ describe('TourismMapPage', () => {
     expect(await screen.findByText('Maros mente és Gyulafehérvár')).toBeVisible()
     await waitFor(() =>
       expect(fetch).toHaveBeenCalledWith(
-        '/api/tourism/star-tours/maros-mente-es-gyulafehervar/route',
+        '/api/tourism/star-tours/routes',
         expect.any(Object),
       ),
     )

@@ -4,7 +4,6 @@ import type { Language } from '../../i18n/languages'
 import type {
   PublicAttraction,
   PublicStarTourRoute,
-  StarTourRouteLeg,
 } from '../../shared/api/tourism'
 import AttractionCategoryIcon from './AttractionCategoryIcon'
 import { categoryForAttraction } from './tourismCategories'
@@ -15,8 +14,8 @@ interface TourismMapProps {
   language: Language
   attractions: PublicAttraction[]
   selectedAttraction: PublicAttraction | null
-  route: PublicStarTourRoute | null
-  routeColor: string
+  selectedRoute: PublicStarTourRoute | null
+  routes: Array<{ route: PublicStarTourRoute; color: string }>
   onSelectAttraction: (attraction: PublicAttraction | null) => void
 }
 
@@ -54,14 +53,15 @@ function decodePolyline(encoded: string): google.maps.LatLngLiteral[] {
   return path
 }
 
-function RoutePolylines({ legs, color }: { legs: StarTourRouteLeg[]; color: string }) {
+function RoutePolylines({ routes }: Pick<TourismMapProps, 'routes'>) {
   const map = useMap()
 
   useEffect(() => {
-    if (!map || legs.length === 0) return
+    if (!map || routes.length === 0) return
 
-    const polylines = legs.map(
-      (leg) =>
+    const polylines = routes.flatMap(({ route, color }) =>
+      route.legs.map(
+        (leg) =>
         new google.maps.Polyline({
           map,
           path: decodePolyline(leg.encodedPolyline),
@@ -71,32 +71,30 @@ function RoutePolylines({ legs, color }: { legs: StarTourRouteLeg[]; color: stri
           clickable: false,
           zIndex: 10,
         }),
+      ),
     )
 
     return () => polylines.forEach((polyline) => polyline.setMap(null))
-  }, [color, legs, map])
+  }, [map, routes])
 
   return null
 }
 
-function MapViewport({ attractions, route }: Pick<TourismMapProps, 'attractions' | 'route'>) {
+function MapViewport({ attractions, selectedRoute }: Pick<TourismMapProps, 'attractions' | 'selectedRoute'>) {
   const map = useMap()
 
   useEffect(() => {
     if (!map || attractions.length === 0) return
 
-    const routeSlugs = new Set(route?.stops.map((stop) => stop.slug) ?? [])
-    const visibleAttractions =
-      routeSlugs.size > 0
-        ? attractions.filter((attraction) => routeSlugs.has(attraction.slug))
-        : attractions
     const bounds = new google.maps.LatLngBounds()
-    visibleAttractions.forEach((attraction) =>
+    attractions.forEach((attraction) =>
       bounds.extend({ lat: attraction.latitude, lng: attraction.longitude }),
     )
-    if (route) bounds.extend({ lat: route.base.latitude, lng: route.base.longitude })
+    if (selectedRoute) {
+      bounds.extend({ lat: selectedRoute.base.latitude, lng: selectedRoute.base.longitude })
+    }
     map.fitBounds(bounds, 72)
-  }, [attractions, map, route])
+  }, [attractions, map, selectedRoute])
 
   return null
 }
@@ -104,19 +102,19 @@ function MapViewport({ attractions, route }: Pick<TourismMapProps, 'attractions'
 function MapContent({
   attractions,
   selectedAttraction,
-  route,
-  routeColor,
+  selectedRoute,
+  routes,
   onSelectAttraction,
 }: Omit<TourismMapProps, 'apiKey' | 'mapId' | 'language'>) {
   const routeStops = useMemo(
-    () => new Set(route?.stops.map((stop) => stop.slug) ?? []),
-    [route?.stops],
+    () => new Set(selectedRoute?.stops.map((stop) => stop.slug) ?? []),
+    [selectedRoute?.stops],
   )
 
   return (
     <>
-      <MapViewport attractions={attractions} route={route} />
-      {route?.routeStatus === 'READY' && <RoutePolylines legs={route.legs} color={routeColor} />}
+      <MapViewport attractions={attractions} selectedRoute={selectedRoute} />
+      <RoutePolylines routes={routes} />
       {attractions.map((attraction) => {
         const active = routeStops.has(attraction.slug)
         const category = categoryForAttraction(attraction)
@@ -130,7 +128,15 @@ function MapContent({
           >
             <span
               className={`tourism-map-marker${active ? ' tourism-map-marker-active' : ''}`}
-              style={active ? ({ '--marker-accent': routeColor } as CSSProperties) : undefined}
+              style={
+                active
+                  ? ({
+                      '--marker-accent':
+                        routes.find(({ route }) => route.tourSlug === selectedRoute?.tourSlug)?.color ??
+                        '#a84930',
+                    } as CSSProperties)
+                  : undefined
+              }
             >
               <AttractionCategoryIcon category={category} />
             </span>

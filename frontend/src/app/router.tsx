@@ -12,6 +12,7 @@ import BookingPage from '../features/booking/BookingPage'
 import BookingManagementPage from '../features/booking/BookingManagementPage'
 import BookingRequestSuccessPage from '../features/booking/BookingRequestSuccessPage'
 import TourismMapPage from '../features/tourism/TourismMapPage'
+import StarTourDetailPage from '../features/tourism/StarTourDetailPage'
 import { DEFAULT_LANGUAGE, readPreferredLanguage } from '../i18n/languages'
 import LanguageLayout from './LanguageLayout'
 
@@ -95,6 +96,10 @@ export const appRoutes: RouteObject[] = [
       {
         path: 'star-tours',
         element: <TourismMapPage />,
+      },
+      {
+        path: 'star-tours/:slug',
+        element: <StarTourDetailPage />,
       },
     ],
   },

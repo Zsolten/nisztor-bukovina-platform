@@ -103,3 +103,41 @@ passed
 - Repeat map, marker, route, selected-tour, and mobile carousel captures.
 
 final result: blocked
+
+---
+
+# Tourism map follow-up QA
+
+## Evidence
+
+- Source visual truth: `C:\Users\nisto\Downloads\csillagtura_desktop_mockup.png`.
+- Browser-rendered implementation: `frontend/.design-qa/tourism-detail-latest.jpg`, captured at `http://localhost:5173/hu/star-tours/maros-mente-es-gyulafehervar`.
+- Full-view comparison: source and implementation were emitted together for comparison in the in-app browser at desktop density.
+- Checked interaction: a public tour detail loads its title, long description, total distance and time, every stop, and each stop's external map link. Browser console: no warnings or errors.
+
+## Findings
+
+- [P1] The new all-routes map state cannot be rendered against the source mockup in the current local runtime.
+  - Evidence: the running backend returns `404` for `/api/tourism/star-tours/routes`; it has not been restarted since the new endpoint was added. The current frontend consequently shows its request-error state.
+  - Impact: the initial all-tour polylines, marker fit, stacked stop previews, and list-to-detail transition cannot receive an end-to-end visual pass yet.
+  - Fix: restart the Spring Boot backend, then capture the desktop and mobile tour views with the two active Hungarian tours.
+- [P2] The current public tour records have no gallery image data.
+  - Evidence: both returned public tours have `images: []`; the implementation only renders the gallery from API images, as intended.
+  - Impact: the responsive gallery behaviour has unit coverage but cannot be checked using live content.
+  - Fix: add one or more Hungarian-alt-text images in the tourism admin for each tour, then repeat the detail capture.
+
+## Required fidelity surfaces
+
+- Fonts and typography: the detail view reuses the mockup's serif display hierarchy and the existing compact navigation styling.
+- Spacing and layout rhythm: the detail page keeps the source's paper/forest editorial rhythm and presents stops in a separate, scannable numbered panel.
+- Colors and visual tokens: route-stop markers inherit each tour's configured `mapColor`; paper, forest, and line tokens remain consistent with the map screen.
+- Image quality and asset fidelity: gallery uses only backend-provided images and translated alt text; no placeholder image is shown for missing content.
+- Copy and content: long description and all stop names come from the requested-language public API response.
+
+## Implementation checklist
+
+1. Restart the local Spring Boot backend.
+2. Open `/hu/star-tours` and verify both colored cached routes and all attraction markers on first load.
+3. Add tour gallery images in admin, then recheck desktop/mobile details.
+
+final result: blocked

@@ -75,6 +75,15 @@ class StarTourRouteControllerTests {
     org.junit.jupiter.api.Assertions.assertEquals(1, provider.calls.get());
 
     mockMvc
+        .perform(get("/api/tourism/star-tours/routes"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].tourSlug").value(TOUR_SLUG))
+        .andExpect(jsonPath("$[0].cached").value(true))
+        .andExpect(jsonPath("$[0].routeStatus").value("READY"));
+    org.junit.jupiter.api.Assertions.assertEquals(1, provider.calls.get());
+
+    mockMvc
         .perform(
             get("/api/tourism/star-tours/{slug}/route", TOUR_SLUG)
                 .param("optionalStopSlug", "demsusi-kotemplom"))

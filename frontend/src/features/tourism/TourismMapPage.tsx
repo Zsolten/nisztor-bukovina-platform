@@ -9,10 +9,10 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useOutletContext } from 'react-router-dom'
+import { Link, useOutletContext } from 'react-router-dom'
 import type { LanguageOutletContext } from '../../app/LanguageLayout'
 import {
-  getPublicStarTourRoute,
+  listPublicCachedStarTourRoutes,
   listPublicAttractions,
   listPublicStarTours,
   type PublicAttraction,
@@ -79,12 +79,11 @@ export default function TourismMapPage() {
   const [attractions, setAttractions] = useState<PublicAttraction[]>([])
   const [selectedTourSlug, setSelectedTourSlug] = useState<string | null>(null)
   const [selectedAttraction, setSelectedAttraction] = useState<PublicAttraction | null>(null)
-  const [route, setRoute] = useState<PublicStarTourRoute | null>(null)
+  const [routes, setRoutes] = useState<PublicStarTourRoute[]>([])
   const [favorites, setFavorites] = useState<string[]>(readFavorites)
   const [expandedAttraction, setExpandedAttraction] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
-  const [routeLoading, setRouteLoading] = useState(false)
 
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim() ?? ''
   const mapId = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID?.trim()
@@ -94,11 +93,13 @@ export default function TourismMapPage() {
     void Promise.all([
       listPublicStarTours(language, controller.signal),
       listPublicAttractions(language, controller.signal),
+      listPublicCachedStarTourRoutes(controller.signal),
     ])
-      .then(([tourResponse, attractionResponse]) => {
+      .then(([tourResponse, attractionResponse, routeResponse]) => {
         setLoadError(false)
         setTours(tourResponse)
         setAttractions(attractionResponse)
+        setRoutes(routeResponse)
         setSelectedTourSlug((current) =>
           current && tourResponse.some((tour) => tour.slug === current)
             ? current
@@ -115,28 +116,8 @@ export default function TourismMapPage() {
     return () => controller.abort()
   }, [language])
 
-  useEffect(() => {
-    if (!selectedTourSlug) return
-
-    const controller = new AbortController()
-    void Promise.resolve()
-      .then(() => {
-        if (!controller.signal.aborted) setRouteLoading(true)
-        return getPublicStarTourRoute(selectedTourSlug, controller.signal)
-      })
-      .then(setRoute)
-      .catch((error: unknown) => {
-        if (!(error instanceof DOMException && error.name === 'AbortError')) setRoute(null)
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setRouteLoading(false)
-      })
-
-    return () => controller.abort()
-  }, [selectedTourSlug])
-
   const selectedTour = tours.find((tour) => tour.slug === selectedTourSlug) ?? null
-  const selectedRoute = route?.tourSlug === selectedTourSlug ? route : null
+  const selectedRoute = routes.find((route) => route.tourSlug === selectedTourSlug) ?? null
   const normalizedQuery = query.trim().toLocaleLowerCase(language)
   const filteredTours = useMemo(
     () =>
@@ -172,12 +153,13 @@ export default function TourismMapPage() {
     })
   }
 
-  const mapAttractions =
-    view === 'tours' && selectedTour
-      ? attractions.filter((attraction) =>
-          selectedTour.stops.some((stop) => stop.slug === attraction.slug),
-        )
-      : filteredAttractions
+  const mapAttractions = view === 'tours' ? attractions : filteredAttractions
+  const mapRoutes = routes
+    .map((route) => {
+      const tour = tours.find((item) => item.slug === route.tourSlug)
+      return tour ? { route, color: tour.mapColor } : null
+    })
+    .filter((route): route is { route: PublicStarTourRoute; color: string } => route !== null)
 
   return (
     <main id="main-content" className="tourism-page">
@@ -261,6 +243,10 @@ export default function TourismMapPage() {
             {filteredTours.map((tour) => {
               const selected = tour.slug === selectedTourSlug
               const image = tourImage(tour)
+              const previewStops =
+                tour.stops.length > 3
+                  ? [tour.stops[0], null, tour.stops.at(-1)!]
+                  : tour.stops
               return (
                 <article
                   key={tour.slug}
@@ -284,12 +270,19 @@ export default function TourismMapPage() {
                       {formatDuration(tour.totals.totalDurationSeconds)}
                     </p>
                     <ol className="tourism-tour-stops">
-                      {tour.stops.slice(0, 4).map((stop, index) => (
-                        <li key={stop.slug}>
-                          <span>{index + 1}</span>
-                          {stop.name}
-                        </li>
-                      ))}
+                      {previewStops.map((stop, index) =>
+                        stop ? (
+                          <li key={stop.slug}>
+                            <span>{index === previewStops.length - 1 ? tour.stops.length : 1}</span>
+                            {stop.name}
+                          </li>
+                        ) : (
+                          <li key="more" className="tourism-tour-stops-more">
+                            <span aria-hidden="true">⋮</span>
+                            {t('tourism.intermediateStops', { count: tour.stops.length - 2 })}
+                          </li>
+                        ),
+                      )}
                     </ol>
                   </div>
                   <button
@@ -301,13 +294,12 @@ export default function TourismMapPage() {
                   >
                     <Heart aria-hidden="true" fill="currentColor" size={25} />
                   </button>
-                  <button
-                    type="button"
+                  <Link
                     className="tourism-tour-cta"
-                    onClick={() => setSelectedTourSlug(tour.slug)}
+                    to={`/${language}/star-tours/${encodeURIComponent(tour.slug)}`}
                   >
                     {t('tourism.showTour')}
-                  </button>
+                  </Link>
                 </article>
               )
             })}
@@ -383,8 +375,8 @@ export default function TourismMapPage() {
             language={language}
             attractions={mapAttractions}
             selectedAttraction={selectedAttraction}
-            route={view === 'tours' ? selectedRoute : null}
-            routeColor={selectedTour?.mapColor ?? '#a84930'}
+            selectedRoute={view === 'tours' ? selectedRoute : null}
+            routes={view === 'tours' ? mapRoutes : []}
             onSelectAttraction={setSelectedAttraction}
           />
         )}
@@ -392,15 +384,11 @@ export default function TourismMapPage() {
           <strong>{t('tourism.mapCaptionTitle')}</strong>
           <span>{t('tourism.mapCaptionText')}</span>
         </div>
-        {view === 'tours' && routeLoading && (
-          <p className="tourism-route-status">{t('tourism.routeLoading')}</p>
-        )}
         {view === 'tours' &&
-          !routeLoading &&
-          selectedRoute &&
-          selectedRoute.routeStatus !== 'READY' && (
+          selectedTour &&
+          !selectedRoute && (
             <p className="tourism-route-status">
-              {t(`tourism.routeStatus.${selectedRoute.routeStatus}`)}
+              {t(`tourism.routeStatus.${selectedTour.routeStatus}`)}
             </p>
           )}
       </section>

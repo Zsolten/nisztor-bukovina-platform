@@ -100,6 +100,18 @@ export function listPublicStarTours(language: Language, signal?: AbortSignal) {
   )
 }
 
+/** Loads only routes already cached by the server; this endpoint never calculates a Google route. */
+export function listPublicCachedStarTourRoutes(signal?: AbortSignal) {
+  return request<PublicStarTourRoute[]>('/api/tourism/star-tours/routes', signal)
+}
+
+export function getPublicStarTour(slug: string, language: Language, signal?: AbortSignal) {
+  return request<PublicStarTour>(
+    `/api/tourism/star-tours/${encodeURIComponent(slug)}?lang=${encodeURIComponent(language)}`,
+    signal,
+  )
+}
+
 export function listPublicAttractions(language: Language, signal?: AbortSignal) {
   return request<PublicAttraction[]>(
     `/api/tourism/attractions?lang=${encodeURIComponent(language)}`,
