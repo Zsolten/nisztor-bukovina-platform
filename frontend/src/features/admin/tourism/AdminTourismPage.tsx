@@ -178,7 +178,14 @@ export default function AdminTourismPage() {
         setSuccess('Látnivaló mentve.')
       }
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Mentési hiba')
+      const message = reason instanceof Error ? reason.message : 'Mentési hiba'
+      if (message === 'ATTRACTION_SLUG_EXISTS') {
+        setAttractionDraft(null)
+        setAttractionId(undefined)
+        setError('Már létezik látnivaló ezzel az azonosítóval.')
+      } else {
+        setError(message)
+      }
     } finally {
       setSaving(false)
     }
