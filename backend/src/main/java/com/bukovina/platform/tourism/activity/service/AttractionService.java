@@ -1,5 +1,7 @@
 package com.bukovina.platform.tourism.activity.service;
 
+import com.bukovina.platform.tourism.routing.DrivingDistanceMatrixService;
+import com.bukovina.platform.tourism.routing.DrivingDistanceMatrixService.CalculationSummary;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.LinkedHashMap;
@@ -20,9 +22,11 @@ public class AttractionService {
   private static final Set<String> LANGUAGES = Set.of("hu", "ro", "en");
   private static final Pattern SLUG = Pattern.compile("^[a-z0-9]+(?:-[a-z0-9]+)*$");
   private final JdbcClient jdbc;
+  private final DrivingDistanceMatrixService drivingDistanceMatrix;
 
-  public AttractionService(JdbcClient jdbc) {
+  public AttractionService(JdbcClient jdbc, DrivingDistanceMatrixService drivingDistanceMatrix) {
     this.jdbc = jdbc;
+    this.drivingDistanceMatrix = drivingDistanceMatrix;
   }
 
   @Transactional(readOnly = true)
@@ -32,7 +36,7 @@ public class AttractionService {
         .query(UUID.class)
         .list()
         .stream()
-        .map(this::findAdmin)
+        .map(id -> findAdmin(id, null))
         .toList();
   }
 
@@ -51,12 +55,12 @@ public class AttractionService {
         .param("active", valid.active())
         .update();
     replaceChildren(id, valid);
-    return findAdmin(id);
+    return findAdmin(id, drivingDistanceMatrix.recalculateAffectedPairs(id));
   }
 
   @Transactional
   public AttractionResponse update(UUID id, AttractionUpsertRequest request) {
-    ensureExists(id);
+    AttractionRow existing = findRow(id);
     ValidAttraction valid = validate(request, id);
     jdbc.sql(
             "UPDATE attraction SET slug = :slug, latitude = :latitude, longitude = :longitude, "
@@ -69,7 +73,11 @@ public class AttractionService {
         .param("active", valid.active())
         .update();
     replaceChildren(id, valid);
-    return findAdmin(id);
+    CalculationSummary calculation =
+        coordinatesChanged(existing, valid)
+            ? drivingDistanceMatrix.recalculateAffectedPairs(id)
+            : null;
+    return findAdmin(id, calculation);
   }
 
   @Transactional(readOnly = true)
@@ -96,24 +104,8 @@ public class AttractionService {
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ATTRACTION_NOT_FOUND"));
   }
 
-  private AttractionResponse findAdmin(UUID id) {
-    AttractionRow row =
-        jdbc.sql(
-                "SELECT id, slug, latitude, longitude, google_maps_url, active "
-                    + "FROM attraction WHERE id = :id")
-            .param("id", id)
-            .query(
-                (rs, n) ->
-                    new AttractionRow(
-                        rs.getObject("id", UUID.class),
-                        rs.getString("slug"),
-                        rs.getBigDecimal("latitude"),
-                        rs.getBigDecimal("longitude"),
-                        rs.getString("google_maps_url"),
-                        rs.getBoolean("active")))
-            .optional()
-            .orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ATTRACTION_NOT_FOUND"));
+  private AttractionResponse findAdmin(UUID id, CalculationSummary calculation) {
+    AttractionRow row = findRow(id);
     List<Translation> translations =
         jdbc.sql(
                 "SELECT language_code, name, short_description, detailed_description, "
@@ -146,7 +138,27 @@ public class AttractionService {
         row.googleMapsUrl(),
         row.active(),
         translations,
-        collections);
+        collections,
+        calculation);
+  }
+
+  private AttractionRow findRow(UUID id) {
+    return jdbc.sql(
+            "SELECT id, slug, latitude, longitude, google_maps_url, active "
+                + "FROM attraction WHERE id = :id")
+        .param("id", id)
+        .query(
+            (rs, n) ->
+                new AttractionRow(
+                    rs.getObject("id", UUID.class),
+                    rs.getString("slug"),
+                    rs.getBigDecimal("latitude"),
+                    rs.getBigDecimal("longitude"),
+                    rs.getString("google_maps_url"),
+                    rs.getBoolean("active")))
+        .optional()
+        .orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ATTRACTION_NOT_FOUND"));
   }
 
   private ValidAttraction validate(AttractionUpsertRequest request, UUID currentId) {
@@ -330,13 +342,9 @@ public class AttractionService {
         .list();
   }
 
-  private void ensureExists(UUID id) {
-    if (!jdbc.sql("SELECT EXISTS(SELECT 1 FROM attraction WHERE id = :id)")
-        .param("id", id)
-        .query(Boolean.class)
-        .single()) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ATTRACTION_NOT_FOUND");
-    }
+  private static boolean coordinatesChanged(AttractionRow existing, ValidAttraction valid) {
+    return existing.latitude().compareTo(valid.latitude()) != 0
+        || existing.longitude().compareTo(valid.longitude()) != 0;
   }
 
   private static void validateHttpUrl(String value, String error) {
@@ -392,7 +400,8 @@ public class AttractionService {
       String googleMapsUrl,
       boolean active,
       List<Translation> translations,
-      List<String> collectionSlugs) {}
+      List<String> collectionSlugs,
+      CalculationSummary distanceCalculation) {}
 
   public record AttractionPublicResponse(
       String slug,

@@ -76,6 +76,7 @@ export default function AdminTourismPage() {
   const [tours, setTours] = useState<AdminStarTour[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [attractionDraft, setAttractionDraft] = useState<AttractionUpdate | null>(null)
   const [attractionId, setAttractionId] = useState<string>()
   const [tourDraft, setTourDraft] = useState<StarTourUpdate | null>(null)
@@ -112,12 +113,14 @@ export default function AdminTourismPage() {
     setAttractionId(item?.id)
     setAttractionDraft(item ? { ...item } : emptyAttraction())
     setError('')
+    setSuccess('')
   }
 
   function editTour(item?: AdminStarTour) {
     setTourId(item?.id)
     setTourDraft(item ? { ...item } : emptyTour())
     setError('')
+    setSuccess('')
   }
 
   function updateAttractionHu(patch: Partial<AttractionTranslation>) {
@@ -138,10 +141,21 @@ export default function AdminTourismPage() {
     if (!attractionDraft) return
     setSaving(true)
     setError('')
+    setSuccess('')
     try {
       const saved = await saveAttraction(authorizedFetch, attractionDraft, attractionId)
       setAttractions((current) => [saved, ...current.filter((item) => item.id !== saved.id)])
       setAttractionDraft(null)
+      if (saved.distanceCalculation) {
+        const { total, successful, failed } = saved.distanceCalculation
+        setSuccess(
+          failed === 0
+            ? `Látnivaló mentve, ${successful}/${total} távolságpár kiszámolva.`
+            : `Látnivaló mentve. ${successful}/${total} távolságpár elkészült, ${failed} számítás sikertelen.`,
+        )
+      } else {
+        setSuccess('Látnivaló mentve.')
+      }
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Mentési hiba')
     } finally {
@@ -154,6 +168,7 @@ export default function AdminTourismPage() {
     if (!tourDraft) return
     setSaving(true)
     setError('')
+    setSuccess('')
     try {
       const saved = await saveStarTour(authorizedFetch, tourDraft, tourId)
       setTours((current) => [saved, ...current.filter((item) => item.id !== saved.id)])
@@ -192,6 +207,7 @@ export default function AdminTourismPage() {
       </header>
 
       {error && <Alert variant="danger">{error}</Alert>}
+      {success && <Alert variant="success">{success}</Alert>}
       {loading ? (
         <div className="admin-tourism-loading">
           <Spinner animation="border" /> Betöltés…

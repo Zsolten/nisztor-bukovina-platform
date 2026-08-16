@@ -2015,8 +2015,21 @@ components:
       allOf:
         - type: object
           required: [id]
-          properties: { id: { type: string, format: uuid } }
+          properties:
+            id: { type: string, format: uuid }
+            distanceCalculation:
+              oneOf:
+                - $ref: '#/components/schemas/DrivingDistanceCalculation'
+                - type: 'null'
         - { $ref: '#/components/schemas/AttractionUpdate' }
+    DrivingDistanceCalculation:
+      type: object
+      description: Returned only after an admin creation or coordinate update has completed its Google Routes recalculation.
+      required: [total, successful, failed]
+      properties:
+        total: { type: integer, minimum: 0 }
+        successful: { type: integer, minimum: 0 }
+        failed: { type: integer, minimum: 0 }
     AttractionPublic:
       type: object
       required: [slug, name, shortDescription, detailedDescription, latitude, longitude, googleMapsUrl, collectionSlugs]
