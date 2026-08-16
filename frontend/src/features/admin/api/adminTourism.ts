@@ -17,6 +17,7 @@ export interface AdminAttraction {
   latitude: number
   longitude: number
   googleMapsUrl: string
+  recommendedVisitDurationMinutes: number
   active: boolean
   translations: AttractionTranslation[]
   collectionSlugs: string[]
@@ -88,6 +89,7 @@ export const saveAttraction = (
     latitude: attraction.latitude,
     longitude: attraction.longitude,
     googleMapsUrl: attraction.googleMapsUrl,
+    recommendedVisitDurationMinutes: attraction.recommendedVisitDurationMinutes,
     active: attraction.active,
     translations: attraction.translations,
     collectionSlugs: attraction.collectionSlugs,

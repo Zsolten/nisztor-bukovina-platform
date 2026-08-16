@@ -34,6 +34,7 @@ const emptyAttraction = (): AttractionUpdate => ({
   latitude: 45.5,
   longitude: 23.2,
   googleMapsUrl: '',
+  recommendedVisitDurationMinutes: 60,
   active: true,
   collectionSlugs: [],
   translations: [
@@ -254,6 +255,9 @@ export default function AdminTourismPage() {
                       </div>
                       <Card.Text>{huAttraction(item).shortDescription}</Card.Text>
                       <small>
+                        Ajánlott látogatási idő: {formatDuration(item.recommendedVisitDurationMinutes)}
+                      </small>
+                      <small>
                         {item.latitude}, {item.longitude}
                       </small>
                     </Card.Body>
@@ -409,6 +413,26 @@ export default function AdminTourismPage() {
                 </Col>
               </Row>
               <Row className="g-3">
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>Ajánlott látogatási idő (perc)</Form.Label>
+                    <Form.Control
+                      required
+                      type="number"
+                      min={5}
+                      max={720}
+                      step={5}
+                      value={attractionDraft.recommendedVisitDurationMinutes}
+                      onChange={(e) =>
+                        setAttractionDraft({
+                          ...attractionDraft,
+                          recommendedVisitDurationMinutes: Number(e.target.value),
+                        })
+                      }
+                    />
+                    <Form.Text>A csillagtúrák ezt használják alapértelmezettként.</Form.Text>
+                  </Form.Group>
+                </Col>
                 <Col md={6}>
                   <Form.Group>
                     <Form.Label>Szélesség</Form.Label>
@@ -630,6 +654,14 @@ function routeStatusLabel(status: StarTourRouteStatus) {
     CALCULATING: 'Számítás folyamatban',
     FAILED: 'Útvonalhiba',
   }[status]
+}
+
+function formatDuration(minutes: number) {
+  const hours = Math.floor(minutes / 60)
+  const remainingMinutes = minutes % 60
+  if (hours === 0) return `${remainingMinutes} perc`
+  if (remainingMinutes === 0) return `${hours} óra`
+  return `${hours} óra ${remainingMinutes} perc`
 }
 
 function routeStatusVariant(status: StarTourRouteStatus) {
