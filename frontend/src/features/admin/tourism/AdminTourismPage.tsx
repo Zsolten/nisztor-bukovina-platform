@@ -12,15 +12,28 @@ import {
   Tab,
   Tabs,
 } from 'react-bootstrap'
-import { MapPinned, Pencil, Plus, Route } from 'lucide-react'
+import {
+  ChevronDown,
+  ChevronUp,
+  Clock3,
+  MapPinned,
+  Pencil,
+  Plus,
+  Route,
+  Trash2,
+} from 'lucide-react'
 import {
   fetchAttractions,
   fetchStarTours,
+  fetchStarTourStopPlan,
   recalculateStarTourRoute,
   saveAttraction,
   saveStarTour,
+  saveStarTourStopPlan,
   type AdminAttraction,
   type AdminStarTour,
+  type AdminStarTourStop,
+  type AdminStarTourStopPlan,
   type AttractionTranslation,
   type AttractionUpdate,
   type StarTourTranslation,
@@ -84,7 +97,11 @@ export default function AdminTourismPage() {
   const [attractionId, setAttractionId] = useState<string>()
   const [tourDraft, setTourDraft] = useState<StarTourUpdate | null>(null)
   const [tourId, setTourId] = useState<string>()
+  const [stopPlan, setStopPlan] = useState<AdminStarTourStopPlan | null>(null)
+  const [stopTour, setStopTour] = useState<AdminStarTour | null>(null)
+  const [attractionToAdd, setAttractionToAdd] = useState('')
   const [saving, setSaving] = useState(false)
+  const [savingStops, setSavingStops] = useState(false)
   const [recalculatingTourId, setRecalculatingTourId] = useState<string>()
 
   useEffect(() => {
@@ -218,6 +235,101 @@ export default function AdminTourismPage() {
     }
   }
 
+  async function editTourStops(item: AdminStarTour) {
+    setError('')
+    setSuccess('')
+    try {
+      const plan = await fetchStarTourStopPlan(authorizedFetch, item.id)
+      setStopPlan(plan)
+      setStopTour(item)
+      setAttractionToAdd('')
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'A megállók betöltése nem sikerült')
+    }
+  }
+
+  async function saveStops(stops: AdminStarTourStop[]) {
+    if (!stopPlan || !stopTour) return
+    setSavingStops(true)
+    setError('')
+    try {
+      const saved = await saveStarTourStopPlan(
+        authorizedFetch,
+        stopPlan.tourId,
+        stops.map(({ attractionId, plannedVisitDurationMinutes }) => ({
+          attractionId,
+          plannedVisitDurationMinutes,
+        })),
+      )
+      setStopPlan(saved)
+      setTours((current) =>
+        current.map((tour) =>
+          tour.id === saved.tourId
+            ? { ...tour, published: saved.published, totals: saved.totals }
+            : tour,
+        ),
+      )
+      setStopTour((current) =>
+        current ? { ...current, published: saved.published, totals: saved.totals } : current,
+      )
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'A megállók mentése nem sikerült')
+    } finally {
+      setSavingStops(false)
+    }
+  }
+
+  function moveStop(index: number, direction: -1 | 1) {
+    if (!stopPlan) return
+    const targetIndex = index + direction
+    if (targetIndex < 0 || targetIndex >= stopPlan.stops.length) return
+    const next = [...stopPlan.stops]
+    ;[next[index], next[targetIndex]] = [next[targetIndex], next[index]]
+    void saveStops(next)
+  }
+
+  function removeStop(index: number) {
+    if (!stopPlan) return
+    void saveStops(stopPlan.stops.filter((_, candidateIndex) => candidateIndex !== index))
+  }
+
+  function addStop() {
+    if (!stopPlan || !attractionToAdd) return
+    const attraction = attractions.find((item) => item.id === attractionToAdd)
+    if (!attraction) return
+    void saveStops([
+      ...stopPlan.stops,
+      {
+        attractionId: attraction.id,
+        slug: attraction.slug,
+        name: huAttraction(attraction).name,
+        recommendedVisitDurationMinutes: attraction.recommendedVisitDurationMinutes,
+        plannedVisitDurationMinutes: null,
+        effectiveVisitDurationMinutes: attraction.recommendedVisitDurationMinutes,
+      },
+    ])
+  }
+
+  function updateStopDuration(index: number, value: string) {
+    if (!stopPlan) return
+    const next = stopPlan.stops.map((stop, candidateIndex) =>
+      candidateIndex === index
+        ? { ...stop, plannedVisitDurationMinutes: value ? Number(value) : null }
+        : stop,
+    )
+    void saveStops(next)
+  }
+
+  const availableAttractions = useMemo(
+    () =>
+      stopPlan
+        ? attractions.filter(
+            (attraction) => !stopPlan.assignedAttractionIds.includes(attraction.id),
+          )
+        : [],
+    [attractions, stopPlan],
+  )
+
   return (
     <section className="admin-tourism-page">
       <header className="admin-tourism-header">
@@ -307,11 +419,23 @@ export default function AdminTourismPage() {
                         </Badge>
                       </div>
                       <Card.Text>{huTour(item).shortDescription}</Card.Text>
+                      <small className="admin-tourism-total">
+                        {item.totals.routeDataComplete
+                          ? `${formatDistance(item.totals.travelDistanceMeters)} · ${formatDuration(item.totals.totalDurationSeconds ? item.totals.totalDurationSeconds / 60 : 0)}`
+                          : 'A közzétételhez hiányzik útvonalszakasz-adat'}
+                      </small>
                       <Badge bg={routeStatusVariant(item.routeStatus)}>
                         {routeStatusLabel(item.routeStatus)}
                       </Badge>
                     </Card.Body>
                     <Card.Footer>
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        onClick={() => void editTourStops(item)}
+                      >
+                        <Route size={15} /> Megállók
+                      </Button>
                       <Button
                         size="sm"
                         variant="outline-primary"
@@ -519,6 +643,184 @@ export default function AdminTourismPage() {
         </Form>
       </Modal>
 
+      <Modal
+        show={Boolean(stopPlan && stopTour)}
+        onHide={() => {
+          if (!savingStops) {
+            setStopPlan(null)
+            setStopTour(null)
+          }
+        }}
+        size="xl"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Megállók és időterv: {stopTour ? huTour(stopTour).name : ''}</Modal.Title>
+        </Modal.Header>
+        {stopPlan && (
+          <Modal.Body className="admin-tour-stop-editor">
+            <section className="admin-tour-stop-list">
+              <div className="admin-tour-stop-heading">
+                <div>
+                  <p className="admin-eyebrow">Fő útvonal</p>
+                  <h3>Megállók sorrendje</h3>
+                </div>
+                <span>{stopPlan.stops.length} megálló</span>
+              </div>
+
+              <div className="admin-tour-stop-add">
+                <Form.Select
+                  aria-label="Látnivaló hozzáadása"
+                  value={attractionToAdd}
+                  disabled={savingStops || availableAttractions.length === 0}
+                  onChange={(event) => setAttractionToAdd(event.target.value)}
+                >
+                  <option value="">Látnivaló hozzáadása...</option>
+                  {availableAttractions.map((attraction) => (
+                    <option key={attraction.id} value={attraction.id}>
+                      {huAttraction(attraction).name}
+                    </option>
+                  ))}
+                </Form.Select>
+                <Button
+                  aria-label="Látnivaló hozzáadása"
+                  disabled={savingStops || !attractionToAdd}
+                  onClick={addStop}
+                >
+                  <Plus size={17} /> Hozzáadás
+                </Button>
+              </div>
+
+              {stopPlan.stops.length === 0 ? (
+                <Alert variant="light" className="mb-0">
+                  Adj hozzá legalább egy fő megállót az útvonalhoz.
+                </Alert>
+              ) : (
+                <ol className="admin-tour-stop-items">
+                  {stopPlan.stops.map((stop, index) => (
+                    <li key={stop.attractionId}>
+                      <div className="admin-tour-stop-order">{index + 1}</div>
+                      <div className="admin-tour-stop-name">
+                        <strong>{stop.name}</strong>
+                        <span>
+                          Ajánlott: {formatDuration(stop.recommendedVisitDurationMinutes)}
+                        </span>
+                      </div>
+                      <Form.Select
+                        aria-label={`${stop.name} látogatási ideje`}
+                        value={stop.plannedVisitDurationMinutes ?? ''}
+                        disabled={savingStops}
+                        onChange={(event) => updateStopDuration(index, event.target.value)}
+                      >
+                        <option value="">Ajánlott idő</option>
+                        {[30, 45, 60, 90, 120, 180, 240].map((minutes) => (
+                          <option key={minutes} value={minutes}>
+                            {formatDuration(minutes)}
+                          </option>
+                        ))}
+                      </Form.Select>
+                      <div className="admin-tour-stop-actions">
+                        <Button
+                          aria-label={`${stop.name} feljebb`}
+                          disabled={savingStops || index === 0}
+                          onClick={() => moveStop(index, -1)}
+                          size="sm"
+                          variant="outline-secondary"
+                        >
+                          <ChevronUp size={16} />
+                        </Button>
+                        <Button
+                          aria-label={`${stop.name} lejjebb`}
+                          disabled={savingStops || index === stopPlan.stops.length - 1}
+                          onClick={() => moveStop(index, 1)}
+                          size="sm"
+                          variant="outline-secondary"
+                        >
+                          <ChevronDown size={16} />
+                        </Button>
+                        <Button
+                          aria-label={`${stop.name} eltávolítása`}
+                          disabled={savingStops}
+                          onClick={() => removeStop(index)}
+                          size="sm"
+                          variant="outline-danger"
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </section>
+
+            <aside className="admin-tour-summary" aria-live="polite">
+              <p className="admin-eyebrow">Automatikus összesítés</p>
+              <h3>Tervezett nap</h3>
+              <dl>
+                <div>
+                  <dt>
+                    <Route size={16} /> Megállók között
+                  </dt>
+                  <dd>
+                    {stopPlan.totals.routeDataComplete
+                      ? `${formatDistance(stopPlan.totals.travelDistanceMeters)} · ${formatDuration((stopPlan.totals.travelDurationSeconds ?? 0) / 60)}`
+                      : 'Nem számolható'}
+                  </dd>
+                </div>
+                <div>
+                  <dt>
+                    <Clock3 size={16} /> Látogatások
+                  </dt>
+                  <dd>{formatDuration(stopPlan.totals.visitDurationMinutes)}</dd>
+                </div>
+                <div className="admin-tour-summary-total">
+                  <dt>Fő útvonal ideje</dt>
+                  <dd>
+                    {stopPlan.totals.totalDurationSeconds === null
+                      ? 'Nem számolható'
+                      : formatDuration(stopPlan.totals.totalDurationSeconds / 60)}
+                  </dd>
+                </div>
+              </dl>
+
+              {!stopPlan.totals.routeDataComplete && (
+                <Alert variant="warning">
+                  A túra jelenleg nem tehető közzé, mert az alábbi fő szakaszokhoz nincs kész
+                  útvonaladat.
+                </Alert>
+              )}
+              {stopPlan.totals.routeLegs.some((leg) => leg.status !== 'SUCCESS') && (
+                <ul className="admin-tour-leg-status">
+                  {stopPlan.totals.routeLegs
+                    .filter((leg) => leg.status !== 'SUCCESS')
+                    .map((leg) => (
+                      <li key={`${leg.fromSlug}-${leg.toSlug}`}>
+                        {leg.fromSlug} → {leg.toSlug}:{' '}
+                        {leg.status === 'MISSING' ? 'nincs adat' : 'sikertelen számítás'}
+                      </li>
+                    ))}
+                </ul>
+              )}
+              {stopPlan.published && stopPlan.totals.routeDataComplete && (
+                <Alert variant="success">A közzétett túra útvonaladata teljes.</Alert>
+              )}
+            </aside>
+          </Modal.Body>
+        )}
+        <Modal.Footer>
+          <Button
+            variant="outline-secondary"
+            disabled={savingStops}
+            onClick={() => {
+              setStopPlan(null)
+              setStopTour(null)
+            }}
+          >
+            Bezárás
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
       <Modal show={Boolean(tourDraft)} onHide={() => setTourDraft(null)} size="lg">
         <Form onSubmit={(event) => void submitTour(event)}>
           <Modal.Header closeButton>
@@ -660,11 +962,17 @@ function routeStatusLabel(status: StarTourRouteStatus) {
 }
 
 function formatDuration(minutes: number) {
-  const hours = Math.floor(minutes / 60)
-  const remainingMinutes = minutes % 60
+  const roundedMinutes = Math.round(minutes)
+  const hours = Math.floor(roundedMinutes / 60)
+  const remainingMinutes = roundedMinutes % 60
   if (hours === 0) return `${remainingMinutes} perc`
   if (remainingMinutes === 0) return `${hours} óra`
   return `${hours} óra ${remainingMinutes} perc`
+}
+
+function formatDistance(distanceMeters: number | null) {
+  if (distanceMeters === null) return 'Nincs adat'
+  return `${(distanceMeters / 1000).toLocaleString('hu-HU', { maximumFractionDigits: 1 })} km`
 }
 
 function routeStatusVariant(status: StarTourRouteStatus) {

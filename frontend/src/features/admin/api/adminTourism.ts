@@ -53,13 +53,52 @@ export interface AdminStarTour {
   translations: StarTourTranslation[]
   tags: string[]
   images: StarTourImage[]
+  totals: StarTourTotals
   routeStatus: StarTourRouteStatus
   routeFailureReason?: string | null
 }
 
 export type StarTourRouteStatus = 'READY' | 'MISSING' | 'STALE' | 'CALCULATING' | 'FAILED'
 
-export type StarTourUpdate = Omit<AdminStarTour, 'id' | 'routeStatus' | 'routeFailureReason'>
+export interface StarTourMatrixLeg {
+  fromSlug: string
+  toSlug: string
+  distanceMeters: number | null
+  durationSeconds: number | null
+  status: 'SUCCESS' | 'PENDING' | 'FAILED' | 'MISSING'
+  failureReason: string | null
+}
+
+export interface StarTourTotals {
+  travelDistanceMeters: number | null
+  travelDurationSeconds: number | null
+  visitDurationMinutes: number
+  totalDurationSeconds: number | null
+  routeDataComplete: boolean
+  routeLegs: StarTourMatrixLeg[]
+}
+
+export interface AdminStarTourStop {
+  attractionId: string
+  slug: string
+  name: string
+  recommendedVisitDurationMinutes: number
+  plannedVisitDurationMinutes: number | null
+  effectiveVisitDurationMinutes: number
+}
+
+export interface AdminStarTourStopPlan {
+  tourId: string
+  published: boolean
+  stops: AdminStarTourStop[]
+  assignedAttractionIds: string[]
+  totals: StarTourTotals
+}
+
+export type StarTourUpdate = Omit<
+  AdminStarTour,
+  'id' | 'totals' | 'routeStatus' | 'routeFailureReason'
+>
 
 async function request<T>(authorizedFetch: AuthorizedFetch, path: string, init?: RequestInit) {
   const response = await authorizedFetch(path, init)
@@ -130,4 +169,18 @@ export const recalculateStarTourRoute = (authorizedFetch: AuthorizedFetch, id: s
     authorizedFetch,
     `/api/admin/tourism/star-tours/${id}/route/recalculate`,
     json('POST', undefined),
+  )
+
+export const fetchStarTourStopPlan = (authorizedFetch: AuthorizedFetch, id: string) =>
+  request<AdminStarTourStopPlan>(authorizedFetch, `/api/admin/tourism/star-tours/${id}/stops`)
+
+export const saveStarTourStopPlan = (
+  authorizedFetch: AuthorizedFetch,
+  id: string,
+  stops: Pick<AdminStarTourStop, 'attractionId' | 'plannedVisitDurationMinutes'>[],
+) =>
+  request<AdminStarTourStopPlan>(
+    authorizedFetch,
+    `/api/admin/tourism/star-tours/${id}/stops`,
+    json('PUT', { stops }),
   )

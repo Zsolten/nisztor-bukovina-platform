@@ -19,11 +19,14 @@ class TourismOpenApiContractTests {
     assertTrue(paths.containsKey("/tourism/star-tours"));
     assertTrue(paths.containsKey("/admin/tourism/attractions"));
     assertTrue(paths.containsKey("/admin/tourism/star-tours"));
+    assertTrue(paths.containsKey("/admin/tourism/star-tours/{id}/stops"));
     assertTrue(contract.contains("requested translation"));
     assertTrue(contract.contains("published: { type: boolean }"));
     assertTrue(contract.contains("googleMapsUrl:"));
     assertTrue(contract.contains("DrivingDistanceCalculation:"));
     assertTrue(contract.contains("StarTourStop:"));
+    assertTrue(contract.contains("StarTourStopPlanUpdate:"));
+    assertTrue(contract.contains("StarTourTotals:"));
     assertTrue(contract.contains("stops:"));
   }
 }
