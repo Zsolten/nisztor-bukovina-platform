@@ -30,7 +30,9 @@ export default function LanguageLayout() {
   const isHomepage =
     isSupportedLanguage(lang) &&
     (location.pathname === `/${lang}` || location.pathname === `/${lang}/`)
-  const useLightHeader = !isHomepage || headerScrolled
+  const isTourismPage =
+    isSupportedLanguage(lang) && location.pathname.startsWith(`/${lang}/star-tours`)
+  const useLightHeader = isTourismPage ? false : !isHomepage || headerScrolled
 
   useEffect(() => {
     if (!isSupportedLanguage(lang)) return
@@ -56,10 +58,10 @@ export default function LanguageLayout() {
   return (
     <div className="site-shell">
       <a className="skip-link" href="#main-content">
-        {t('app.navigation.guesthouses')}
+        {isTourismPage ? t('tourism.attractions') : t('app.navigation.guesthouses')}
       </a>
       <Navbar
-        className={`site-header${useLightHeader ? ' site-header-scrolled' : ''}`}
+        className={`site-header${useLightHeader ? ' site-header-scrolled' : ''}${isTourismPage ? ' site-header-tourism' : ''}`}
         expand="md"
         expanded={navigationOpen}
         onToggle={setNavigationOpen}
@@ -71,13 +73,22 @@ export default function LanguageLayout() {
             to={`/${lang}`}
             aria-label={t('app.navigation.home')}
           >
-            {/* <img className="brand-logo" src="/images/logo/logo-anniversary.png" alt="Anniversary Logo" /> */}
+            {isTourismPage && (
+              <img
+                className="brand-logo"
+                src="/images/logo/logo-anniversary.png"
+                alt="Nisztor–Bukovina 30 év"
+              />
+            )}
             <span>
-              <strong>{t('app.title')}</strong>
+              <strong>{isTourismPage ? t('tourism.brandName') : t('app.title')}</strong>
               <small>{t('app.location')}</small>
             </span>
           </Navbar.Brand>
 
+          {isTourismPage && (
+            <span className="tourism-current-language">{LANGUAGE_LABELS[lang]}</span>
+          )}
           <Navbar.Toggle aria-controls="language-navigation" label={t('app.navigation.menu')} />
           <Navbar.Offcanvas
             id="language-navigation"
@@ -90,7 +101,20 @@ export default function LanguageLayout() {
               <Offcanvas.Title>{t('app.navigation.languages')}</Offcanvas.Title>
             </Offcanvas.Header>
             <Offcanvas.Body>
-              <Nav className="language-switcher ms-auto">
+              <Nav className="site-navigation ms-auto">
+                <Nav.Link as={Link} to={`/${lang}`} onClick={() => setNavigationOpen(false)}>
+                  {t('app.navigation.guesthouses')}
+                </Nav.Link>
+                <Nav.Link
+                  as={Link}
+                  active={isTourismPage}
+                  to={`/${lang}/star-tours`}
+                  onClick={() => setNavigationOpen(false)}
+                >
+                  {t('app.navigation.starTours')}
+                </Nav.Link>
+              </Nav>
+              <Nav className="language-switcher">
                 {SUPPORTED_LANGUAGES.map((language) => (
                   <Nav.Link
                     as={Link}
@@ -111,7 +135,7 @@ export default function LanguageLayout() {
 
       <Outlet context={{ language: lang }} />
 
-      <SiteFooter language={lang} />
+      {!isTourismPage && <SiteFooter language={lang} />}
     </div>
   )
 }
