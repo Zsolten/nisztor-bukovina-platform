@@ -54,6 +54,10 @@ class GoogleRoutesDrivingDistanceProviderTests {
       assertEquals("test-key", apiKey.get());
       assertTrue(requestBody.get().contains("\"travelMode\":\"DRIVE\""));
       assertTrue(requestBody.get().contains("\"routingPreference\":\"TRAFFIC_UNAWARE\""));
+      assertTrue(
+          requestBody
+              .get()
+              .contains("\"location\":{\"latLng\":{\"latitude\":45.1,\"longitude\":23.1}}"));
       assertEquals(2, result.size());
       assertEquals(12_345, result.getFirst().distanceMeters());
       assertEquals(678, result.getFirst().durationSeconds());

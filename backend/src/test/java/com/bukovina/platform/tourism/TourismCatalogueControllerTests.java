@@ -69,7 +69,15 @@ class TourismCatalogueControllerTests {
             post("/api/admin/tourism/attractions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(attractionRequest(91)))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_LATITUDE"));
+    mockMvc
+        .perform(
+            post("/api/admin/tourism/attractions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(attractionRequest(45).replace("{", "{\"id\":\"ignored\",")))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_ADMIN_ATTRACTION_REQUEST"));
     mockMvc
         .perform(
             post("/api/admin/tourism/attractions")

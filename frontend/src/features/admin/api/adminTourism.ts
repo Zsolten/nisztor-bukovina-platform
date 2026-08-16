@@ -78,19 +78,39 @@ export const saveAttraction = (
   authorizedFetch: AuthorizedFetch,
   attraction: AttractionUpdate,
   id?: string,
-) =>
-  request<AdminAttraction>(
+) => {
+  const payload: AttractionUpdate = {
+    slug: attraction.slug,
+    latitude: attraction.latitude,
+    longitude: attraction.longitude,
+    googleMapsUrl: attraction.googleMapsUrl,
+    active: attraction.active,
+    translations: attraction.translations,
+    collectionSlugs: attraction.collectionSlugs,
+  }
+  return request<AdminAttraction>(
     authorizedFetch,
     id ? `/api/admin/tourism/attractions/${id}` : '/api/admin/tourism/attractions',
-    json(id ? 'PUT' : 'POST', attraction),
+    json(id ? 'PUT' : 'POST', payload),
   )
+}
 
 export const fetchStarTours = (authorizedFetch: AuthorizedFetch, signal?: AbortSignal) =>
   request<AdminStarTour[]>(authorizedFetch, '/api/admin/tourism/star-tours', { signal })
 
-export const saveStarTour = (authorizedFetch: AuthorizedFetch, tour: StarTourUpdate, id?: string) =>
-  request<AdminStarTour>(
+export const saveStarTour = (authorizedFetch: AuthorizedFetch, tour: StarTourUpdate, id?: string) => {
+  const payload: StarTourUpdate = {
+    slug: tour.slug,
+    mapColor: tour.mapColor,
+    published: tour.published,
+    active: tour.active,
+    translations: tour.translations,
+    tags: tour.tags,
+    images: tour.images,
+  }
+  return request<AdminStarTour>(
     authorizedFetch,
     id ? `/api/admin/tourism/star-tours/${id}` : '/api/admin/tourism/star-tours',
-    json(id ? 'PUT' : 'POST', tour),
+    json(id ? 'PUT' : 'POST', payload),
   )
+}

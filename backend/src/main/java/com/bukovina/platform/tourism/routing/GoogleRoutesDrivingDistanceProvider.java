@@ -1,26 +1,42 @@
 package com.bukovina.platform.tourism.routing;
 
+import java.io.IOException;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 @Service
 class GoogleRoutesDrivingDistanceProvider implements DrivingDistanceProvider {
 
   private static final String FIELD_MASK =
       "originIndex,destinationIndex,condition,distanceMeters,duration,status";
+  private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);
+  private static final Duration READ_TIMEOUT = Duration.ofSeconds(20);
   private final GoogleRoutesProperties properties;
   private final ObjectMapper objectMapper = new ObjectMapper();
+  private final RestClient restClient;
 
   GoogleRoutesDrivingDistanceProvider(GoogleRoutesProperties properties) {
     this.properties = properties;
+    SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+    requestFactory.setConnectTimeout(CONNECT_TIMEOUT);
+    requestFactory.setReadTimeout(READ_TIMEOUT);
+    this.restClient =
+        RestClient.builder().baseUrl(properties.baseUrl()).requestFactory(requestFactory).build();
   }
 
   @Override
@@ -34,9 +50,7 @@ class GoogleRoutesDrivingDistanceProvider implements DrivingDistanceProvider {
     }
 
     String response =
-        RestClient.builder()
-            .baseUrl(properties.baseUrl())
-            .build()
+        restClient
             .post()
             .uri("/distanceMatrix/v2:computeRouteMatrix")
             .contentType(MediaType.APPLICATION_JSON)
@@ -55,7 +69,7 @@ class GoogleRoutesDrivingDistanceProvider implements DrivingDistanceProvider {
       List<GoogleMatrixElement> elements =
           objectMapper.readValue(response, new TypeReference<List<GoogleMatrixElement>>() {});
       return elements.stream().map(this::toMatrixElement).toList();
-    } catch (Exception arrayException) {
+    } catch (JsonProcessingException arrayException) {
       try {
         List<GoogleMatrixElement> elements = new ArrayList<>();
         MappingIterator<GoogleMatrixElement> iterator =
@@ -64,7 +78,7 @@ class GoogleRoutesDrivingDistanceProvider implements DrivingDistanceProvider {
           elements.add(iterator.nextValue());
         }
         return elements.stream().map(this::toMatrixElement).toList();
-      } catch (Exception streamException) {
+      } catch (IOException streamException) {
         throw new IllegalStateException("GOOGLE_ROUTES_INVALID_RESPONSE", streamException);
       }
     }
@@ -100,21 +114,26 @@ class GoogleRoutesDrivingDistanceProvider implements DrivingDistanceProvider {
         .intValueExact();
   }
 
-  private static List<Waypoint> toWaypoints(List<AttractionPoint> points) {
+  private static List<RouteMatrixWaypoint> toWaypoints(List<AttractionPoint> points) {
     return points.stream()
-        .map(point -> new Waypoint(new Location(new LatLng(point.latitude(), point.longitude()))))
+        .map(
+            point ->
+                new RouteMatrixWaypoint(
+                    new Waypoint(new Location(new LatLng(point.latitude(), point.longitude())))))
         .toList();
   }
 
   private record MatrixRequest(
-      List<Waypoint> origins,
-      List<Waypoint> destinations,
+      List<RouteMatrixWaypoint> origins,
+      List<RouteMatrixWaypoint> destinations,
       String travelMode,
       String routingPreference) {}
 
-  private record Waypoint(Location waypoint) {}
+  private record RouteMatrixWaypoint(Waypoint waypoint) {}
 
-  private record Location(LatLng location) {}
+  private record Waypoint(Location location) {}
+
+  private record Location(LatLng latLng) {}
 
   private record LatLng(BigDecimal latitude, BigDecimal longitude) {}
 
