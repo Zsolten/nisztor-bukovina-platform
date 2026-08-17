@@ -3,6 +3,8 @@ import {
   ExternalLink,
   Grid2X2,
   Heart,
+  List,
+  Map as MapIcon,
   MapPinned,
   Search,
   SlidersHorizontal,
@@ -32,10 +34,12 @@ import TourismMap from './TourismMap'
 import { categoryForAttraction, type AttractionCategory } from './tourismCategories'
 
 type TourismView = 'tours' | 'attractions'
+type TourismLayout = 'map' | 'list'
 type DetailTarget =
   { type: 'tour'; value: PublicStarTour } | { type: 'attraction'; value: PublicAttraction } | null
 
 const FAVORITES_STORAGE_KEY = 'favoriteStarTours'
+const MOBILE_TOURISM_QUERY = '(max-width: 767.98px), (max-width: 900px) and (max-height: 600px)'
 const TOUR_IMAGE_BY_SLUG: Record<string, string> = {
   'paring-es-hatszegi-medence': '/images/destinations/retezat-mountains.jpg',
   'maros-mente-es-gyulafehervar': '/images/destinations/deva-citadel.jpg',
@@ -79,10 +83,18 @@ function tourImage(tour: PublicStarTour) {
   return tour.images[0]?.imageUrl || TOUR_IMAGE_BY_SLUG[tour.slug]
 }
 
+function normalizeSearchText(value: string, language: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase(language)
+}
+
 export default function TourismMapPage() {
   const { language } = useOutletContext<LanguageOutletContext>()
   const { t } = useTranslation()
   const [view, setView] = useState<TourismView>('tours')
+  const [layout, setLayout] = useState<TourismLayout>('map')
   const [query, setQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<AttractionCategory | 'all'>('all')
   const [tours, setTours] = useState<PublicStarTour[]>([])
@@ -94,6 +106,7 @@ export default function TourismMapPage() {
   const [detailTarget, setDetailTarget] = useState<DetailTarget>(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
+  const searchInputRef = useRef<HTMLInputElement>(null)
   const tourListRef = useRef<HTMLDivElement>(null)
   const swipeStartRef = useRef<{ slug: string; y: number } | null>(null)
 
@@ -128,15 +141,14 @@ export default function TourismMapPage() {
     return () => controller.abort()
   }, [language])
 
-  const selectedTour = tours.find((tour) => tour.slug === selectedTourSlug) ?? null
-  const selectedRoute = routes.find((route) => route.tourSlug === selectedTourSlug) ?? null
-  const normalizedQuery = query.trim().toLocaleLowerCase(language)
+  const normalizedQuery = normalizeSearchText(query.trim(), language)
   const filteredTours = useMemo(
     () =>
       tours.filter((tour) =>
-        `${tour.name} ${tour.shortDescription} ${tour.stops.map((stop) => stop.name).join(' ')}`
-          .toLocaleLowerCase(language)
-          .includes(normalizedQuery),
+        normalizeSearchText(
+          `${tour.name} ${tour.shortDescription} ${tour.stops.map((stop) => stop.name).join(' ')}`,
+          language,
+        ).includes(normalizedQuery),
       ),
     [language, normalizedQuery, tours],
   )
@@ -144,13 +156,21 @@ export default function TourismMapPage() {
     () =>
       attractions.filter(
         (attraction) =>
-          `${attraction.name} ${attraction.shortDescription}`
-            .toLocaleLowerCase(language)
-            .includes(normalizedQuery) &&
+          normalizeSearchText(
+            `${attraction.name} ${attraction.shortDescription}`,
+            language,
+          ).includes(normalizedQuery) &&
           (selectedCategory === 'all' || categoryForAttraction(attraction) === selectedCategory),
       ),
     [attractions, language, normalizedQuery, selectedCategory],
   )
+  const activeAttraction =
+    filteredAttractions.find((attraction) => attraction.slug === selectedAttraction?.slug) ??
+    filteredAttractions[0] ??
+    null
+  const activeTour =
+    filteredTours.find((tour) => tour.slug === selectedTourSlug) ?? filteredTours[0] ?? null
+  const activeRoute = routes.find((route) => route.tourSlug === activeTour?.slug) ?? null
 
   function toggleFavorite(slug: string) {
     setFavorites((current) => {
@@ -197,64 +217,110 @@ export default function TourismMapPage() {
 
   function scrollToTour(slug: string) {
     setSelectedTourSlug(slug)
+    if (window.matchMedia(MOBILE_TOURISM_QUERY).matches) return
     const card = Array.from(tourListRef.current?.children ?? []).find(
       (element) => element instanceof HTMLElement && element.dataset.tourSlug === slug,
     )
     card?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
   }
 
-  const mapAttractions = view === 'tours' ? attractions : filteredAttractions
+  function selectAttraction(attraction: PublicAttraction | null) {
+    setSelectedAttraction(attraction)
+  }
+
+  function updateQuery(value: string) {
+    setQuery(value)
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        searchInputRef.current?.focus({ preventScroll: true })
+      })
+    })
+  }
+
+  const mapAttractions = useMemo(() => {
+    if (view === 'attractions') return filteredAttractions
+
+    const matchingStopSlugs = new Set(
+      filteredTours.flatMap((tour) => tour.stops.map((stop) => stop.slug)),
+    )
+    return attractions.filter((attraction) => matchingStopSlugs.has(attraction.slug))
+  }, [attractions, filteredAttractions, filteredTours, view])
   const mapRoutes = useMemo(
     () =>
       routes
+        .filter((route) => filteredTours.some((tour) => tour.slug === route.tourSlug))
         .map((route) => {
           const tour = tours.find((item) => item.slug === route.tourSlug)
           return tour ? { route, color: tour.mapColor } : null
         })
         .filter((route): route is { route: PublicStarTourRoute; color: string } => route !== null),
-    [routes, tours],
+    [filteredTours, routes, tours],
   )
 
   return (
-    <main id="main-content" className="tourism-page">
+    <main
+      id="main-content"
+      className={`tourism-page${layout === 'list' ? ' tourism-page-list-view' : ''}`}
+    >
       <section className="tourism-sidebar" aria-labelledby="tourism-title">
         <div className="tourism-intro">
-          <p className="eyebrow">{t('tourism.eyebrow')}</p>
           <h1 id="tourism-title">{t('tourism.title')}</h1>
-          <p>{t('tourism.introduction')}</p>
         </div>
 
-        <div className="tourism-view-switch" role="tablist" aria-label={t('tourism.viewLabel')}>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === 'tours'}
-            className={view === 'tours' ? 'active' : ''}
-            onClick={() => setView('tours')}
-          >
-            {t('tourism.tours')}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === 'attractions'}
-            className={view === 'attractions' ? 'active' : ''}
-            onClick={() => setView('attractions')}
-          >
-            {t('tourism.attractions')}
-          </button>
+        <div className="tourism-controls">
+          <div className="tourism-view-switch" role="tablist" aria-label={t('tourism.viewLabel')}>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === 'tours'}
+              className={view === 'tours' ? 'active' : ''}
+              onClick={() => setView('tours')}
+            >
+              {t('tourism.tours')}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === 'attractions'}
+              className={view === 'attractions' ? 'active' : ''}
+              onClick={() => setView('attractions')}
+            >
+              {t('tourism.attractions')}
+            </button>
+          </div>
+          <div className="tourism-layout-switch" role="group" aria-label={t('tourism.layoutLabel')}>
+            <button
+              type="button"
+              className={layout === 'map' ? 'active' : ''}
+              aria-label={t('tourism.mapView')}
+              aria-pressed={layout === 'map'}
+              onClick={() => setLayout('map')}
+            >
+              <MapIcon aria-hidden="true" size={18} />
+            </button>
+            <button
+              type="button"
+              className={layout === 'list' ? 'active' : ''}
+              aria-label={t('tourism.listView')}
+              aria-pressed={layout === 'list'}
+              onClick={() => setLayout('list')}
+            >
+              <List aria-hidden="true" size={18} />
+            </button>
+          </div>
         </div>
 
         <label className="tourism-search">
           <Search aria-hidden="true" size={23} />
           <span className="visually-hidden">{t('tourism.searchLabel')}</span>
           <input
+            ref={searchInputRef}
             type="search"
             value={query}
             placeholder={
               view === 'tours' ? t('tourism.searchTours') : t('tourism.searchAttractions')
             }
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => updateQuery(event.target.value)}
           />
           {view === 'attractions' && (
             <span className="tourism-search-filter" aria-hidden="true">
@@ -301,7 +367,7 @@ export default function TourismMapPage() {
               onScroll={handleTourListScroll}
             >
               {filteredTours.map((tour) => {
-                const selected = tour.slug === selectedTourSlug
+                const selected = tour.slug === activeTour?.slug
                 const image = tourImage(tour)
                 const previewStops =
                   tour.stops.length > 3 ? [tour.stops[0], null, tour.stops.at(-1)!] : tour.stops
@@ -340,12 +406,14 @@ export default function TourismMapPage() {
                               <span>
                                 {index === previewStops.length - 1 ? tour.stops.length : 1}
                               </span>
-                              {stop.name}
+                              <span className="tourism-tour-stop-label">{stop.name}</span>
                             </li>
                           ) : (
                             <li key="more" className="tourism-tour-stops-more">
                               <span aria-hidden="true">⋮</span>
-                              {t('tourism.intermediateStops', { count: tour.stops.length - 2 })}
+                              <span className="tourism-tour-stop-label">
+                                {t('tourism.intermediateStops', { count: tour.stops.length - 2 })}
+                              </span>
                             </li>
                           ),
                         )}
@@ -380,9 +448,9 @@ export default function TourismMapPage() {
                   <button
                     key={tour.slug}
                     type="button"
-                    className={tour.slug === selectedTourSlug ? 'active' : ''}
+                    className={tour.slug === activeTour?.slug ? 'active' : ''}
                     aria-label={t('tourism.selectTourPagination', { name: tour.name })}
-                    aria-current={tour.slug === selectedTourSlug ? 'true' : undefined}
+                    aria-current={tour.slug === activeTour?.slug ? 'true' : undefined}
                     onClick={() => scrollToTour(tour.slug)}
                   />
                 ))}
@@ -403,7 +471,7 @@ export default function TourismMapPage() {
                 return (
                   <article
                     key={attraction.slug}
-                    className={`tourism-attraction-card${image ? ' has-image' : ''}`}
+                    className={`tourism-attraction-card${image ? ' has-image' : ''}${attraction.slug === activeAttraction?.slug ? ' selected' : ''}`}
                   >
                     {image && <img src={image} alt="" />}
                     <div className="tourism-attraction-copy">
@@ -437,6 +505,23 @@ export default function TourismMapPage() {
                 <p className="tourism-state">{t('tourism.noAttractions')}</p>
               )}
             </div>
+            {filteredAttractions.length > 1 && (
+              <div
+                className="tourism-attraction-pagination"
+                aria-label={t('tourism.attractionPagination')}
+              >
+                {filteredAttractions.map((attraction) => (
+                  <button
+                    key={attraction.slug}
+                    type="button"
+                    className={attraction.slug === activeAttraction?.slug ? 'active' : ''}
+                    aria-label={t('tourism.selectAttractionPagination', { name: attraction.name })}
+                    aria-current={attraction.slug === activeAttraction?.slug ? 'true' : undefined}
+                    onClick={() => selectAttraction(attraction)}
+                  />
+                ))}
+              </div>
+            )}
           </section>
         )}
       </section>
@@ -454,26 +539,31 @@ export default function TourismMapPage() {
             mapId={mapId}
             language={language}
             attractions={mapAttractions}
-            selectedAttraction={selectedAttraction}
-            selectedRoute={view === 'tours' ? selectedRoute : null}
+            selectedAttraction={view === 'attractions' ? activeAttraction : selectedAttraction}
+            selectedRoute={view === 'tours' ? activeRoute : null}
             routes={view === 'tours' ? mapRoutes : []}
-            onSelectAttraction={setSelectedAttraction}
+            visible={layout === 'map'}
+            onSelectAttraction={selectAttraction}
             onOpenAttractionDetails={(attraction) =>
               setDetailTarget({ type: 'attraction', value: attraction })
             }
           />
         )}
-        <div className="tourism-map-caption">
-          <strong>{t('tourism.mapCaptionTitle')}</strong>
-          <span>{t('tourism.mapCaptionText')}</span>
-        </div>
-        {view === 'tours' && selectedTour && !selectedRoute && (
+        {view === 'tours' && activeTour && !activeRoute && (
           <p className="tourism-route-status">
-            {t(`tourism.routeStatus.${selectedTour.routeStatus}`)}
+            {t(`tourism.routeStatus.${activeTour.routeStatus}`)}
           </p>
         )}
       </section>
-      <TourismDetailsModal detail={detailTarget} onHide={() => setDetailTarget(null)} />
+      <TourismDetailsModal
+        detail={detailTarget}
+        route={
+          detailTarget?.type === 'tour'
+            ? (routes.find((route) => route.tourSlug === detailTarget.value.slug) ?? null)
+            : null
+        }
+        onHide={() => setDetailTarget(null)}
+      />
     </main>
   )
 }

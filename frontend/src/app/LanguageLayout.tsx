@@ -62,7 +62,7 @@ export default function LanguageLayout() {
       </a>
       <Navbar
         className={`site-header${useLightHeader ? ' site-header-scrolled' : ''}${isTourismPage ? ' site-header-tourism' : ''}`}
-        expand="md"
+        expand="lg"
         expanded={navigationOpen}
         onToggle={setNavigationOpen}
       >

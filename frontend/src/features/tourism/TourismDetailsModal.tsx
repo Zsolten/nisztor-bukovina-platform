@@ -2,17 +2,21 @@ import { ExternalLink, MapPin } from 'lucide-react'
 import { Modal } from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import type { CSSProperties } from 'react'
-import type { PublicAttraction, PublicStarTour } from '../../shared/api/tourism'
+import type {
+  PublicAttraction,
+  PublicStarTour,
+  PublicStarTourRoute,
+} from '../../shared/api/tourism'
 import AttractionCategoryIcon from './AttractionCategoryIcon'
+import { buildGoogleMapsDirectionsUrl } from './googleMapsDirections'
 import { categoryForAttraction } from './tourismCategories'
 
 type TourismDetail =
-  | { type: 'tour'; value: PublicStarTour }
-  | { type: 'attraction'; value: PublicAttraction }
-  | null
+  { type: 'tour'; value: PublicStarTour } | { type: 'attraction'; value: PublicAttraction } | null
 
 interface TourismDetailsModalProps {
   detail: TourismDetail
+  route: PublicStarTourRoute | null
   onHide: () => void
 }
 
@@ -27,10 +31,14 @@ function formatDuration(seconds: number | null) {
   return hours > 0 ? `${hours} óra ${minutes} perc` : `${minutes} perc`
 }
 
-export default function TourismDetailsModal({ detail, onHide }: TourismDetailsModalProps) {
+export default function TourismDetailsModal({ detail, route, onHide }: TourismDetailsModalProps) {
   const { t } = useTranslation()
   const tour = detail?.type === 'tour' ? detail.value : null
   const attraction = detail?.type === 'attraction' ? detail.value : null
+  const directionsUrl =
+    tour && route?.routeStatus === 'READY'
+      ? buildGoogleMapsDirectionsUrl(route.base, tour.stops)
+      : null
 
   return (
     <Modal
@@ -73,6 +81,23 @@ export default function TourismDetailsModal({ detail, onHide }: TourismDetailsMo
               <h2>{t('tourism.aboutTour')}</h2>
               <p className="tourism-modal-description">{tour.detailedDescription}</p>
             </section>
+            {directionsUrl && (
+              <section className="tourism-tour-directions">
+                <h2>{t('tourism.navigation')}</h2>
+                <div className="tourism-tour-directions-links">
+                  <a
+                    className="tourism-tour-directions-link"
+                    href={directionsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <MapPin aria-hidden="true" size={17} />
+                    {t('tourism.openFullRoute')}
+                    <ExternalLink aria-hidden="true" size={15} />
+                  </a>
+                </div>
+              </section>
+            )}
             <section className="tourism-modal-stops">
               <h2>{t('tourism.tourStops')}</h2>
               <ol style={{ '--tour-color': tour.mapColor } as CSSProperties}>

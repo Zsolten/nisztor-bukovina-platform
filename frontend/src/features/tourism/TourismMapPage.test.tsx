@@ -153,6 +153,22 @@ describe('TourismMapPage', () => {
     ])
   })
 
+  it('keeps focus in the search field while filtering accented tour names', async () => {
+    const user = userEvent.setup()
+    const router = createMemoryRouter(appRoutes, { initialEntries: ['/hu/star-tours'] })
+    render(
+      <AppProviders>
+        <RouterProvider router={router} />
+      </AppProviders>,
+    )
+
+    const searchInput = await screen.findByPlaceholderText('Hová indulnál?')
+    await user.type(searchInput, 'gyulafehervar')
+
+    expect(searchInput).toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Megnézem' })).toBeVisible()
+  })
+
   it('opens tour details when the mobile card is swiped upward', async () => {
     const router = createMemoryRouter(appRoutes, { initialEntries: ['/hu/star-tours'] })
     render(
@@ -171,5 +187,11 @@ describe('TourismMapPage', () => {
     fireEvent.pointerUp(card!, { clientY: 240 })
 
     expect(await screen.findByRole('dialog')).toHaveTextContent('A túra részletes bemutatása.')
+    expect(
+      screen.getByRole('link', { name: 'Teljes túra megnyitása Google Mapsben' }),
+    ).toHaveAttribute('href', expect.stringContaining('api=1'))
+    expect(
+      screen.getByRole('link', { name: 'Teljes túra megnyitása Google Mapsben' }),
+    ).toHaveAttribute('target', '_blank')
   })
 })

@@ -1,6 +1,6 @@
 import { AdvancedMarker, APIProvider, InfoWindow, Map, useMap } from '@vis.gl/react-google-maps'
 import { House } from 'lucide-react'
-import { useEffect, useMemo, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Language } from '../../i18n/languages'
 import type { PublicAttraction, PublicStarTourRoute } from '../../shared/api/tourism'
@@ -15,6 +15,7 @@ interface TourismMapProps {
   selectedAttraction: PublicAttraction | null
   selectedRoute: PublicStarTourRoute | null
   routes: Array<{ route: PublicStarTourRoute; color: string }>
+  visible: boolean
   onSelectAttraction: (attraction: PublicAttraction | null) => void
   onOpenAttractionDetails: (attraction: PublicAttraction) => void
 }
@@ -121,21 +122,56 @@ function RoutePolylines({
 function MapViewport({
   attractions,
   selectedRoute,
-}: Pick<TourismMapProps, 'attractions' | 'selectedRoute'>) {
+  visible,
+}: Pick<TourismMapProps, 'attractions' | 'selectedRoute' | 'visible'>) {
   const map = useMap()
+  const wasVisibleRef = useRef(false)
 
   useEffect(() => {
-    if (!map || attractions.length === 0) return
+    if (!map) return
+
+    const needsResize = visible && !wasVisibleRef.current
+    wasVisibleRef.current = visible
+    if (!visible || attractions.length === 0) return
 
     const bounds = new google.maps.LatLngBounds()
-    attractions.forEach((attraction) =>
-      bounds.extend({ lat: attraction.latitude, lng: attraction.longitude }),
-    )
+    const locations = attractions.map((attraction) => ({
+      lat: attraction.latitude,
+      lng: attraction.longitude,
+    }))
     if (selectedRoute) {
-      bounds.extend({ lat: selectedRoute.base.latitude, lng: selectedRoute.base.longitude })
+      locations.push({ lat: selectedRoute.base.latitude, lng: selectedRoute.base.longitude })
     }
-    map.fitBounds(bounds, 72)
-  }, [attractions, map, selectedRoute])
+    locations.forEach((location) => bounds.extend(location))
+
+    const latitudes = locations.map((location) => location.lat)
+    const longitudes = locations.map((location) => location.lng)
+    const latitudeSpan = Math.max(...latitudes) - Math.min(...latitudes)
+    const longitudeSpan = Math.max(...longitudes) - Math.min(...longitudes)
+
+    if (latitudeSpan < 0.04 && longitudeSpan < 0.04) {
+      const centerLatitude = (Math.max(...latitudes) + Math.min(...latitudes)) / 2
+      const centerLongitude = (Math.max(...longitudes) + Math.min(...longitudes)) / 2
+      const latitudePadding = 0.02
+      const longitudePadding =
+        latitudePadding / Math.max(Math.cos((centerLatitude * Math.PI) / 180), 0.2)
+      bounds.extend({
+        lat: centerLatitude - latitudePadding,
+        lng: centerLongitude - longitudePadding,
+      })
+      bounds.extend({
+        lat: centerLatitude + latitudePadding,
+        lng: centerLongitude + longitudePadding,
+      })
+    }
+
+    const animationFrame = window.requestAnimationFrame(() => {
+      if (needsResize) google.maps.event.trigger(map, 'resize')
+      map.fitBounds(bounds, 72)
+    })
+
+    return () => window.cancelAnimationFrame(animationFrame)
+  }, [attractions, map, selectedRoute, visible])
 
   return null
 }
@@ -145,6 +181,7 @@ function MapContent({
   selectedAttraction,
   selectedRoute,
   routes,
+  visible,
   onSelectAttraction,
   onOpenAttractionDetails,
 }: Omit<TourismMapProps, 'apiKey' | 'mapId' | 'language'>) {
@@ -157,7 +194,7 @@ function MapContent({
 
   return (
     <>
-      <MapViewport attractions={attractions} selectedRoute={selectedRoute} />
+      <MapViewport attractions={attractions} selectedRoute={selectedRoute} visible={visible} />
       <RoutePolylines routes={routes} selectedRoute={selectedRoute} />
       {guesthouseBase && (
         <AdvancedMarker
@@ -244,6 +281,7 @@ export default function TourismMap({ apiKey, mapId, language, ...props }: Touris
         colorScheme="LIGHT"
         renderingType="VECTOR"
         gestureHandling="greedy"
+        keyboardShortcuts={false}
         disableDefaultUI
         zoomControl
         clickableIcons={false}
