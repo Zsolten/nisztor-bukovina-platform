@@ -388,7 +388,18 @@ export default function AdminTourismPage() {
               {attractions.map((item) => (
                 <Col key={item.id} lg={6} xl={4}>
                   <Card className="admin-tourism-card h-100">
-                    <Card.Body>
+                    <Card.Body
+                      className="admin-tourism-card-trigger"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => editAttraction(item)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault()
+                          editAttraction(item)
+                        }
+                      }}
+                    >
                       <div className="admin-tourism-card-heading">
                         <MapPinned aria-hidden="true" />
                         <div>
@@ -439,7 +450,18 @@ export default function AdminTourismPage() {
                     className="admin-tourism-card h-100"
                     style={{ borderTopColor: item.mapColor }}
                   >
-                    <Card.Body>
+                    <Card.Body
+                      className="admin-tourism-card-trigger"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => editTour(item)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault()
+                          editTour(item)
+                        }
+                      }}
+                    >
                       <div className="admin-tourism-card-heading">
                         <Route aria-hidden="true" style={{ color: item.mapColor }} />
                         <div>

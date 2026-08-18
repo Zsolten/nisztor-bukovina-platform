@@ -2583,6 +2583,15 @@
   }
 }
 
+.admin-tourism-card-trigger {
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 3px solid rgba($gold, 0.75);
+    outline-offset: -3px;
+  }
+}
+
 .admin-tourism-card-heading {
   gap: 0.75rem;
 
