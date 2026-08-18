@@ -27,7 +27,6 @@ export default function GuesthousePricing({ pricing, title }: GuesthousePricingP
       aria-labelledby="pricing-heading"
     >
       <header className="detail-sheet-heading pricing-heading">
-        <p className="section-index">05</p>
         <h2 id="pricing-heading">{title}</h2>
         <BookingPlaceholderButton />
       </header>

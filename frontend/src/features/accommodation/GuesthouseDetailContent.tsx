@@ -98,7 +98,6 @@ export default function GuesthouseDetailContent({
         'gallery',
         <section className="gallery-section" aria-labelledby="gallery-heading">
           <header className="section-heading compact">
-            <p className="section-index">07</p>
             <div>
               <h2 id="gallery-heading">{data.pageText.galleryTitle}</h2>
               <p>{data.pageText.galleryHint}</p>

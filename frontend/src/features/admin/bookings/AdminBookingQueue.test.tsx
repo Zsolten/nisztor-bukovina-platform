@@ -53,7 +53,7 @@ function renderQueue(
           name: booking.guesthouseName,
           slug: 'bukovina-panzio',
           shortDescription: '',
-          roomCount: 19,
+          roomCount: 20,
           coverImage: { path: '/cover.jpg', altText: '', cover: true },
         },
       ]),

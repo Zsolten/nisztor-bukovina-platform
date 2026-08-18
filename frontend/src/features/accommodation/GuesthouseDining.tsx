@@ -20,7 +20,6 @@ export default function GuesthouseDining({ eyebrow, title, description }: Guesth
       aria-labelledby="dining-heading"
     >
       <div className="editorial-copy">
-        <p className="section-index">02</p>
         <p className="eyebrow">{eyebrow}</p>
         <h2 id="dining-heading">{title}</h2>
         <p>{description}</p>

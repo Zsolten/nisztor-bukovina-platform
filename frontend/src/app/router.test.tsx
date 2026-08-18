@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -23,7 +23,7 @@ const guesthouses = [
     slug: 'bukovina-panzio',
     name: 'Bukovina Panzió',
     shortDescription: 'Igényes szálláslehetőség Csernakeresztúron.',
-    roomCount: 12,
+    roomCount: 20,
     coverImage: {
       path: '/images/guesthouses/bukovina/gallery-01.jpg',
       altText: 'A Bukovina Panzió és a vendéglátó család',
@@ -145,6 +145,24 @@ describe('guesthouse and language routing', () => {
     expect(await screen.findByRole('heading', { name: 'Nisztor Panzió' })).toBeVisible()
     expect(screen.getByRole('heading', { name: 'Bukovina Panzió' })).toBeVisible()
     expect(screen.getAllByRole('link', { name: 'Megnézem a panziót' })).toHaveLength(2)
+    const bookingLinks = screen.getAllByRole('link', { name: 'Foglalás' })
+    expect(bookingLinks).toHaveLength(3)
+    bookingLinks.forEach((link) => expect(link).toHaveAttribute('href', '/hu/booking'))
+
+    const nisztorCard = screen.getByRole('heading', { name: 'Nisztor Panzió' }).closest('article')
+    expect(nisztorCard).not.toBeNull()
+
+    const nisztorCardCopy = nisztorCard?.querySelector('.guesthouse-card-copy')
+    expect(nisztorCardCopy).not.toBeNull()
+    expect([...nisztorCardCopy!.children].map((element) => element.tagName)).toEqual([
+      'P',
+      'H3',
+      'DIV',
+      'A',
+    ])
+    expect(within(nisztorCard!).getByRole('link', { name: 'Megnézem a panziót' })).toBeVisible()
+    expect(within(nisztorCard!).getByRole('link', { name: 'Foglalás' })).toBeVisible()
+
     expect(
       screen
         .getAllByRole('link', { name: /Nisztor Panzió/ })
@@ -206,6 +224,21 @@ describe('guesthouse and language routing', () => {
     const router = renderRoute('/de')
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/hu'))
+  })
+
+  it('scrolls to the top after navigating to a different public page', async () => {
+    const scrollTo = vi.fn()
+    vi.stubGlobal('scrollTo', scrollTo)
+    const router = renderRoute('/hu')
+
+    await screen.findByRole('heading', { name: 'Ismerje meg panzióinkat.' })
+    scrollTo.mockClear()
+
+    await router.navigate('/hu/guesthouses/nisztor-panzio')
+
+    await waitFor(() =>
+      expect(scrollTo).toHaveBeenCalledWith({ top: 0, left: 0, behavior: 'auto' }),
+    )
   })
 
   it('stores a supported language when its route is opened', async () => {
@@ -271,5 +304,31 @@ describe('guesthouse and language routing', () => {
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: 'Nyelvválasztás' })).not.toBeInTheDocument(),
     )
+  })
+
+  it('opens guesthouse navigation links and routes to the booking start', async () => {
+    const user = userEvent.setup()
+    const router = renderRoute('/hu/guesthouses/nisztor-panzio')
+
+    const navigation = document.querySelector('.site-navigation')
+    expect(navigation).not.toBeNull()
+    const guesthouseHomeLink = within(navigation as HTMLElement).getByRole('link', {
+      name: 'Panzióink',
+    })
+    expect(guesthouseHomeLink).toHaveAttribute('href', '/hu')
+    await user.click(guesthouseHomeLink)
+    await waitFor(() => expect(router.state.location.pathname).toBe('/hu'))
+
+    await user.click(screen.getByRole('button', { name: 'Panziók listájának megnyitása' }))
+
+    const guesthouseMenu = document.querySelector('.guesthouse-navigation-menu')
+    expect(guesthouseMenu).toBeInTheDocument()
+    expect(guesthouseMenu?.parentElement).toHaveClass('is-open')
+    expect(
+      within(guesthouseMenu as HTMLElement).getByRole('link', { name: 'Nisztor Panzió' }),
+    ).toHaveAttribute('href', '/hu/guesthouses/nisztor-panzio')
+
+    await user.click(within(guesthouseMenu as HTMLElement).getByRole('link', { name: 'Foglalás' }))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/hu/booking'))
   })
 })

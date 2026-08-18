@@ -12,7 +12,6 @@ export default function GuesthouseHistory({ history, eyebrow }: GuesthouseHistor
       aria-labelledby="history-heading"
     >
       <header className="detail-sheet-heading">
-        <p className="section-index">06</p>
         <div>
           <p className="eyebrow">{eyebrow}</p>
           <h2 id="history-heading">{history.title}</h2>

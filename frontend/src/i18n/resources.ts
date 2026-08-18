@@ -6,6 +6,10 @@ export const resources = {
         location: 'Csernakeresztúr · Dél-Erdély',
         navigation: {
           guesthouses: 'Panzióink',
+          openGuesthouseMenu: 'Panziók listájának megnyitása',
+          nisztorGuesthouse: 'Nisztor Panzió',
+          bukovinaGuesthouse: 'Bukovina Panzió',
+          booking: 'Foglalás',
           starTours: 'Csillagtúrák',
           favorites: 'Kedvenceim',
           home: 'Főoldal',
@@ -418,6 +422,10 @@ export const resources = {
         location: 'Cristur · Transilvania de Sud',
         navigation: {
           guesthouses: 'Pensiunile noastre',
+          openGuesthouseMenu: 'Deschide lista pensiunilor',
+          nisztorGuesthouse: 'Pensiunea Nisztor',
+          bukovinaGuesthouse: 'Pensiunea Bukovina',
+          booking: 'Rezervare',
           starTours: 'Tururi în circuit',
           favorites: 'Favorite',
           home: 'Acasă',
@@ -825,6 +833,10 @@ export const resources = {
         location: 'Cristur · Southern Transylvania',
         navigation: {
           guesthouses: 'Our guesthouses',
+          openGuesthouseMenu: 'Open guesthouse list',
+          nisztorGuesthouse: 'Nisztor Guesthouse',
+          bukovinaGuesthouse: 'Bukovina Guesthouse',
+          booking: 'Booking',
           starTours: 'Star tours',
           favorites: 'Favorites',
           home: 'Home',

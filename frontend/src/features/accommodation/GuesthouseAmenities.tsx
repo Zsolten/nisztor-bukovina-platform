@@ -31,7 +31,6 @@ export default function GuesthouseAmenities({ amenities, title }: GuesthouseAmen
       aria-labelledby="amenities-heading"
     >
       <header className="detail-sheet-heading">
-        <p className="section-index">03</p>
         <h2 id="amenities-heading">{title}</h2>
       </header>
       <div className="amenity-groups">

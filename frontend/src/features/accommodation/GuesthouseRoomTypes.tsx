@@ -25,7 +25,6 @@ export default function GuesthouseRoomTypes({
       aria-labelledby="room-types-heading"
     >
       <header className="detail-sheet-heading">
-        <p className="section-index">04</p>
         <div>
           <h2 id="room-types-heading">{title}</h2>
           <p className="section-introduction">{description}</p>
@@ -37,7 +36,6 @@ export default function GuesthouseRoomTypes({
             <Card as="article" className="room-type-card h-100">
               <Card.Body>
                 <Card.Title as="h3">{roomType.name}</Card.Title>
-                {roomType.shortDescription && <Card.Text>{roomType.shortDescription}</Card.Text>}
                 <div className="room-type-facts">
                   <span>{t('guesthouses.capacity', { count: roomType.standardOccupancy })}</span>
                 </div>

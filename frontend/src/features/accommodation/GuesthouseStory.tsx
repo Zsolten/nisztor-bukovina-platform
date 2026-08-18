@@ -27,7 +27,6 @@ export default function GuesthouseStory({
         ))}
       </div>
       <div className="editorial-copy">
-        <p className="section-index">01</p>
         <p className="eyebrow">{eyebrow}</p>
         <h2 id="story-heading">{title}</h2>
         <p>{description}</p>

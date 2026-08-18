@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Container, Nav, Navbar, Offcanvas } from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Link, Navigate, Outlet, useLocation, useParams } from 'react-router-dom'
+import { ChevronDown } from 'lucide-react'
 import {
   DEFAULT_LANGUAGE,
   isSupportedLanguage,
@@ -26,6 +27,8 @@ export default function LanguageLayout() {
   const location = useLocation()
   const { i18n, t } = useTranslation()
   const [navigationOpen, setNavigationOpen] = useState(false)
+  const [guesthouseMenuOpen, setGuesthouseMenuOpen] = useState(false)
+  const [guesthouseMenuDismissed, setGuesthouseMenuDismissed] = useState(false)
   const [headerScrolled, setHeaderScrolled] = useState(() => window.scrollY > 24)
   const isHomepage =
     isSupportedLanguage(lang) &&
@@ -33,6 +36,11 @@ export default function LanguageLayout() {
   const isTourismPage =
     isSupportedLanguage(lang) && location.pathname.startsWith(`/${lang}/star-tours`)
   const useLightHeader = isTourismPage ? false : !isHomepage || headerScrolled
+  const closeNavigation = () => {
+    setGuesthouseMenuOpen(false)
+    setGuesthouseMenuDismissed(true)
+    setNavigationOpen(false)
+  }
 
   useEffect(() => {
     if (!isSupportedLanguage(lang)) return
@@ -50,6 +58,10 @@ export default function LanguageLayout() {
 
     return () => window.removeEventListener('scroll', updateHeaderState)
   }, [])
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [location.pathname])
 
   if (!isSupportedLanguage(lang)) {
     return <Navigate to={`/${DEFAULT_LANGUAGE}`} replace />
@@ -87,7 +99,7 @@ export default function LanguageLayout() {
             id="language-navigation"
             aria-label={t('app.navigation.languages')}
             placement="end"
-            responsive="md"
+            responsive="lg"
             onHide={() => setNavigationOpen(false)}
           >
             <Offcanvas.Header closeButton closeLabel={t('app.navigation.closeMenu')}>
@@ -95,19 +107,58 @@ export default function LanguageLayout() {
             </Offcanvas.Header>
             <Offcanvas.Body>
               <Nav className="site-navigation ms-auto">
-                <Nav.Link
-                  as={Link}
-                  active={!isTourismPage}
-                  to={`/${lang}`}
-                  onClick={() => setNavigationOpen(false)}
+                <div
+                  className={`guesthouse-navigation-dropdown${guesthouseMenuOpen ? ' is-open' : ''}${guesthouseMenuDismissed ? ' is-dismissed' : ''}`}
+                  onMouseEnter={() => setGuesthouseMenuDismissed(false)}
+                  onMouseLeave={() => setGuesthouseMenuOpen(false)}
                 >
-                  {t('app.navigation.guesthouses')}
-                </Nav.Link>
+                  <Nav.Link
+                    as={Link}
+                    active={!isTourismPage}
+                    to={`/${lang}`}
+                    onClick={closeNavigation}
+                  >
+                    {t('app.navigation.guesthouses')}
+                  </Nav.Link>
+                  <button
+                    className="guesthouse-navigation-toggle"
+                    type="button"
+                    aria-label={t('app.navigation.openGuesthouseMenu')}
+                    aria-controls="guesthouse-navigation-menu"
+                    aria-expanded={guesthouseMenuOpen}
+                    onClick={() => {
+                      setGuesthouseMenuDismissed(false)
+                      setGuesthouseMenuOpen((open) => !open)
+                    }}
+                  >
+                    <ChevronDown aria-hidden="true" size={15} strokeWidth={2} />
+                  </button>
+                  <div className="guesthouse-navigation-menu" id="guesthouse-navigation-menu">
+                    <Link
+                      to={`/${lang}/guesthouses/nisztor-panzio`}
+                      onClick={closeNavigation}
+                    >
+                      {t('app.navigation.nisztorGuesthouse')}
+                    </Link>
+                    <Link
+                      to={`/${lang}/guesthouses/bukovina-panzio`}
+                      onClick={closeNavigation}
+                    >
+                      {t('app.navigation.bukovinaGuesthouse')}
+                    </Link>
+                    <Link
+                      to={`/${lang}/booking`}
+                      onClick={closeNavigation}
+                    >
+                      {t('app.navigation.booking')}
+                    </Link>
+                  </div>
+                </div>
                 <Nav.Link
                   as={Link}
                   active={isTourismPage}
                   to={`/${lang}/star-tours`}
-                  onClick={() => setNavigationOpen(false)}
+                  onClick={closeNavigation}
                 >
                   {t('app.navigation.starTours')}
                 </Nav.Link>
@@ -120,7 +171,7 @@ export default function LanguageLayout() {
                     active={language === lang}
                     to={languagePath(location.pathname, language)}
                     aria-current={language === lang ? 'page' : undefined}
-                    onClick={() => setNavigationOpen(false)}
+                    onClick={closeNavigation}
                   >
                     {LANGUAGE_LABELS[language]}
                   </Nav.Link>

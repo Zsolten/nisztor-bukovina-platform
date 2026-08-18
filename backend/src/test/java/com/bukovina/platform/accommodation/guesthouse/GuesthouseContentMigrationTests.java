@@ -56,6 +56,14 @@ class GuesthouseContentMigrationTests {
   }
 
   @Test
+  void appliesOwnerConfirmedBukovinaRoomCapacityAndCopy() {
+    assertEquals(20, guesthouseRoomCount("bukovina-panzio"));
+    assertEquals(
+        "20 szoba egy-, két-, három- és négyágyas elrendezésben, az igényekhez igazodva.",
+        roomDescription("bukovina-panzio", "hu"));
+  }
+
+  @Test
   void keepsOnlyGalleryImagesThatExistInTheFrontend() {
     assertEquals(10, galleryImageCount("nisztor-panzio"));
     assertEquals(16, galleryImageCount("bukovina-panzio"));
@@ -114,6 +122,24 @@ class GuesthouseContentMigrationTests {
         Integer.class,
         slug,
         code);
+  }
+
+  private int guesthouseRoomCount(String slug) {
+    return jdbcTemplate.queryForObject(
+        "SELECT room_count FROM guesthouse WHERE slug = ?", Integer.class, slug);
+  }
+
+  private String roomDescription(String slug, String languageCode) {
+    return jdbcTemplate.queryForObject(
+        """
+        SELECT translation.room_description
+        FROM guesthouse_translation translation
+        JOIN guesthouse ON guesthouse.id = translation.guesthouse_id
+        WHERE guesthouse.slug = ? AND translation.language_code = ?
+        """,
+        String.class,
+        slug,
+        languageCode);
   }
 
   private int galleryImageCount(String slug) {
