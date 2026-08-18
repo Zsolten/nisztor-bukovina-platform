@@ -1,6 +1,6 @@
 import { AdvancedMarker, APIProvider, InfoWindow, Map, useMap } from '@vis.gl/react-google-maps'
 import { House } from 'lucide-react'
-import { useEffect, useMemo, useRef, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Language } from '../../i18n/languages'
 import type { PublicAttraction, PublicStarTourRoute } from '../../shared/api/tourism'
@@ -13,6 +13,8 @@ interface TourismMapProps {
   language: Language
   attractions: PublicAttraction[]
   selectedAttraction: PublicAttraction | null
+  focusAttraction: PublicAttraction | null
+  focusZoom: number
   selectedRoute: PublicStarTourRoute | null
   routes: Array<{ route: PublicStarTourRoute; color: string }>
   visible: boolean
@@ -21,6 +23,7 @@ interface TourismMapProps {
 }
 
 const DEFAULT_CENTER = { lat: 45.75, lng: 23.12 }
+const MOBILE_ATTRACTION_TRANSITION_DURATION = 800
 
 function decodePolyline(encoded: string): google.maps.LatLngLiteral[] {
   const path: google.maps.LatLngLiteral[] = []
@@ -176,9 +179,77 @@ function MapViewport({
   return null
 }
 
+function FocusedAttractionViewport({
+  attraction,
+  focusZoom,
+  visible,
+}: {
+  attraction: PublicAttraction | null
+  focusZoom: number
+  visible: boolean
+}) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (!map || !visible || !attraction) return
+
+    let secondAnimationFrame: number | null = null
+    let transitionAnimationFrame: number | null = null
+    const firstAnimationFrame = window.requestAnimationFrame(() => {
+      secondAnimationFrame = window.requestAnimationFrame(() => {
+        const currentCenter = map.getCenter()
+        const currentZoom = map.getZoom()
+        if (!currentCenter || currentZoom === undefined) {
+          map.moveCamera({
+            center: { lat: attraction.latitude, lng: attraction.longitude },
+            zoom: focusZoom,
+          })
+          return
+        }
+
+        const startLatitude = currentCenter.lat()
+        const startLongitude = currentCenter.lng()
+        const startTime = performance.now()
+        const animate = (timestamp: number) => {
+          const progress = Math.min(
+            (timestamp - startTime) / MOBILE_ATTRACTION_TRANSITION_DURATION,
+            1,
+          )
+          const easedProgress =
+            progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2
+
+          map.moveCamera({
+            center: {
+              lat: startLatitude + (attraction.latitude - startLatitude) * easedProgress,
+              lng: startLongitude + (attraction.longitude - startLongitude) * easedProgress,
+            },
+            zoom: currentZoom + (focusZoom - currentZoom) * easedProgress,
+          })
+
+          if (progress < 1) transitionAnimationFrame = window.requestAnimationFrame(animate)
+        }
+
+        transitionAnimationFrame = window.requestAnimationFrame(animate)
+      })
+    })
+
+    return () => {
+      window.cancelAnimationFrame(firstAnimationFrame)
+      if (secondAnimationFrame !== null) window.cancelAnimationFrame(secondAnimationFrame)
+      if (transitionAnimationFrame !== null) {
+        window.cancelAnimationFrame(transitionAnimationFrame)
+      }
+    }
+  }, [attraction, focusZoom, map, visible])
+
+  return null
+}
+
 function MapContent({
   attractions,
   selectedAttraction,
+  focusAttraction,
+  focusZoom,
   selectedRoute,
   routes,
   visible,
@@ -186,15 +257,49 @@ function MapContent({
   onOpenAttractionDetails,
 }: Omit<TourismMapProps, 'apiKey' | 'mapId' | 'language'>) {
   const { t } = useTranslation()
+  const [hoveredAttraction, setHoveredAttraction] = useState<PublicAttraction | null>(null)
+  const hoverDismissTimeoutRef = useRef<number | null>(null)
   const routeStops = useMemo(
     () => new Set(selectedRoute?.stops.map((stop) => stop.slug) ?? []),
     [selectedRoute?.stops],
   )
   const guesthouseBase = selectedRoute?.base ?? routes[0]?.route.base
+  const infoAttraction = hoveredAttraction ?? selectedAttraction
+
+  function cancelHoverDismiss() {
+    if (hoverDismissTimeoutRef.current === null) return
+    window.clearTimeout(hoverDismissTimeoutRef.current)
+    hoverDismissTimeoutRef.current = null
+  }
+
+  function showAttractionInfo(attraction: PublicAttraction) {
+    cancelHoverDismiss()
+    setHoveredAttraction(attraction)
+  }
+
+  function dismissAttractionInfoSoon() {
+    cancelHoverDismiss()
+    hoverDismissTimeoutRef.current = window.setTimeout(() => {
+      setHoveredAttraction(null)
+      hoverDismissTimeoutRef.current = null
+    }, 160)
+  }
+
+  useEffect(
+    () => () => {
+      cancelHoverDismiss()
+    },
+    [],
+  )
 
   return (
     <>
       <MapViewport attractions={attractions} selectedRoute={selectedRoute} visible={visible} />
+      <FocusedAttractionViewport
+        attraction={focusAttraction}
+        focusZoom={focusZoom}
+        visible={visible}
+      />
       <RoutePolylines routes={routes} selectedRoute={selectedRoute} />
       {guesthouseBase && (
         <AdvancedMarker
@@ -208,7 +313,8 @@ function MapContent({
         </AdvancedMarker>
       )}
       {attractions.map((attraction) => {
-        const active = routeStops.has(attraction.slug)
+        const active =
+          routeStops.has(attraction.slug) || selectedAttraction?.slug === attraction.slug
         const category = categoryForAttraction(attraction)
         return (
           <AdvancedMarker
@@ -217,6 +323,8 @@ function MapContent({
             title={attraction.name}
             zIndex={active ? 30 : 20}
             onClick={() => onSelectAttraction(attraction)}
+            onMouseEnter={() => showAttractionInfo(attraction)}
+            onMouseLeave={dismissAttractionInfoSoon}
           >
             <span
               className={`tourism-map-marker${active ? ' tourism-map-marker-active' : ''}`}
@@ -235,31 +343,36 @@ function MapContent({
           </AdvancedMarker>
         )
       })}
-      {selectedAttraction && (
+      {infoAttraction && (
         <InfoWindow
           position={{
-            lat: selectedAttraction.latitude,
-            lng: selectedAttraction.longitude,
+            lat: infoAttraction.latitude,
+            lng: infoAttraction.longitude,
           }}
           pixelOffset={[0, -42]}
           headerContent={
             <span className="tourism-map-popup-category">
-              <AttractionCategoryIcon
-                category={categoryForAttraction(selectedAttraction)}
-                size={15}
-              />
-              {selectedAttraction.name}
+              <AttractionCategoryIcon category={categoryForAttraction(infoAttraction)} size={15} />
+              {infoAttraction.name}
             </span>
           }
-          onCloseClick={() => onSelectAttraction(null)}
+          onCloseClick={() => {
+            cancelHoverDismiss()
+            setHoveredAttraction(null)
+            onSelectAttraction(null)
+          }}
         >
-          <div className="tourism-map-popup">
-            <p>{selectedAttraction.shortDescription}</p>
+          <div
+            className="tourism-map-popup"
+            onMouseEnter={cancelHoverDismiss}
+            onMouseLeave={dismissAttractionInfoSoon}
+          >
+            <p>{infoAttraction.shortDescription}</p>
             <div className="tourism-map-popup-actions">
-              <a href={selectedAttraction.googleMapsUrl} target="_blank" rel="noreferrer">
+              <a href={infoAttraction.googleMapsUrl} target="_blank" rel="noreferrer">
                 {t('tourism.openOnMap')}
               </a>
-              <button type="button" onClick={() => onOpenAttractionDetails(selectedAttraction)}>
+              <button type="button" onClick={() => onOpenAttractionDetails(infoAttraction)}>
                 {t('tourism.details')}
               </button>
             </div>
@@ -283,7 +396,7 @@ export default function TourismMap({ apiKey, mapId, language, ...props }: Touris
         gestureHandling="greedy"
         keyboardShortcuts={false}
         disableDefaultUI
-        zoomControl
+        zoomControl={false}
         clickableIcons={false}
         reuseMaps
       >

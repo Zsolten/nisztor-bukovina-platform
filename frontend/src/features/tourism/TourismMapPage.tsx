@@ -7,7 +7,6 @@ import {
   Map as MapIcon,
   MapPinned,
   Search,
-  SlidersHorizontal,
 } from 'lucide-react'
 import {
   useEffect,
@@ -15,10 +14,11 @@ import {
   useRef,
   useState,
   type CSSProperties,
-  type PointerEvent as ReactPointerEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useOutletContext } from 'react-router-dom'
+import { useSwipeable } from 'react-swipeable'
 import type { LanguageOutletContext } from '../../app/LanguageLayout'
 import {
   listPublicCachedStarTourRoutes,
@@ -38,17 +38,27 @@ type TourismLayout = 'map' | 'list'
 type DetailTarget =
   { type: 'tour'; value: PublicStarTour } | { type: 'attraction'; value: PublicAttraction } | null
 
+const MOBILE_ATTRACTION_FOCUS_ZOOM = 10
+const DESKTOP_ATTRACTION_FOCUS_ZOOM = 9
 const FAVORITES_STORAGE_KEY = 'favoriteStarTours'
 const MOBILE_TOURISM_QUERY = '(max-width: 767.98px), (max-width: 900px) and (max-height: 600px)'
 const TOUR_IMAGE_BY_SLUG: Record<string, string> = {
   'paring-es-hatszegi-medence': '/images/destinations/retezat-mountains.jpg',
   'maros-mente-es-gyulafehervar': '/images/destinations/deva-citadel.jpg',
 }
+const TOUR_FALLBACK_IMAGE = '/images/destinations/sibiu-old-town.jpg'
 const ATTRACTION_IMAGE_BY_SLUG: Record<string, string> = {
   'deva-vara': '/images/destinations/deva-citadel.jpg',
   gyulafehervar: '/images/destinations/alba-iulia-citadel.jpg',
   'paring-hegyseg': '/images/destinations/retezat-mountains.jpg',
   'veka-szurdok': '/images/destinations/red-ravine.jpg',
+}
+const ATTRACTION_FALLBACK_IMAGE_BY_CATEGORY: Record<AttractionCategory, string> = {
+  castle: '/images/destinations/deva-citadel.jpg',
+  nature: '/images/destinations/retezat-mountains.jpg',
+  church: '/images/destinations/alba-iulia-citadel.jpg',
+  museum: '/images/destinations/turda-salt-mine.jpg',
+  other: '/images/destinations/sibiu-old-town.jpg',
 }
 const ATTRACTION_CATEGORIES: AttractionCategory[] = ['castle', 'nature', 'church', 'museum']
 
@@ -80,7 +90,14 @@ function formatDuration(seconds: number | null) {
 }
 
 function tourImage(tour: PublicStarTour) {
-  return tour.images[0]?.imageUrl || TOUR_IMAGE_BY_SLUG[tour.slug]
+  return tour.images[0]?.imageUrl || TOUR_IMAGE_BY_SLUG[tour.slug] || TOUR_FALLBACK_IMAGE
+}
+
+function attractionImage(attraction: PublicAttraction) {
+  return (
+    ATTRACTION_IMAGE_BY_SLUG[attraction.slug] ||
+    ATTRACTION_FALLBACK_IMAGE_BY_CATEGORY[categoryForAttraction(attraction)]
+  )
 }
 
 function normalizeSearchText(value: string, language: string) {
@@ -96,6 +113,10 @@ export default function TourismMapPage() {
   const [view, setView] = useState<TourismView>('tours')
   const [layout, setLayout] = useState<TourismLayout>('map')
   const [query, setQuery] = useState('')
+  const [mobileCardAnimation, setMobileCardAnimation] = useState<'next' | 'previous' | null>(null)
+  const [compactViewport, setCompactViewport] = useState(
+    () => window.matchMedia(MOBILE_TOURISM_QUERY).matches,
+  )
   const [selectedCategory, setSelectedCategory] = useState<AttractionCategory | 'all'>('all')
   const [tours, setTours] = useState<PublicStarTour[]>([])
   const [attractions, setAttractions] = useState<PublicAttraction[]>([])
@@ -104,11 +125,11 @@ export default function TourismMapPage() {
   const [routes, setRoutes] = useState<PublicStarTourRoute[]>([])
   const [favorites, setFavorites] = useState<string[]>(readFavorites)
   const [detailTarget, setDetailTarget] = useState<DetailTarget>(null)
+  const [hoveredListAttraction, setHoveredListAttraction] = useState<PublicAttraction | null>(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const tourListRef = useRef<HTMLDivElement>(null)
-  const swipeStartRef = useRef<{ slug: string; y: number } | null>(null)
 
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim() ?? ''
   const mapId = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID?.trim()
@@ -141,6 +162,14 @@ export default function TourismMapPage() {
     return () => controller.abort()
   }, [language])
 
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(MOBILE_TOURISM_QUERY)
+    const updateCompactViewport = () => setCompactViewport(mediaQuery.matches)
+    updateCompactViewport()
+    mediaQuery.addEventListener('change', updateCompactViewport)
+    return () => mediaQuery.removeEventListener('change', updateCompactViewport)
+  }, [])
+
   const normalizedQuery = normalizeSearchText(query.trim(), language)
   const filteredTours = useMemo(
     () =>
@@ -152,17 +181,22 @@ export default function TourismMapPage() {
       ),
     [language, normalizedQuery, tours],
   )
-  const filteredAttractions = useMemo(
+  const categoryAttractions = useMemo(
     () =>
       attractions.filter(
         (attraction) =>
-          normalizeSearchText(
-            `${attraction.name} ${attraction.shortDescription}`,
-            language,
-          ).includes(normalizedQuery) &&
-          (selectedCategory === 'all' || categoryForAttraction(attraction) === selectedCategory),
+          selectedCategory === 'all' || categoryForAttraction(attraction) === selectedCategory,
       ),
-    [attractions, language, normalizedQuery, selectedCategory],
+    [attractions, selectedCategory],
+  )
+  const filteredAttractions = useMemo(
+    () =>
+      categoryAttractions.filter((attraction) =>
+        normalizeSearchText(`${attraction.name} ${attraction.shortDescription}`, language).includes(
+          normalizedQuery,
+        ),
+      ),
+    [categoryAttractions, language, normalizedQuery],
   )
   const activeAttraction =
     filteredAttractions.find((attraction) => attraction.slug === selectedAttraction?.slug) ??
@@ -171,6 +205,8 @@ export default function TourismMapPage() {
   const activeTour =
     filteredTours.find((tour) => tour.slug === selectedTourSlug) ?? filteredTours[0] ?? null
   const activeRoute = routes.find((route) => route.tourSlug === activeTour?.slug) ?? null
+  const selectedRoute = routes.find((route) => route.tourSlug === selectedTourSlug) ?? null
+  const mapSearchActive = compactViewport && layout === 'map' && normalizedQuery.length > 0
 
   function toggleFavorite(slug: string) {
     setFavorites((current) => {
@@ -185,17 +221,48 @@ export default function TourismMapPage() {
     })
   }
 
-  function handleTourPointerDown(event: ReactPointerEvent, slug: string) {
-    swipeStartRef.current = { slug, y: event.clientY }
+  function selectAdjacentTour(direction: 1 | -1) {
+    if (filteredTours.length < 2 || !activeTour) return
+    const index = filteredTours.findIndex((tour) => tour.slug === activeTour.slug)
+    const nextTour =
+      filteredTours[(index + direction + filteredTours.length) % filteredTours.length]
+    if (!nextTour) return
+    setMobileCardAnimation(direction === 1 ? 'next' : 'previous')
+    setSelectedTourSlug(nextTour.slug)
   }
 
-  function handleTourPointerUp(event: ReactPointerEvent, tour: PublicStarTour) {
-    const start = swipeStartRef.current
-    swipeStartRef.current = null
-    if (start?.slug === tour.slug && start.y - event.clientY >= 48) {
-      setDetailTarget({ type: 'tour', value: tour })
-    }
+  function selectAdjacentAttraction(direction: 1 | -1) {
+    if (filteredAttractions.length < 2 || !activeAttraction) return
+    const index = filteredAttractions.findIndex(
+      (attraction) => attraction.slug === activeAttraction.slug,
+    )
+    const nextAttraction =
+      filteredAttractions[
+        (index + direction + filteredAttractions.length) % filteredAttractions.length
+      ]
+    if (!nextAttraction) return
+    setMobileCardAnimation(direction === 1 ? 'next' : 'previous')
+    selectAttraction(nextAttraction)
   }
+
+  const tourSwipeHandlers = useSwipeable({
+    delta: 32,
+    onSwipedLeft: () => selectAdjacentTour(1),
+    onSwipedRight: () => selectAdjacentTour(-1),
+    onSwipedUp: () => {
+      if (activeTour) setDetailTarget({ type: 'tour', value: activeTour })
+    },
+    preventScrollOnSwipe: true,
+    swipeDuration: 500,
+  })
+
+  const attractionSwipeHandlers = useSwipeable({
+    delta: 32,
+    onSwipedLeft: () => selectAdjacentAttraction(1),
+    onSwipedRight: () => selectAdjacentAttraction(-1),
+    preventScrollOnSwipe: true,
+    swipeDuration: 500,
+  })
 
   function handleTourListScroll() {
     const list = tourListRef.current
@@ -230,31 +297,54 @@ export default function TourismMapPage() {
 
   function updateQuery(value: string) {
     setQuery(value)
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => {
-        searchInputRef.current?.focus({ preventScroll: true })
-      })
-    })
+  }
+
+  function closeSearch() {
+    setQuery('')
+    searchInputRef.current?.blur()
+  }
+
+  function selectSearchTour(tour: PublicStarTour) {
+    setSelectedTourSlug(tour.slug)
+    closeSearch()
+  }
+
+  function selectSearchAttraction(attraction: PublicAttraction) {
+    selectAttraction(attraction)
+    closeSearch()
+  }
+
+  function handleSearchKeyDown(event: ReactKeyboardEvent<HTMLInputElement>) {
+    if (event.key !== 'Enter' || !mapSearchActive) return
+
+    event.preventDefault()
+    if (view === 'tours') {
+      const firstTour = filteredTours[0]
+      if (firstTour) selectSearchTour(firstTour)
+      else closeSearch()
+      return
+    }
+
+    const firstAttraction = filteredAttractions[0]
+    if (firstAttraction) selectSearchAttraction(firstAttraction)
+    else closeSearch()
   }
 
   const mapAttractions = useMemo(() => {
-    if (view === 'attractions') return filteredAttractions
+    if (view === 'attractions') return mapSearchActive ? categoryAttractions : filteredAttractions
 
-    const matchingStopSlugs = new Set(
-      filteredTours.flatMap((tour) => tour.stops.map((stop) => stop.slug)),
-    )
+    const matchingStopSlugs = new Set(tours.flatMap((tour) => tour.stops.map((stop) => stop.slug)))
     return attractions.filter((attraction) => matchingStopSlugs.has(attraction.slug))
-  }, [attractions, filteredAttractions, filteredTours, view])
+  }, [attractions, categoryAttractions, filteredAttractions, mapSearchActive, tours, view])
   const mapRoutes = useMemo(
     () =>
       routes
-        .filter((route) => filteredTours.some((tour) => tour.slug === route.tourSlug))
         .map((route) => {
           const tour = tours.find((item) => item.slug === route.tourSlug)
           return tour ? { route, color: tour.mapColor } : null
         })
         .filter((route): route is { route: PublicStarTourRoute; color: string } => route !== null),
-    [filteredTours, routes, tours],
+    [routes, tours],
   )
 
   return (
@@ -274,7 +364,10 @@ export default function TourismMapPage() {
               role="tab"
               aria-selected={view === 'tours'}
               className={view === 'tours' ? 'active' : ''}
-              onClick={() => setView('tours')}
+              onClick={() => {
+                setHoveredListAttraction(null)
+                setView('tours')
+              }}
             >
               {t('tourism.tours')}
             </button>
@@ -283,18 +376,42 @@ export default function TourismMapPage() {
               role="tab"
               aria-selected={view === 'attractions'}
               className={view === 'attractions' ? 'active' : ''}
-              onClick={() => setView('attractions')}
+              onClick={() => {
+                setHoveredListAttraction(null)
+                setView('attractions')
+              }}
             >
               {t('tourism.attractions')}
             </button>
           </div>
+        </div>
+
+        <div className="tourism-search-area">
+          <label className="tourism-search">
+            <Search aria-hidden="true" size={23} />
+            <span className="visually-hidden">{t('tourism.searchLabel')}</span>
+            <input
+              ref={searchInputRef}
+              type="search"
+              value={query}
+              placeholder={
+                view === 'tours' ? t('tourism.searchTours') : t('tourism.searchAttractions')
+              }
+              onChange={(event) => updateQuery(event.target.value)}
+              onKeyDown={handleSearchKeyDown}
+            />
+          </label>
+
           <div className="tourism-layout-switch" role="group" aria-label={t('tourism.layoutLabel')}>
             <button
               type="button"
               className={layout === 'map' ? 'active' : ''}
               aria-label={t('tourism.mapView')}
               aria-pressed={layout === 'map'}
-              onClick={() => setLayout('map')}
+              onClick={() => {
+                setHoveredListAttraction(null)
+                setLayout('map')
+              }}
             >
               <MapIcon aria-hidden="true" size={18} />
             </button>
@@ -303,33 +420,43 @@ export default function TourismMapPage() {
               className={layout === 'list' ? 'active' : ''}
               aria-label={t('tourism.listView')}
               aria-pressed={layout === 'list'}
-              onClick={() => setLayout('list')}
+              onClick={() => {
+                setHoveredListAttraction(null)
+                setLayout('list')
+                setSelectedCategory('all')
+              }}
             >
               <List aria-hidden="true" size={18} />
             </button>
           </div>
+
+          {!loading && !loadError && mapSearchActive && (
+            <section className="tourism-search-results" aria-label={t('tourism.searchResults')}>
+              {view === 'tours'
+                ? filteredTours.map((tour) => (
+                    <button key={tour.slug} type="button" onClick={() => selectSearchTour(tour)}>
+                      <span>{tour.name}</span>
+                      <ChevronRight aria-hidden="true" size={18} />
+                    </button>
+                  ))
+                : filteredAttractions.map((attraction) => (
+                    <button
+                      key={attraction.slug}
+                      type="button"
+                      onClick={() => selectSearchAttraction(attraction)}
+                    >
+                      <span>{attraction.name}</span>
+                      <ChevronRight aria-hidden="true" size={18} />
+                    </button>
+                  ))}
+              {(view === 'tours' ? filteredTours : filteredAttractions).length === 0 && (
+                <p>{view === 'tours' ? t('tourism.noTours') : t('tourism.noAttractions')}</p>
+              )}
+            </section>
+          )}
         </div>
 
-        <label className="tourism-search">
-          <Search aria-hidden="true" size={23} />
-          <span className="visually-hidden">{t('tourism.searchLabel')}</span>
-          <input
-            ref={searchInputRef}
-            type="search"
-            value={query}
-            placeholder={
-              view === 'tours' ? t('tourism.searchTours') : t('tourism.searchAttractions')
-            }
-            onChange={(event) => updateQuery(event.target.value)}
-          />
-          {view === 'attractions' && (
-            <span className="tourism-search-filter" aria-hidden="true">
-              <SlidersHorizontal size={19} />
-            </span>
-          )}
-        </label>
-
-        {view === 'attractions' && (
+        {view === 'attractions' && layout === 'map' && (
           <div className="tourism-category-filters" aria-label={t('tourism.categoryFilter')}>
             <button
               type="button"
@@ -358,7 +485,7 @@ export default function TourismMapPage() {
         {loading && <p className="tourism-state">{t('tourism.loading')}</p>}
         {loadError && <p className="tourism-state tourism-state-error">{t('tourism.error')}</p>}
 
-        {!loading && !loadError && view === 'tours' && (
+        {!loading && !loadError && view === 'tours' && !mapSearchActive && (
           <div className="tourism-tour-carousel">
             <div
               ref={tourListRef}
@@ -375,13 +502,9 @@ export default function TourismMapPage() {
                   <article
                     key={tour.slug}
                     data-tour-slug={tour.slug}
-                    className={`tourism-tour-card${selected ? ' selected' : ''}`}
+                    className={`tourism-tour-card${selected ? ' selected' : ''}${selected && mobileCardAnimation ? ` tourism-card-enter-${mobileCardAnimation}` : ''}`}
                     style={{ '--tour-color': tour.mapColor } as CSSProperties}
-                    onPointerDown={(event) => handleTourPointerDown(event, tour.slug)}
-                    onPointerUp={(event) => handleTourPointerUp(event, tour)}
-                    onPointerCancel={() => {
-                      swipeStartRef.current = null
-                    }}
+                    {...(selected ? tourSwipeHandlers : {})}
                   >
                     <button
                       className="tourism-tour-select"
@@ -459,7 +582,7 @@ export default function TourismMapPage() {
           </div>
         )}
 
-        {!loading && !loadError && view === 'attractions' && (
+        {!loading && !loadError && view === 'attractions' && !mapSearchActive && (
           <section className="tourism-attraction-section" aria-labelledby="attractions-heading">
             <div className="tourism-list-heading">
               <h2 id="attractions-heading">{t('tourism.attractions')}</h2>
@@ -467,11 +590,16 @@ export default function TourismMapPage() {
             </div>
             <div className="tourism-attraction-list">
               {filteredAttractions.map((attraction) => {
-                const image = ATTRACTION_IMAGE_BY_SLUG[attraction.slug]
+                const image = attractionImage(attraction)
                 return (
                   <article
                     key={attraction.slug}
-                    className={`tourism-attraction-card${image ? ' has-image' : ''}${attraction.slug === activeAttraction?.slug ? ' selected' : ''}`}
+                    className={`tourism-attraction-card${image ? ' has-image' : ''}${attraction.slug === activeAttraction?.slug ? ' selected' : ''}${attraction.slug === activeAttraction?.slug && mobileCardAnimation ? ` tourism-card-enter-${mobileCardAnimation}` : ''}`}
+                    {...(attraction.slug === activeAttraction?.slug ? attractionSwipeHandlers : {})}
+                    onMouseEnter={() => {
+                      if (!compactViewport && layout === 'map') setHoveredListAttraction(attraction)
+                    }}
+                    onMouseLeave={() => setHoveredListAttraction(null)}
                   >
                     {image && <img src={image} alt="" />}
                     <div className="tourism-attraction-copy">
@@ -539,11 +667,33 @@ export default function TourismMapPage() {
             mapId={mapId}
             language={language}
             attractions={mapAttractions}
-            selectedAttraction={view === 'attractions' ? activeAttraction : selectedAttraction}
-            selectedRoute={view === 'tours' ? activeRoute : null}
+            selectedAttraction={
+              compactViewport && view === 'attractions'
+                ? mapSearchActive
+                  ? selectedAttraction
+                  : activeAttraction
+                : compactViewport
+                  ? selectedAttraction
+                  : hoveredListAttraction
+            }
+            focusAttraction={
+              layout === 'map' && view === 'attractions' && !mapSearchActive
+                ? compactViewport
+                  ? activeAttraction
+                  : hoveredListAttraction
+                : null
+            }
+            focusZoom={
+              compactViewport ? MOBILE_ATTRACTION_FOCUS_ZOOM : DESKTOP_ATTRACTION_FOCUS_ZOOM
+            }
+            selectedRoute={
+              view === 'tours' ? (mapSearchActive ? selectedRoute : activeRoute) : null
+            }
             routes={view === 'tours' ? mapRoutes : []}
             visible={layout === 'map'}
-            onSelectAttraction={selectAttraction}
+            onSelectAttraction={(attraction) => {
+              if (compactViewport) selectAttraction(attraction)
+            }}
             onOpenAttractionDetails={(attraction) =>
               setDetailTarget({ type: 'attraction', value: attraction })
             }
