@@ -63,7 +63,8 @@ public class StarTourRouteService {
    */
   public List<StarTourRouteResponse> listPublicCachedRoutes() {
     return jdbc
-        .sql("SELECT id, slug FROM star_tour WHERE published = TRUE AND active = TRUE ORDER BY slug")
+        .sql(
+            "SELECT id, slug FROM star_tour WHERE published = TRUE AND active = TRUE ORDER BY slug")
         .query((rs, row) -> new PublishedTour(rs.getObject("id", UUID.class), rs.getString("slug")))
         .list()
         .stream()
@@ -258,7 +259,8 @@ public class StarTourRouteService {
     List<RouteLeg> legs = storedLegs(variant.id(), definition.stops().size() + 1);
     return legs == null
         ? java.util.Optional.empty()
-        : java.util.Optional.of(response(tour.slug(), definition, RouteStatus.READY, legs, true, null, null));
+        : java.util.Optional.of(
+            response(tour.slug(), definition, RouteStatus.READY, legs, true, null, null));
   }
 
   private RouteDefinition definition(UUID tourId, List<String> requestedOptionalSlugs) {

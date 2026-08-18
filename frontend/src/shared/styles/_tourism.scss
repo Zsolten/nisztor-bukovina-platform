@@ -1737,7 +1737,9 @@
     white-space: nowrap;
   }
 
-  .tourism-page:not(.tourism-page-list-view) .tourism-attraction-actions :is(button, .tourism-modal-map-link) {
+  .tourism-page:not(.tourism-page-list-view)
+    .tourism-attraction-actions
+    :is(button, .tourism-modal-map-link) {
     min-height: 26px;
     font-size: 0.58rem;
   }

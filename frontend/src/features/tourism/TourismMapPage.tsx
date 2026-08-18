@@ -526,8 +526,7 @@ export default function TourismMapPage() {
           )}
         </div>
 
-        {view === 'attractions' &&
-          (compactViewport ? layout === 'list' : layout === 'map') && (
+        {view === 'attractions' && (compactViewport ? layout === 'list' : layout === 'map') && (
           <div
             className={`tourism-category-filter-controls${categoryNavigation.isScrollable ? ' has-overflow' : ''}`}
           >
