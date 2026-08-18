@@ -27,6 +27,20 @@ interface TourismMapProps {
 const DEFAULT_CENTER = { lat: 45.75, lng: 23.12 }
 const MOBILE_ATTRACTION_TRANSITION_DURATION = 800
 
+export function getMapViewportLocations(
+  selectedRoute: PublicStarTourRoute | null,
+  attractions: PublicAttraction[],
+) {
+  if (selectedRoute) {
+    return [
+      { lat: selectedRoute.base.latitude, lng: selectedRoute.base.longitude },
+      ...selectedRoute.stops.map((stop) => ({ lat: stop.latitude, lng: stop.longitude })),
+    ]
+  }
+
+  return attractions.map((attraction) => ({ lat: attraction.latitude, lng: attraction.longitude }))
+}
+
 function decodePolyline(encoded: string): google.maps.LatLngLiteral[] {
   const path: google.maps.LatLngLiteral[] = []
   let index = 0
@@ -137,16 +151,11 @@ function MapViewport({
 
     const needsResize = visible && !wasVisibleRef.current
     wasVisibleRef.current = visible
-    if (!visible || attractions.length === 0) return
+    if (!visible) return
 
     const bounds = new google.maps.LatLngBounds()
-    const locations = attractions.map((attraction) => ({
-      lat: attraction.latitude,
-      lng: attraction.longitude,
-    }))
-    if (selectedRoute) {
-      locations.push({ lat: selectedRoute.base.latitude, lng: selectedRoute.base.longitude })
-    }
+    const locations = getMapViewportLocations(selectedRoute, attractions)
+    if (locations.length === 0) return
     locations.forEach((location) => bounds.extend(location))
 
     const latitudes = locations.map((location) => location.lat)

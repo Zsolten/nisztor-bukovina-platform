@@ -55,10 +55,17 @@ const TOUR_IMAGE_BY_SLUG: Record<string, string> = {
 }
 const TOUR_FALLBACK_IMAGE = '/images/destinations/sibiu-old-town.jpg'
 const ATTRACTION_IMAGE_BY_SLUG: Record<string, string> = {
+  'paring-hegyseg': '/images/tourism/paring-hegyseg.jpg',
+  'veka-szurdok': '/images/tourism/veka-szurdok.jpg',
+  'boli-barlang': '/images/tourism/boli-barlang.jpg',
+  'vajdahunyadi-kastely': '/images/tourism/vajdahunyadi-kastely.webp',
+  'oraljaboldogfalvi-reformatus-templom':
+    '/images/tourism/oraljaboldogfalvi-reformatus-templom.jpg',
+  'demsusi-kotemplom': '/images/tourism/demsusi-kotemplom.jpg',
   'deva-vara': '/images/destinations/deva-citadel.jpg',
+  algyogyfurdo: '/images/tourism/algyogyfurdo.jpg',
   gyulafehervar: '/images/destinations/alba-iulia-citadel.jpg',
-  'paring-hegyseg': '/images/destinations/retezat-mountains.jpg',
-  'veka-szurdok': '/images/destinations/red-ravine.jpg',
+  'csernakereszturi-tajhaz': '/images/tourism/csernakereszturi-tajhaz.jpg',
 }
 const ATTRACTION_FALLBACK_IMAGE_BY_CATEGORY: Record<AttractionCategory, string> = {
   castle: '/images/destinations/deva-citadel.jpg',
