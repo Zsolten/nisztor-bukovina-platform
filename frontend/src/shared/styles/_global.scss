@@ -150,6 +150,10 @@ img {
   gap: 0.25rem;
 }
 
+.site-navigation + .language-switcher {
+  margin-left: clamp(1.25rem, 2.5vw, 2.5rem);
+}
+
 .site-navigation {
   display: flex;
   align-items: center;
@@ -178,8 +182,9 @@ img {
 }
 
 .site-header-tourism {
-  background: rgba(17, 38, 30, 0.96);
-  box-shadow: 0 6px 24px rgba(16, 38, 30, 0.18);
+  background: rgba(39, 36, 31, 0.58);
+  backdrop-filter: blur(14px);
+  box-shadow: none;
 }
 
 .tourism-current-language {
@@ -1135,6 +1140,36 @@ img {
   .booking-entry-actions button {
     width: 100%;
     min-width: 0;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .offcanvas .site-navigation + .language-switcher {
+    margin-top: 1rem;
+    margin-left: 0;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .site-header.site-header-tourism {
+    border-bottom-color: var(--line);
+    background: rgba(251, 248, 241, 0.96);
+    box-shadow: 0 8px 24px rgba(16, 38, 30, 0.08);
+  }
+
+  .site-header.site-header-tourism .brand,
+  .site-header.site-header-tourism .brand:hover,
+  .site-header.site-header-tourism .brand:focus-visible {
+    color: var(--ink);
+  }
+
+  .site-header.site-header-tourism .brand small,
+  .site-header.site-header-tourism .tourism-current-language {
+    color: var(--muted);
+  }
+
+  .site-header.site-header-tourism .navbar-toggler-icon {
+    filter: none;
   }
 }
 

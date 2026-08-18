@@ -18,6 +18,8 @@ interface TourismMapProps {
   selectedRoute: PublicStarTourRoute | null
   routes: Array<{ route: PublicStarTourRoute; color: string }>
   visible: boolean
+  detailsOpen: boolean
+  showAttractionPopups: boolean
   onSelectAttraction: (attraction: PublicAttraction | null) => void
   onOpenAttractionDetails: (attraction: PublicAttraction) => void
 }
@@ -253,6 +255,8 @@ function MapContent({
   selectedRoute,
   routes,
   visible,
+  detailsOpen,
+  showAttractionPopups,
   onSelectAttraction,
   onOpenAttractionDetails,
 }: Omit<TourismMapProps, 'apiKey' | 'mapId' | 'language'>) {
@@ -264,7 +268,7 @@ function MapContent({
     [selectedRoute?.stops],
   )
   const guesthouseBase = selectedRoute?.base ?? routes[0]?.route.base
-  const infoAttraction = hoveredAttraction ?? selectedAttraction
+  const infoAttraction = showAttractionPopups ? (hoveredAttraction ?? selectedAttraction) : null
 
   function cancelHoverDismiss() {
     if (hoverDismissTimeoutRef.current === null) return
@@ -283,6 +287,16 @@ function MapContent({
       setHoveredAttraction(null)
       hoverDismissTimeoutRef.current = null
     }, 160)
+  }
+
+  function selectAttraction(attraction: PublicAttraction | null) {
+    setHoveredAttraction(null)
+    onSelectAttraction(attraction)
+  }
+
+  function openAttractionDetails(attraction: PublicAttraction) {
+    setHoveredAttraction(null)
+    onOpenAttractionDetails(attraction)
   }
 
   useEffect(
@@ -322,9 +336,9 @@ function MapContent({
             position={{ lat: attraction.latitude, lng: attraction.longitude }}
             title={attraction.name}
             zIndex={active ? 30 : 20}
-            onClick={() => onSelectAttraction(attraction)}
-            onMouseEnter={() => showAttractionInfo(attraction)}
-            onMouseLeave={dismissAttractionInfoSoon}
+            onClick={() => selectAttraction(attraction)}
+            onMouseEnter={showAttractionPopups ? () => showAttractionInfo(attraction) : undefined}
+            onMouseLeave={showAttractionPopups ? dismissAttractionInfoSoon : undefined}
           >
             <span
               className={`tourism-map-marker${active ? ' tourism-map-marker-active' : ''}`}
@@ -343,7 +357,7 @@ function MapContent({
           </AdvancedMarker>
         )
       })}
-      {infoAttraction && (
+      {!detailsOpen && infoAttraction && (
         <InfoWindow
           position={{
             lat: infoAttraction.latitude,
@@ -357,9 +371,7 @@ function MapContent({
             </span>
           }
           onCloseClick={() => {
-            cancelHoverDismiss()
-            setHoveredAttraction(null)
-            onSelectAttraction(null)
+            selectAttraction(null)
           }}
         >
           <div
@@ -372,7 +384,7 @@ function MapContent({
               <a href={infoAttraction.googleMapsUrl} target="_blank" rel="noreferrer">
                 {t('tourism.openOnMap')}
               </a>
-              <button type="button" onClick={() => onOpenAttractionDetails(infoAttraction)}>
+              <button type="button" onClick={() => openAttractionDetails(infoAttraction)}>
                 {t('tourism.details')}
               </button>
             </div>

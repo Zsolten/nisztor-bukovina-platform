@@ -1,4 +1,5 @@
 import {
+  ChevronLeft,
   ChevronRight,
   ExternalLink,
   Grid2X2,
@@ -37,10 +38,16 @@ type TourismView = 'tours' | 'attractions'
 type TourismLayout = 'map' | 'list'
 type DetailTarget =
   { type: 'tour'; value: PublicStarTour } | { type: 'attraction'; value: PublicAttraction } | null
+type HorizontalNavigationState = {
+  canScrollBackward: boolean
+  canScrollForward: boolean
+  isScrollable: boolean
+}
 
 const MOBILE_ATTRACTION_FOCUS_ZOOM = 10
-const DESKTOP_ATTRACTION_FOCUS_ZOOM = 9
+const DESKTOP_ATTRACTION_FOCUS_ZOOM = 11
 const FAVORITES_STORAGE_KEY = 'favoriteStarTours'
+const DEFAULT_ATTRACTION_SLUG = 'csernakereszturi-tajhaz'
 const MOBILE_TOURISM_QUERY = '(max-width: 767.98px), (max-width: 900px) and (max-height: 600px)'
 const TOUR_IMAGE_BY_SLUG: Record<string, string> = {
   'paring-es-hatszegi-medence': '/images/destinations/retezat-mountains.jpg',
@@ -128,8 +135,14 @@ export default function TourismMapPage() {
   const [hoveredListAttraction, setHoveredListAttraction] = useState<PublicAttraction | null>(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
+  const [categoryNavigation, setCategoryNavigation] = useState<HorizontalNavigationState>({
+    canScrollBackward: false,
+    canScrollForward: false,
+    isScrollable: false,
+  })
   const searchInputRef = useRef<HTMLInputElement>(null)
   const tourListRef = useRef<HTMLDivElement>(null)
+  const categoryFiltersRef = useRef<HTMLDivElement>(null)
 
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim() ?? ''
   const mapId = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID?.trim()
@@ -170,6 +183,51 @@ export default function TourismMapPage() {
     return () => mediaQuery.removeEventListener('change', updateCompactViewport)
   }, [])
 
+  function updateCategoryNavigation() {
+    const filters = categoryFiltersRef.current
+    if (!filters) {
+      setCategoryNavigation({
+        canScrollBackward: false,
+        canScrollForward: false,
+        isScrollable: false,
+      })
+      return
+    }
+
+    const maxScrollLeft = filters.scrollWidth - filters.clientWidth
+    const isScrollable = maxScrollLeft > 1
+    setCategoryNavigation({
+      canScrollBackward: isScrollable && filters.scrollLeft > 1,
+      canScrollForward: isScrollable && filters.scrollLeft < maxScrollLeft - 1,
+      isScrollable,
+    })
+  }
+
+  function scrollCategories(direction: -1 | 1) {
+    const filters = categoryFiltersRef.current
+    if (!filters) return
+    filters.scrollBy({
+      left: direction * Math.max(filters.clientWidth * 0.75, 180),
+      behavior: 'smooth',
+    })
+  }
+
+  useEffect(() => {
+    updateCategoryNavigation()
+    const filters = categoryFiltersRef.current
+    if (!filters) return
+
+    const resizeObserver =
+      typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(updateCategoryNavigation)
+    resizeObserver?.observe(filters)
+    window.addEventListener('resize', updateCategoryNavigation)
+
+    return () => {
+      resizeObserver?.disconnect()
+      window.removeEventListener('resize', updateCategoryNavigation)
+    }
+  }, [language, layout, view])
+
   const normalizedQuery = normalizeSearchText(query.trim(), language)
   const filteredTours = useMemo(
     () =>
@@ -200,6 +258,7 @@ export default function TourismMapPage() {
   )
   const activeAttraction =
     filteredAttractions.find((attraction) => attraction.slug === selectedAttraction?.slug) ??
+    filteredAttractions.find((attraction) => attraction.slug === DEFAULT_ATTRACTION_SLUG) ??
     filteredAttractions[0] ??
     null
   const activeTour =
@@ -260,6 +319,9 @@ export default function TourismMapPage() {
     delta: 32,
     onSwipedLeft: () => selectAdjacentAttraction(1),
     onSwipedRight: () => selectAdjacentAttraction(-1),
+    onSwipedUp: () => {
+      if (activeAttraction) setDetailTarget({ type: 'attraction', value: activeAttraction })
+    },
     preventScrollOnSwipe: true,
     swipeDuration: 500,
   })
@@ -355,6 +417,7 @@ export default function TourismMapPage() {
       <section className="tourism-sidebar" aria-labelledby="tourism-title">
         <div className="tourism-intro">
           <h1 id="tourism-title">{t('tourism.title')}</h1>
+          <p>{t('tourism.introduction')}</p>
         </div>
 
         <div className="tourism-controls">
@@ -456,29 +519,57 @@ export default function TourismMapPage() {
           )}
         </div>
 
-        {view === 'attractions' && layout === 'map' && (
-          <div className="tourism-category-filters" aria-label={t('tourism.categoryFilter')}>
+        {view === 'attractions' &&
+          (compactViewport ? layout === 'list' : layout === 'map') && (
+          <div
+            className={`tourism-category-filter-controls${categoryNavigation.isScrollable ? ' has-overflow' : ''}`}
+          >
             <button
               type="button"
-              className={selectedCategory === 'all' ? 'active' : ''}
-              aria-pressed={selectedCategory === 'all'}
-              onClick={() => setSelectedCategory('all')}
+              className="tourism-category-scroll-button"
+              aria-label={t('tourism.scrollCategoriesBackward')}
+              disabled={!categoryNavigation.canScrollBackward}
+              onClick={() => scrollCategories(-1)}
             >
-              <Grid2X2 aria-hidden="true" size={20} />
-              {t('tourism.categories.all')}
+              <ChevronLeft aria-hidden="true" size={18} />
             </button>
-            {ATTRACTION_CATEGORIES.map((category) => (
+            <div
+              ref={categoryFiltersRef}
+              className="tourism-category-filters"
+              aria-label={t('tourism.categoryFilter')}
+              onScroll={updateCategoryNavigation}
+            >
               <button
-                key={category}
                 type="button"
-                className={selectedCategory === category ? 'active' : ''}
-                aria-pressed={selectedCategory === category}
-                onClick={() => setSelectedCategory(category)}
+                className={selectedCategory === 'all' ? 'active' : ''}
+                aria-pressed={selectedCategory === 'all'}
+                onClick={() => setSelectedCategory('all')}
               >
-                <AttractionCategoryIcon category={category} size={20} />
-                {t(`tourism.categories.${category}`)}
+                <Grid2X2 aria-hidden="true" size={20} />
+                {t('tourism.categories.all')}
               </button>
-            ))}
+              {ATTRACTION_CATEGORIES.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  className={selectedCategory === category ? 'active' : ''}
+                  aria-pressed={selectedCategory === category}
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  <AttractionCategoryIcon category={category} size={20} />
+                  {t(`tourism.categories.${category}`)}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              className="tourism-category-scroll-button"
+              aria-label={t('tourism.scrollCategoriesForward')}
+              disabled={!categoryNavigation.canScrollForward}
+              onClick={() => scrollCategories(1)}
+            >
+              <ChevronRight aria-hidden="true" size={18} />
+            </button>
           </div>
         )}
 
@@ -510,7 +601,14 @@ export default function TourismMapPage() {
                       className="tourism-tour-select"
                       type="button"
                       aria-label={`${tour.name} ${t('tourism.selectTour')}`}
-                      onClick={() => scrollToTour(tour.slug)}
+                      onClick={() => {
+                        if (compactViewport && selected) {
+                          setDetailTarget({ type: 'tour', value: tour })
+                          return
+                        }
+
+                        scrollToTour(tour.slug)
+                      }}
                     >
                       {selected && <span aria-hidden="true">✓</span>}
                     </button>
@@ -557,6 +655,7 @@ export default function TourismMapPage() {
                       onClick={() => setDetailTarget({ type: 'tour', value: tour })}
                     >
                       {t('tourism.showTour')}
+                      <ChevronRight aria-hidden="true" size={18} />
                     </button>
                   </article>
                 )
@@ -596,6 +695,7 @@ export default function TourismMapPage() {
                     key={attraction.slug}
                     className={`tourism-attraction-card${image ? ' has-image' : ''}${attraction.slug === activeAttraction?.slug ? ' selected' : ''}${attraction.slug === activeAttraction?.slug && mobileCardAnimation ? ` tourism-card-enter-${mobileCardAnimation}` : ''}`}
                     {...(attraction.slug === activeAttraction?.slug ? attractionSwipeHandlers : {})}
+                    onClick={() => setDetailTarget({ type: 'attraction', value: attraction })}
                     onMouseEnter={() => {
                       if (!compactViewport && layout === 'map') setHoveredListAttraction(attraction)
                     }}
@@ -615,12 +715,21 @@ export default function TourismMapPage() {
                       <div className="tourism-attraction-actions">
                         <button
                           type="button"
-                          onClick={() => setDetailTarget({ type: 'attraction', value: attraction })}
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            setDetailTarget({ type: 'attraction', value: attraction })
+                          }}
                         >
                           {t('tourism.details')}
                           <ChevronRight aria-hidden="true" size={18} />
                         </button>
-                        <a href={attraction.googleMapsUrl} target="_blank" rel="noreferrer">
+                        <a
+                          className="tourism-modal-map-link"
+                          href={attraction.googleMapsUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={(event) => event.stopPropagation()}
+                        >
                           {t('tourism.googleMaps')}
                           <ExternalLink aria-hidden="true" size={17} />
                         </a>
@@ -691,8 +800,19 @@ export default function TourismMapPage() {
             }
             routes={view === 'tours' ? mapRoutes : []}
             visible={layout === 'map'}
+            detailsOpen={detailTarget !== null}
+            showAttractionPopups={!compactViewport}
             onSelectAttraction={(attraction) => {
-              if (compactViewport) selectAttraction(attraction)
+              if (compactViewport) {
+                selectAttraction(attraction)
+                return
+              }
+
+              if (attraction) {
+                setDetailTarget({ type: 'attraction', value: attraction })
+              } else {
+                setHoveredListAttraction(null)
+              }
             }}
             onOpenAttractionDetails={(attraction) =>
               setDetailTarget({ type: 'attraction', value: attraction })
@@ -712,7 +832,11 @@ export default function TourismMapPage() {
             ? (routes.find((route) => route.tourSlug === detailTarget.value.slug) ?? null)
             : null
         }
-        onHide={() => setDetailTarget(null)}
+        immersiveMap={layout === 'map'}
+        onHide={() => {
+          setDetailTarget(null)
+          setHoveredListAttraction(null)
+        }}
       />
     </main>
   )

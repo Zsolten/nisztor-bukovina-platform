@@ -1,5 +1,6 @@
 import { ExternalLink, MapPin } from 'lucide-react'
 import { Modal } from 'react-bootstrap'
+import ModalManager from '@restart/ui/ModalManager'
 import { useTranslation } from 'react-i18next'
 import type { CSSProperties } from 'react'
 import type {
@@ -17,8 +18,11 @@ type TourismDetail =
 interface TourismDetailsModalProps {
   detail: TourismDetail
   route: PublicStarTourRoute | null
+  immersiveMap: boolean
   onHide: () => void
 }
+
+const immersiveMapModalManager = new ModalManager({ handleContainerOverflow: false })
 
 function formatDistance(meters: number | null) {
   return meters === null ? '—' : `${Math.round(meters / 1000)} km`
@@ -31,7 +35,32 @@ function formatDuration(seconds: number | null) {
   return hours > 0 ? `${hours} óra ${minutes} perc` : `${minutes} perc`
 }
 
-export default function TourismDetailsModal({ detail, route, onHide }: TourismDetailsModalProps) {
+function descriptionParagraphs(description: string) {
+  const explicitParagraphs = description
+    .split(/\r?\n+/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
+
+  if (explicitParagraphs.length > 1) return explicitParagraphs
+
+  const sentences = (explicitParagraphs[0] ?? description)
+    .match(/[^.!?]+[.!?]+|[^.!?]+$/g)
+    ?.map((sentence) => sentence.trim())
+    .filter(Boolean)
+
+  if (!sentences || sentences.length <= 3) return explicitParagraphs
+
+  return Array.from({ length: Math.ceil(sentences.length / 3) }, (_, index) =>
+    sentences.slice(index * 3, index * 3 + 3).join(' '),
+  )
+}
+
+export default function TourismDetailsModal({
+  detail,
+  route,
+  immersiveMap,
+  onHide,
+}: TourismDetailsModalProps) {
   const { t } = useTranslation()
   const tour = detail?.type === 'tour' ? detail.value : null
   const attraction = detail?.type === 'attraction' ? detail.value : null
@@ -39,18 +68,43 @@ export default function TourismDetailsModal({ detail, route, onHide }: TourismDe
     tour && route?.routeStatus === 'READY'
       ? buildGoogleMapsDirectionsUrl(route.base, tour.stops)
       : null
+  const headerMapUrl = attraction?.googleMapsUrl ?? directionsUrl
 
   return (
     <Modal
       centered
       className="tourism-details-modal"
+      manager={immersiveMap ? immersiveMapModalManager : undefined}
       onHide={onHide}
+      restoreFocus={false}
       scrollable
       show={detail !== null}
       size="lg"
     >
       <Modal.Header closeButton closeLabel={t('tourism.closeDetails')}>
-        <Modal.Title>{tour?.name ?? attraction?.name}</Modal.Title>
+        <div className="tourism-modal-header-content">
+          <Modal.Title>{tour?.name ?? attraction?.name}</Modal.Title>
+          {headerMapUrl && (
+            <div className="tourism-modal-header-actions">
+              {attraction && (
+                <p className="tourism-attraction-category">
+                  <AttractionCategoryIcon category={categoryForAttraction(attraction)} size={19} />
+                  {t(`tourism.categories.${categoryForAttraction(attraction)}`)}
+                </p>
+              )}
+              <a
+                className="tourism-modal-map-link"
+                aria-label={tour ? t('tourism.openFullRoute') : undefined}
+                href={headerMapUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {t('tourism.googleMaps')}
+                <ExternalLink aria-hidden="true" size={15} />
+              </a>
+            </div>
+          )}
+        </div>
       </Modal.Header>
       <Modal.Body>
         {tour && (
@@ -62,14 +116,18 @@ export default function TourismDetailsModal({ detail, route, onHide }: TourismDe
                 ))}
               </div>
             )}
-            <p className="tourism-modal-summary">{tour.shortDescription}</p>
+            <blockquote className="tourism-modal-quote">„{tour.shortDescription}”</blockquote>
             <dl className="tourism-modal-facts">
               <div>
                 <dt>{t('tourism.distance')}</dt>
                 <dd>{formatDistance(tour.totals.travelDistanceMeters)}</dd>
               </div>
               <div>
-                <dt>{t('tourism.duration')}</dt>
+                <dt>{t('tourism.travelDuration')}</dt>
+                <dd>{formatDuration(tour.totals.travelDurationSeconds)}</dd>
+              </div>
+              <div>
+                <dt>{t('tourism.totalVisitDuration')}</dt>
                 <dd>{formatDuration(tour.totals.totalDurationSeconds)}</dd>
               </div>
               <div>
@@ -77,27 +135,6 @@ export default function TourismDetailsModal({ detail, route, onHide }: TourismDe
                 <dd>{tour.stops.length}</dd>
               </div>
             </dl>
-            <section>
-              <h2>{t('tourism.aboutTour')}</h2>
-              <p className="tourism-modal-description">{tour.detailedDescription}</p>
-            </section>
-            {directionsUrl && (
-              <section className="tourism-tour-directions">
-                <h2>{t('tourism.navigation')}</h2>
-                <div className="tourism-tour-directions-links">
-                  <a
-                    className="tourism-tour-directions-link"
-                    href={directionsUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <MapPin aria-hidden="true" size={17} />
-                    {t('tourism.openFullRoute')}
-                    <ExternalLink aria-hidden="true" size={15} />
-                  </a>
-                </div>
-              </section>
-            )}
             <section className="tourism-modal-stops">
               <h2>{t('tourism.tourStops')}</h2>
               <ol style={{ '--tour-color': tour.mapColor } as CSSProperties}>
@@ -117,16 +154,17 @@ export default function TourismDetailsModal({ detail, route, onHide }: TourismDe
                 ))}
               </ol>
             </section>
+            <section className="tourism-modal-detailed-description">
+              <h2>{t('tourism.detailedDescription')}</h2>
+              {descriptionParagraphs(tour.detailedDescription).map((paragraph, index) => (
+                <p key={`${tour.slug}-${index}`}>{paragraph}</p>
+              ))}
+            </section>
           </article>
         )}
         {attraction && (
           <article className="tourism-modal-content tourism-modal-attraction">
-            <p className="tourism-attraction-category">
-              <AttractionCategoryIcon category={categoryForAttraction(attraction)} size={19} />
-              {t(`tourism.categories.${categoryForAttraction(attraction)}`)}
-            </p>
-            <p className="tourism-modal-summary">{attraction.shortDescription}</p>
-            <p className="tourism-modal-description">{attraction.detailedDescription}</p>
+            <blockquote className="tourism-modal-quote">{attraction.shortDescription}</blockquote>
             {attraction.admissionInformation && (
               <section>
                 <h2>{t('tourism.admissionInformation')}</h2>
@@ -139,15 +177,12 @@ export default function TourismDetailsModal({ detail, route, onHide }: TourismDe
                 <p>{attraction.practicalInformation}</p>
               </section>
             )}
-            <a
-              className="tourism-modal-map-link"
-              href={attraction.googleMapsUrl}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {t('tourism.googleMaps')}
-              <ExternalLink aria-hidden="true" size={17} />
-            </a>
+            <section className="tourism-modal-detailed-description">
+              <h2>{t('tourism.detailedDescription')}</h2>
+              {descriptionParagraphs(attraction.detailedDescription).map((paragraph, index) => (
+                <p key={`${attraction.slug}-${index}`}>{paragraph}</p>
+              ))}
+            </section>
           </article>
         )}
       </Modal.Body>

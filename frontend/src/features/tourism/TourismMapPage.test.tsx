@@ -10,7 +10,8 @@ const attractions = [
     slug: 'deva-vara',
     name: 'Déva vára',
     shortDescription: 'Középkori várrom a Maros völgye fölött.',
-    detailedDescription: 'Déva várának részletes története.',
+    detailedDescription:
+      'Déva várának részletes története.\n\nA vár történetének második bekezdése.',
     admissionInformation: '9 lej/fő',
     practicalInformation: null,
     latitude: 45.8763,
@@ -33,6 +34,20 @@ const attractions = [
     collectionSlugs: ['hatszegi-medence'],
   },
 ]
+
+const localHeritageHouse = {
+  slug: 'csernakereszturi-tajhaz',
+  name: 'Csernakeresztúri tájház',
+  shortDescription: 'Bukovinai székely tárgyakat bemutató helyi tájház.',
+  detailedDescription: 'A tájház a helyi közösség emlékeit őrzi.',
+  admissionInformation: 'Ingyenes.',
+  practicalInformation: null,
+  latitude: 45.8233,
+  longitude: 22.9309,
+  googleMapsUrl: 'https://maps.google.com/?q=45.8233,22.9309',
+  recommendedVisitDurationMinutes: 30,
+  collectionSlugs: ['maros-mente'],
+}
 
 const tours = [
   {
@@ -171,11 +186,48 @@ describe('TourismMapPage', () => {
     expect(screen.getByText('Déva vára')).toBeVisible()
     expect(screen.queryByText('Páring-hegység')).not.toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'Részletek' }))
-    expect(await screen.findByRole('dialog')).toHaveTextContent('Déva várának részletes története.')
+    const attractionCard = screen.getByText('Déva vára').closest('article')
+    expect(attractionCard).not.toBeNull()
+    await user.click(attractionCard!)
+    const dialog = await screen.findByRole('dialog')
+    const summary = dialog.querySelector('.tourism-modal-quote')
+    const admissionHeading = screen.getByRole('heading', { name: 'Belépési információk' })
+    const detailedDescriptionHeading = screen.getByRole('heading', { name: 'Részletes leírás' })
+
+    expect(summary).toHaveTextContent('Középkori várrom a Maros völgye fölött.')
+    expect(summary?.tagName).toBe('BLOCKQUOTE')
+    expect(dialog.querySelector('.modal-header .tourism-attraction-category')).toHaveTextContent(
+      'Vár',
+    )
+    expect(dialog.querySelector('.modal-header .tourism-modal-map-link')).toHaveAttribute(
+      'href',
+      'https://maps.google.com/?q=45.8763,22.9008',
+    )
+    expect(summary?.compareDocumentPosition(admissionHeading)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    )
+    expect(admissionHeading.compareDocumentPosition(detailedDescriptionHeading)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    )
+    expect(dialog.querySelectorAll('.tourism-modal-detailed-description p')).toHaveLength(2)
+
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   })
 
-  it('shows all attractions without category controls in the mobile list view', async () => {
+  it('uses the Csernakeresztúri tájház as the initial attraction when available', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input)
+        if (url.endsWith('/routes')) return Promise.resolve(okJson([route]))
+        if (url.includes('/star-tours')) return Promise.resolve(okJson(tours))
+        if (url.includes('/attractions')) {
+          return Promise.resolve(okJson([...attractions, localHeritageHouse]))
+        }
+        return Promise.resolve(okJson([]))
+      }),
+    )
     const user = userEvent.setup()
     const router = createMemoryRouter(appRoutes, { initialEntries: ['/hu/star-tours'] })
     render(
@@ -185,14 +237,66 @@ describe('TourismMapPage', () => {
     )
 
     await user.click(await screen.findByRole('tab', { name: 'Látnivalók' }))
-    await user.click(screen.getByRole('button', { name: 'Vár' }))
-    expect(screen.queryByText('Páring-hegység')).not.toBeInTheDocument()
+    expect(document.querySelector('.tourism-attraction-card.selected')).toHaveTextContent(
+      'Csernakeresztúri tájház',
+    )
+  })
+
+  it('shows category controls only in the mobile attraction list view', async () => {
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({
+        matches: true,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })),
+    )
+    const user = userEvent.setup()
+    const router = createMemoryRouter(appRoutes, { initialEntries: ['/hu/star-tours'] })
+    render(
+      <AppProviders>
+        <RouterProvider router={router} />
+      </AppProviders>,
+    )
+
+    await user.click(await screen.findByRole('tab', { name: 'Látnivalók' }))
+    expect(screen.queryByRole('button', { name: 'Vár' })).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Lista nézet' }))
 
     expect(screen.getByText('Déva vára')).toBeVisible()
     expect(screen.getByText('Páring-hegység')).toBeVisible()
-    expect(screen.queryByRole('button', { name: 'Vár' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Vár' }))
+    expect(screen.queryByText('Páring-hegység')).not.toBeInTheDocument()
+  })
+
+  it('scrolls desktop category filters with the forward control', async () => {
+    const user = userEvent.setup()
+    const router = createMemoryRouter(appRoutes, { initialEntries: ['/hu/star-tours'] })
+    render(
+      <AppProviders>
+        <RouterProvider router={router} />
+      </AppProviders>,
+    )
+
+    await user.click(await screen.findByRole('tab', { name: 'Látnivalók' }))
+    const filters = screen.getByLabelText('Látnivaló-kategóriák')
+    const scrollBy = vi.fn()
+    Object.defineProperties(filters, {
+      clientWidth: { configurable: true, value: 160 },
+      scrollLeft: { configurable: true, value: 0, writable: true },
+      scrollWidth: { configurable: true, value: 480 },
+    })
+    Object.defineProperty(filters, 'scrollBy', { configurable: true, value: scrollBy })
+
+    fireEvent.scroll(filters)
+
+    const forwardButton = await screen.findByRole('button', { name: 'További kategóriák' })
+    expect(forwardButton).toBeEnabled()
+    await user.click(forwardButton)
+    expect(scrollBy).toHaveBeenCalledWith({ behavior: 'smooth', left: 180 })
   })
 
   it('stores favorites without persisting full tour content', async () => {
@@ -351,12 +455,67 @@ describe('TourismMapPage', () => {
     fireEvent.touchMove(card!, { touches: [{ clientX: 180, clientY: 240 }] })
     fireEvent.touchEnd(card!, { changedTouches: [{ clientX: 180, clientY: 240 }] })
 
-    expect(await screen.findByRole('dialog')).toHaveTextContent('A túra részletes bemutatása.')
-    expect(
-      screen.getByRole('link', { name: 'Teljes túra megnyitása Google Mapsben' }),
-    ).toHaveAttribute('href', expect.stringContaining('api=1'))
-    expect(
-      screen.getByRole('link', { name: 'Teljes túra megnyitása Google Mapsben' }),
-    ).toHaveAttribute('target', '_blank')
+    const dialog = await screen.findByRole('dialog')
+    const summary = dialog.querySelector('.tourism-modal-quote')
+    const stopsHeading = screen.getByRole('heading', { name: 'Megállók' })
+    const detailedDescriptionHeading = screen.getByRole('heading', { name: 'Részletes leírás' })
+
+    expect(summary).toHaveTextContent('Egynapos történelmi körút.')
+    expect(summary?.tagName).toBe('BLOCKQUOTE')
+    expect(summary?.compareDocumentPosition(stopsHeading)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+    expect(stopsHeading.compareDocumentPosition(detailedDescriptionHeading)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    )
+    expect(screen.getByText('Utazási idő').parentElement).toHaveTextContent('3 óra 20 perc')
+    expect(screen.getByText('Teljes látogatási idő').parentElement).toHaveTextContent(
+      '4 óra 50 perc',
+    )
+    expect(dialog).toHaveTextContent('A túra részletes bemutatása.')
+    const directionsLink = screen.getByRole('link', {
+      name: 'Teljes túra megnyitása Google Mapsben',
+    })
+    expect(directionsLink.closest('.modal-header')).not.toBeNull()
+    expect(directionsLink).toHaveTextContent('Google Térkép')
+    expect(directionsLink).toHaveAttribute('href', expect.stringContaining('api=1'))
+    expect(directionsLink).toHaveAttribute('target', '_blank')
+  })
+
+  it('opens the mobile bottom cards from their main surface and keeps Maps separate', async () => {
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({
+        matches: true,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })),
+    )
+    const user = userEvent.setup()
+    const router = createMemoryRouter(appRoutes, { initialEntries: ['/hu/star-tours'] })
+    render(
+      <AppProviders>
+        <RouterProvider router={router} />
+      </AppProviders>,
+    )
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Maros mente és Gyulafehérvár kiválasztása',
+      }),
+    )
+    expect(await screen.findByRole('dialog')).toHaveTextContent('Egynapos történelmi körút.')
+
+    await user.click(screen.getByRole('button', { name: 'Részletek bezárása' }))
+    await user.click(screen.getByRole('tab', { name: 'Látnivalók' }))
+
+    const attractionCard = screen.getByText('Déva vára').closest('article')
+    expect(attractionCard).not.toBeNull()
+    expect(attractionCard?.querySelector('a.tourism-modal-map-link')).toHaveTextContent(
+      'Google Térkép',
+    )
+
+    await user.click(attractionCard!)
+    expect(await screen.findByRole('dialog')).toHaveTextContent('Déva várának részletes története.')
   })
 })

@@ -73,15 +73,8 @@ export default function LanguageLayout() {
             to={`/${lang}`}
             aria-label={t('app.navigation.home')}
           >
-            {isTourismPage && (
-              <img
-                className="brand-logo"
-                src="/images/logo/logo-anniversary.png"
-                alt="Nisztor–Bukovina 30 év"
-              />
-            )}
             <span>
-              <strong>{isTourismPage ? t('tourism.brandName') : t('app.title')}</strong>
+              <strong>{t('app.title')}</strong>
               <small>{t('app.location')}</small>
             </span>
           </Navbar.Brand>
@@ -102,7 +95,12 @@ export default function LanguageLayout() {
             </Offcanvas.Header>
             <Offcanvas.Body>
               <Nav className="site-navigation ms-auto">
-                <Nav.Link as={Link} to={`/${lang}`} onClick={() => setNavigationOpen(false)}>
+                <Nav.Link
+                  as={Link}
+                  active={!isTourismPage}
+                  to={`/${lang}`}
+                  onClick={() => setNavigationOpen(false)}
+                >
                   {t('app.navigation.guesthouses')}
                 </Nav.Link>
                 <Nav.Link
