@@ -55,6 +55,24 @@ public class StarTourRouteService {
     return calculateIfNeeded(tourId, tourSlug, definition, false, clientIp);
   }
 
+  /**
+   * Returns default routes that have already been calculated for published tours.
+   *
+   * <p>This deliberately never invokes Google Routes: loading the public map must not create a
+   * billable request for every visible tour.
+   */
+  public List<StarTourRouteResponse> listPublicCachedRoutes() {
+    return jdbc
+        .sql(
+            "SELECT id, slug FROM star_tour WHERE published = TRUE AND active = TRUE ORDER BY slug")
+        .query((rs, row) -> new PublishedTour(rs.getObject("id", UUID.class), rs.getString("slug")))
+        .list()
+        .stream()
+        .map(this::cachedDefaultRouteFor)
+        .flatMap(java.util.Optional::stream)
+        .toList();
+  }
+
   /** Recalculates the required-stop route after an administrator saves a tour. */
   public RouteStatus recalculateForAdmin(UUID tourId) {
     ensureTourExists(tourId);
@@ -227,6 +245,22 @@ public class StarTourRouteService {
         .single()) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "STAR_TOUR_NOT_FOUND");
     }
+  }
+
+  private java.util.Optional<StarTourRouteResponse> cachedDefaultRouteFor(PublishedTour tour) {
+    RouteDefinition definition = definition(tour.id(), List.of());
+    if (definition.stops().isEmpty()) {
+      return java.util.Optional.empty();
+    }
+    Variant variant = findVariant(tour.id(), definition.fingerprint());
+    if (variant == null || !"SUCCESS".equals(variant.status())) {
+      return java.util.Optional.empty();
+    }
+    List<RouteLeg> legs = storedLegs(variant.id(), definition.stops().size() + 1);
+    return legs == null
+        ? java.util.Optional.empty()
+        : java.util.Optional.of(
+            response(tour.slug(), definition, RouteStatus.READY, legs, true, null, null));
   }
 
   private RouteDefinition definition(UUID tourId, List<String> requestedOptionalSlugs) {
@@ -591,6 +625,8 @@ public class StarTourRouteService {
       OffsetDateTime calculatedAt,
       String failureReason,
       OffsetDateTime retryAfter) {}
+
+  private record PublishedTour(UUID id, String slug) {}
 
   private record TourStop(
       UUID id,

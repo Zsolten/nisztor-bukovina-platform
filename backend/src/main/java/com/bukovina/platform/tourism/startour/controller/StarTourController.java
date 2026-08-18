@@ -78,6 +78,11 @@ public class StarTourController {
     return service.listPublic(lang);
   }
 
+  @GetMapping("/api/tourism/star-tours/routes")
+  List<StarTourRouteResponse> listPublicCachedRoutes() {
+    return routeService.listPublicCachedRoutes();
+  }
+
   @GetMapping("/api/tourism/star-tours/{slug}/route")
   StarTourRouteResponse getPublicRoute(
       @PathVariable String slug,
