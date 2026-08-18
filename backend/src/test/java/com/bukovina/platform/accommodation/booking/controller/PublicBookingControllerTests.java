@@ -26,7 +26,14 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-@SpringBootTest(properties = "DB_PASSWORD=test-password")
+@SpringBootTest(
+    properties = {
+      "DB_PASSWORD=test-password",
+      "booking.notification.enabled=true",
+      "booking.notification.token-encryption-key=MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=",
+      "booking.notification.from-address=sender@example.com",
+      "booking.notification.worker-delay=PT1H"
+    })
 @AutoConfigureMockMvc
 @Import(PostgreSqlTestContainerConfiguration.class)
 @Transactional
@@ -52,6 +59,8 @@ class PublicBookingControllerTests {
         .andExpect(jsonPath("$.selectedRoomCount").value(1))
         .andExpect(jsonPath("$.selectedCapacity").value(2))
         .andExpect(jsonPath("$.priceBreakdown.accommodationTotal").value(520.00))
+        .andExpect(jsonPath("$.priceBreakdown.adultAccommodationTotal").value(520.00))
+        .andExpect(jsonPath("$.priceBreakdown.childAccommodationTotal").value(0.00))
         .andExpect(jsonPath("$.priceBreakdown.accommodationTaxRate").doesNotExist())
         .andExpect(jsonPath("$.priceBreakdown.cityTaxAmount").doesNotExist())
         .andExpect(jsonPath("$.priceBreakdown.breakfastTotal").value(180.00))
@@ -73,6 +82,8 @@ class PublicBookingControllerTests {
                 .content(quoteJson(guesthouseId, roomTypeId, 2, 1, 1, 2, 0, 0)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.priceBreakdown.accommodationTotal").value(715.00))
+        .andExpect(jsonPath("$.priceBreakdown.adultAccommodationTotal").value(520.00))
+        .andExpect(jsonPath("$.priceBreakdown.childAccommodationTotal").value(195.00))
         .andExpect(jsonPath("$.priceBreakdown.totalPayable").value(715.00))
         .andExpect(jsonPath("$.lines[1].code").value("children_under_10_accommodation"))
         .andExpect(jsonPath("$.lines[1].unitAmount").value(97.50))
@@ -121,12 +132,12 @@ class PublicBookingControllerTests {
 
     expectError(quoteJson(guesthouseId, roomTypeId, 0, 0, 0, 1, 0, 0), "TOTAL_GUESTS_REQUIRED");
     expectError(quoteJson(guesthouseId, roomTypeId, -1, 0, 0, 1, 0, 0), "NEGATIVE_GUEST_COUNT");
-    expectError(quoteJson(guesthouseId, roomTypeId, 20, 0, 0, 6, 0, 0), "LARGE_GROUP_OFFLINE_ONLY");
+    expectError(quoteJson(guesthouseId, roomTypeId, 31, 0, 0, 6, 0, 0), "LARGE_GROUP_OFFLINE_ONLY");
 
     UUID triple = roomTypeId("bukovina-panzio", "triple");
-    UUID quadruple = roomTypeId("bukovina-panzio", "quadruple");
+    jdbcTemplate.update("UPDATE room_type SET quantity = 6 WHERE id = ?", triple);
     String boundaryRequest =
-        quoteJson(guesthouseId, roomTypeId, 19, 0, 0, 6, 0, 0)
+        quoteJson(guesthouseId, roomTypeId, 30, 0, 0, 6, 0, 0)
             .replace(
                 "{\"roomTypeId\": \"" + roomTypeId + "\", \"quantity\": 6}",
                 "{\"roomTypeId\": \""
@@ -134,17 +145,14 @@ class PublicBookingControllerTests {
                     + "\", \"quantity\": 6},"
                     + "{\"roomTypeId\": \""
                     + triple
-                    + "\", \"quantity\": 1},"
-                    + "{\"roomTypeId\": \""
-                    + quadruple
-                    + "\", \"quantity\": 1}");
+                    + "\", \"quantity\": 6}");
     mockMvc
         .perform(
             post("/api/booking-quotes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(boundaryRequest))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.totalGuests").value(19));
+        .andExpect(jsonPath("$.totalGuests").value(30));
   }
 
   @Test
@@ -155,7 +163,7 @@ class PublicBookingControllerTests {
     expectError(quoteJson(guesthouseId, doubleRoom, 2, 0, 0, 0, 0, 0), "INVALID_ROOM_QUANTITY");
     expectError(quoteJson(guesthouseId, doubleRoom, 2, 0, 0, -1, 0, 0), "INVALID_ROOM_QUANTITY");
     expectError(
-        quoteJson(guesthouseId, doubleRoom, 2, 0, 0, 7, 0, 0), "ROOM_QUANTITY_EXCEEDS_STOCK");
+        quoteJson(guesthouseId, doubleRoom, 2, 0, 0, 16, 0, 0), "ROOM_QUANTITY_EXCEEDS_STOCK");
     expectError(
         quoteJson(guesthouseId, doubleRoom, 3, 0, 0, 1, 0, 0), "INSUFFICIENT_ROOM_CAPACITY");
     expectError(quoteJson(guesthouseId, doubleRoom, 1, 0, 0, 2, 0, 0), "TOO_MANY_ROOMS");
@@ -350,6 +358,7 @@ class PublicBookingControllerTests {
   void anonymouslyPersistsCompleteReceivedRequestAndLiteralNoteAtomically() throws Exception {
     UUID guesthouseId = guesthouseId("bukovina-panzio");
     UUID roomTypeId = roomTypeId("bukovina-panzio", "double");
+    addNotificationRecipient(guesthouseId, "ADMIN@EXAMPLE.COM");
 
     mockMvc
         .perform(
@@ -372,6 +381,22 @@ class PublicBookingControllerTests {
     assertEquals(1, count("booking_request"));
     assertEquals(1, count("booking_room_selection"));
     assertEquals(1, count("booking_status_history"));
+    assertEquals(3, count("notification_outbox"));
+    assertEquals(
+        1,
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM notification_outbox WHERE notification_type = 'BOOKING_RECEIVED_GUEST' AND recipient = 'guest@example.com' AND encrypted_management_token IS NOT NULL",
+            Integer.class));
+    assertEquals(
+        1,
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM notification_outbox WHERE notification_type = 'BOOKING_RECEIVED_ADMIN' AND recipient = 'admin@example.com'",
+            Integer.class));
+    assertEquals(
+        1,
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM notification_outbox WHERE notification_type = 'BOOKING_RECEIVED_ADMIN' AND recipient = 'nistorzsolt5@gmail.com'",
+            Integer.class));
     assertEquals(
         "RECEIVED",
         jdbcTemplate.queryForObject("SELECT status FROM booking_request", String.class));
@@ -398,6 +423,7 @@ class PublicBookingControllerTests {
     assertEquals(
         first.getResponse().getContentAsString(), second.getResponse().getContentAsString());
     assertEquals(1, count("booking_request"));
+    assertEquals(2, count("notification_outbox"));
 
     String changedBody = body.replace("  Teszt   Vendeg  ", "Masik Vendeg");
     mockMvc
@@ -409,6 +435,39 @@ class PublicBookingControllerTests {
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.code").value("IDEMPOTENCY_KEY_REUSED"));
     assertEquals(1, count("booking_request"));
+    assertEquals(2, count("notification_outbox"));
+  }
+
+  @Test
+  void snapshotsGuesthouseRecipientsForNewBookingsAndAllowsSharedAddresses() throws Exception {
+    UUID bukovinaId = guesthouseId("bukovina-panzio");
+    UUID nisztorId = guesthouseId("nisztor-panzio");
+    UUID roomTypeId = roomTypeId("bukovina-panzio", "double");
+    addNotificationRecipient(bukovinaId, "shared@example.com");
+    addNotificationRecipient(nisztorId, "shared@example.com");
+
+    submit(validSubmitJson(bukovinaId, roomTypeId, "700.00"), "recipient-snapshot-one");
+    jdbcTemplate.update(
+        "UPDATE guesthouse_notification_recipient SET active = FALSE WHERE guesthouse_id = ?",
+        bukovinaId);
+    addNotificationRecipient(bukovinaId, "new-admin@example.com");
+    submit(validSubmitJson(bukovinaId, roomTypeId, "700.00"), "recipient-snapshot-two");
+
+    assertEquals(
+        1,
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM notification_outbox WHERE notification_type = 'BOOKING_RECEIVED_ADMIN' AND recipient = 'shared@example.com'",
+            Integer.class));
+    assertEquals(
+        1,
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM notification_outbox WHERE notification_type = 'BOOKING_RECEIVED_ADMIN' AND recipient = 'new-admin@example.com'",
+            Integer.class));
+    assertEquals(
+        2,
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM guesthouse_notification_recipient WHERE email = 'shared@example.com'",
+            Integer.class));
   }
 
   @Test
@@ -631,6 +690,14 @@ class PublicBookingControllerTests {
         active,
         guesthouseSlug,
         code);
+  }
+
+  private void addNotificationRecipient(UUID guesthouseId, String email) {
+    jdbcTemplate.update(
+        "INSERT INTO guesthouse_notification_recipient (id, guesthouse_id, email) VALUES (?, ?, LOWER(?))",
+        UUID.randomUUID(),
+        guesthouseId,
+        email);
   }
 
   private int count(String table) {

@@ -31,6 +31,8 @@ export interface BookingQuote {
   }>
   priceBreakdown: {
     accommodationTotal: number
+    adultAccommodationTotal: number
+    childAccommodationTotal: number
     singleRoomSurcharge: number
     breakfastTotal: number
     dinnerTotal: number
@@ -80,6 +82,43 @@ export interface BookingRequestCreated {
   totalGuests: number
   totalPayable: number
   requestOnly: true
+}
+
+export interface BookingManagementSummary {
+  reference: string
+  status: 'RECEIVED' | 'UNDER_REVIEW' | 'CONFIRMED' | 'REJECTED' | 'CANCELLED'
+  guesthouse: {
+    name: string
+    contacts: Array<{
+      type: 'PHONE' | 'EMAIL'
+      value: string
+      label: string | null
+      preferred: boolean
+    }>
+  }
+  stay: {
+    checkInDate: string
+    checkOutDate: string
+    nights: number
+  }
+  guests: {
+    adults: number
+    childrenAge3to10: number
+    childrenAge0to3: number
+  }
+  services: {
+    breakfastParticipants: number
+    dinnerParticipants: number
+  }
+  rooms: Array<{ name: string; quantity: number }>
+  price: {
+    accommodationTotal: number
+    breakfastTotal: number
+    dinnerTotal: number
+    totalPayable: number
+    currency: 'RON'
+  }
+  cancellationAllowed: boolean
 }
 
 async function bookingApiError(response: Response): Promise<BookingApiError> {
@@ -138,4 +177,21 @@ export function submitBookingRequest(
     },
     signal,
   })
+}
+
+export function fetchBookingManagementSummary(token: string, language: string) {
+  return getJson<BookingManagementSummary>(
+    `/api/booking-management/${encodeURIComponent(token)}?lang=${encodeURIComponent(language)}`,
+  )
+}
+
+export async function cancelManagedBooking(token: string) {
+  const response = await fetch(
+    `/api/booking-management/${encodeURIComponent(token)}/cancellation`,
+    {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+    },
+  )
+  if (!response.ok) throw await bookingApiError(response)
 }

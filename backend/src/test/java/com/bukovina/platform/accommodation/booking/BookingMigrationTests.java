@@ -23,11 +23,45 @@ class BookingMigrationTests {
     assertTrue(tableExists("booking_request"));
     assertTrue(tableExists("booking_room_selection"));
     assertTrue(tableExists("booking_status_history"));
+    assertTrue(tableExists("guesthouse_notification_recipient"));
+    assertTrue(tableExists("notification_outbox"));
 
     assertTrue(foreignKeyExists("booking_request", "guesthouse"));
     assertTrue(foreignKeyExists("booking_room_selection", "booking_request"));
     assertTrue(foreignKeyExists("booking_room_selection", "room_type"));
     assertTrue(foreignKeyExists("booking_status_history", "booking_request"));
+    assertTrue(foreignKeyExists("guesthouse_notification_recipient", "guesthouse"));
+    assertTrue(foreignKeyExists("notification_outbox", "booking_request"));
+  }
+
+  @Test
+  void supportsGuestDecisionNotificationsAndTheirOptionalMessage() {
+    assertTrue(columnExists("notification_outbox", "guest_message"));
+    String constraints = constraintsFor("notification_outbox");
+    assertTrue(constraints.contains("BOOKING_CONFIRMED_GUEST"));
+    assertTrue(constraints.contains("BOOKING_REJECTED_GUEST"));
+  }
+
+  @Test
+  void configuresTheDefaultAdminRecipientForBothGuesthouses() {
+    Integer recipientCount =
+        jdbcTemplate.queryForObject(
+            """
+            SELECT COUNT(*)
+            FROM guesthouse_notification_recipient recipient
+            JOIN guesthouse ON guesthouse.id = recipient.guesthouse_id
+            WHERE LOWER(recipient.email) = 'nistorzsolt5@gmail.com'
+              AND recipient.active = TRUE
+              AND guesthouse.slug IN ('nisztor-panzio', 'bukovina-panzio')
+            """,
+            Integer.class);
+
+    assertEquals(2, recipientCount);
+  }
+
+  @Test
+  void storesExplicitManagementTokenRevocation() {
+    assertTrue(columnExists("booking_request", "management_token_revoked_at"));
   }
 
   @Test
@@ -43,14 +77,14 @@ class BookingMigrationTests {
   }
 
   @Test
-  void restrictsStatusToBook009ValuesWithoutEmailVerificationState() {
+  void supportsTheAdministratorReviewWorkflowWithoutEmailVerificationState() {
     String constraints =
         constraintsFor("booking_request") + constraintsFor("booking_status_history");
 
-    for (String status : List.of("RECEIVED", "CONFIRMED", "REJECTED", "CANCELLED")) {
+    for (String status :
+        List.of("RECEIVED", "UNDER_REVIEW", "CONFIRMED", "REJECTED", "CANCELLED")) {
       assertTrue(constraints.contains(status));
     }
-    assertFalse(constraints.contains("UNDER_REVIEW"));
     assertFalse(constraints.contains("PENDING_EMAIL_VERIFICATION"));
   }
 
@@ -73,6 +107,8 @@ class BookingMigrationTests {
   @Test
   void storesPriceSnapshotWithoutTaxInformation() {
     assertTrue(columnExists("booking_request", "accommodation_total"));
+    assertTrue(columnExists("booking_request", "adult_accommodation_total"));
+    assertTrue(columnExists("booking_request", "child_accommodation_total"));
     for (String columnName :
         List.of(
             "accommodation_tax_rate",

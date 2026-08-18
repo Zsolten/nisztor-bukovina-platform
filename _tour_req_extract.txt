@@ -1,0 +1,49 @@
+FR-TOUR-001 – Önálló csillagtúra-modul Prioritás:  P0 A csillagtúrák a weboldal önálló tartalmi részét képezik
+
+---
+
+FR-TOUR-002 – Csillagtúra-adatlap Prioritás:  P0 A rendszer körülbelül tíz előre megtervezett csillagtúrát kezel
+
+---
+
+FR-TOUR-003 – Túrapontok idővonala Prioritás:  P0 Egy csillagtúra több, sorrendbe rendezett programpontból áll
+
+---
+
+FR-TOUR-004 – Tevékenységcímkék Prioritás:  P0 A túrákhoz és programpontokhoz több címke rendelhető
+
+---
+
+FR-TOUR-005 – Programpont részletes leírása Prioritás:  P0 A látogató a túra során bármikor megnyithatja egy programpont részletes leírását
+
+---
+
+FR-FAV-001 – Túra kedvencként jelölése Prioritás:  P0 A látogató bejelentkezés nélkül kedvencként jelölhet meg egy csillagtúrát
+
+---
+
+FR-FAV-002 – Kedvencek tárolási formátuma Prioritás:  P0 A kedvenc túrákat a frontendnek JSON-formátumban kell tárolnia a  localStorage  tárhelyen
+
+---
+
+FR-FAV-003 – Kedvencek tartóssága Prioritás:  P0 A kedvenc túráknak az oldal frissítése és a böngésző újraindítása után is meg kell maradniuk
+
+---
+
+FR-FAV-004 – Kedvenc eltávolítása Prioritás:  P0 A látogató eltávolíthat egy korábban kedvencnek jelölt túrát
+
+---
+
+FR-FAV-005 – Kedvenc túrák oldala Prioritás:  P0 A rendszernek külön oldalt kell biztosítania a kedvencnek jelölt túrák megtekintésére
+
+---
+
+FR-FAV-006 – Kedvencek törlése Prioritás:  P1 A látogató egy művelettel törölheti a teljes kedvenclistát
+
+---
+
+FR-FAV-007 – Kedvencek technikai korlátai Prioritás:  P0 A rendszernek egyértelműen kezelnie kell a  localStorage  használatából eredő korlátokat
+
+---
+
+FR-ALT-001 – Alternatív programpontok előkészítése Prioritás:  P2 Egy túrapont megjelölhető cserélhetőként, és alternatív tevékenységek rendelhetők hozzá

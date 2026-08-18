@@ -57,6 +57,8 @@ class BookingRequestPersistenceTests {
             "Csendes szobát szeretnénk.",
             new BookingPriceBreakdown(
                 new BigDecimal("1170.00"),
+                new BigDecimal("780.00"),
+                new BigDecimal("390.00"),
                 new BigDecimal("0.00"),
                 new BigDecimal("0.00"),
                 new BigDecimal("0.00"),
@@ -77,6 +79,10 @@ class BookingRequestPersistenceTests {
     assertEquals("NB-0123456789ABCDEF", reloaded.getPublicReference());
     assertEquals(BookingStatus.RECEIVED, reloaded.getStatus());
     assertEquals(new BigDecimal("1170.00"), reloaded.getPriceBreakdown().getAccommodationTotal());
+    assertEquals(
+        new BigDecimal("780.00"), reloaded.getPriceBreakdown().getAdultAccommodationTotal());
+    assertEquals(
+        new BigDecimal("390.00"), reloaded.getPriceBreakdown().getChildAccommodationTotal());
     assertEquals(new BigDecimal("1170.00"), reloaded.getPriceBreakdown().getTotalPayable());
     assertEquals(1, reloaded.getRoomSelections().size());
     assertEquals(roomTypeId, reloaded.getRoomSelections().getFirst().getRoomTypeId());

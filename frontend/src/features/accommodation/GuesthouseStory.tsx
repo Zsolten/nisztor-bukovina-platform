@@ -5,9 +5,16 @@ import BookingPlaceholderButton from './BookingPlaceholderButton'
 interface GuesthouseStoryProps {
   description: string
   images: GuesthouseImage[]
+  eyebrow: string
+  title: string
 }
 
-export default function GuesthouseStory({ description, images }: GuesthouseStoryProps) {
+export default function GuesthouseStory({
+  description,
+  images,
+  eyebrow,
+  title,
+}: GuesthouseStoryProps) {
   const { t } = useTranslation()
 
   return (
@@ -21,8 +28,8 @@ export default function GuesthouseStory({ description, images }: GuesthouseStory
       </div>
       <div className="editorial-copy">
         <p className="section-index">01</p>
-        <p className="eyebrow">{t('guesthouses.welcome')}</p>
-        <h2 id="story-heading">{t('guesthouses.villageTitle')}</h2>
+        <p className="eyebrow">{eyebrow}</p>
+        <h2 id="story-heading">{title}</h2>
         <p>{description}</p>
         <BookingPlaceholderButton />
       </div>

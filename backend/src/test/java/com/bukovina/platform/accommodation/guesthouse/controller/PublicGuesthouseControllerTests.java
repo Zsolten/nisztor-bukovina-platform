@@ -63,8 +63,8 @@ class PublicGuesthouseControllerTests {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Nisztor Guesthouse"))
         .andExpect(jsonPath("$.history.title").value("Bukovina Szekler heritage in Cristur"))
-        .andExpect(jsonPath("$.roomTypes.length()").value(3))
-        .andExpect(jsonPath("$.roomTypes[0].quantity").value(3))
+        .andExpect(jsonPath("$.roomTypes.length()").value(4))
+        .andExpect(jsonPath("$.roomTypes[0].quantity").value(15))
         .andExpect(jsonPath("$.amenities.length()").value(23))
         .andExpect(jsonPath("$.pricing.currency").value("RON"))
         .andExpect(jsonPath("$.pricing.items[0].amount").value(130))
@@ -129,7 +129,7 @@ class PublicGuesthouseControllerTests {
     mockMvc
         .perform(get("/api/guesthouses/nisztor-panzio").queryParam("lang", "hu"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.roomTypes.length()").value(2))
+        .andExpect(jsonPath("$.roomTypes.length()").value(3))
         .andExpect(jsonPath("$.amenities.length()").value(22))
         .andExpect(jsonPath("$.pricing.items.length()").value(6));
   }

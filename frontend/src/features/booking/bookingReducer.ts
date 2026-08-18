@@ -56,20 +56,30 @@ export type BookingFlowAction =
 
 export const BOOKING_FLOW_STORAGE_KEY = 'bukovina-booking-flow'
 
+type PersistedBookingFlowState = Omit<
+  BookingFlowState,
+  'contact' | 'preferredLanguageSelectedByVisitor'
+>
+
 export function restoreBookingFlowState(): BookingFlowState {
   try {
     const saved = window.sessionStorage.getItem(BOOKING_FLOW_STORAGE_KEY)
     if (!saved) return initialBookingFlowState
 
-    const parsed = JSON.parse(saved) as Partial<BookingFlowState>
+    const parsed = JSON.parse(saved) as Partial<PersistedBookingFlowState>
     return {
       ...initialBookingFlowState,
-      ...parsed,
+      guesthouseId: parsed.guesthouseId ?? null,
+      guesthouseSlug: parsed.guesthouseSlug ?? null,
+      checkInDate: parsed.checkInDate ?? '',
+      checkOutDate: parsed.checkOutDate ?? '',
+      adults: parsed.adults ?? initialBookingFlowState.adults,
+      childrenAge3to10: parsed.childrenAge3to10 ?? initialBookingFlowState.childrenAge3to10,
+      childrenAge0to3: parsed.childrenAge0to3 ?? initialBookingFlowState.childrenAge0to3,
       roomQuantities: parsed.roomQuantities ?? {},
-      contact: {
-        ...initialBookingFlowState.contact,
-        ...parsed.contact,
-      },
+      breakfastParticipants:
+        parsed.breakfastParticipants ?? initialBookingFlowState.breakfastParticipants,
+      dinnerParticipants: parsed.dinnerParticipants ?? initialBookingFlowState.dinnerParticipants,
     }
   } catch {
     return initialBookingFlowState
@@ -77,7 +87,19 @@ export function restoreBookingFlowState(): BookingFlowState {
 }
 
 export function persistBookingFlowState(state: BookingFlowState) {
-  window.sessionStorage.setItem(BOOKING_FLOW_STORAGE_KEY, JSON.stringify(state))
+  const persistedBookingState: PersistedBookingFlowState = {
+    guesthouseId: state.guesthouseId,
+    guesthouseSlug: state.guesthouseSlug,
+    checkInDate: state.checkInDate,
+    checkOutDate: state.checkOutDate,
+    adults: state.adults,
+    childrenAge3to10: state.childrenAge3to10,
+    childrenAge0to3: state.childrenAge0to3,
+    roomQuantities: state.roomQuantities,
+    breakfastParticipants: state.breakfastParticipants,
+    dinnerParticipants: state.dinnerParticipants,
+  }
+  window.sessionStorage.setItem(BOOKING_FLOW_STORAGE_KEY, JSON.stringify(persistedBookingState))
 }
 
 export function bookingReducer(

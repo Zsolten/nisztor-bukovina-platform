@@ -30,18 +30,24 @@ public class BookingRequestService {
   private final BookingPriceCalculator calculator;
   private final BookingRequestRepository repository;
   private final BookingIdempotencyGuard idempotencyGuard;
+  private final ManagementTokenGenerator managementTokenGenerator;
+  private final BookingNotificationOutbox notificationOutbox;
 
   public BookingRequestService(
       BookingValidator validator,
       BookingContactValidator contactValidator,
       BookingPriceCalculator calculator,
       BookingRequestRepository repository,
-      BookingIdempotencyGuard idempotencyGuard) {
+      BookingIdempotencyGuard idempotencyGuard,
+      ManagementTokenGenerator managementTokenGenerator,
+      BookingNotificationOutbox notificationOutbox) {
     this.validator = validator;
     this.contactValidator = contactValidator;
     this.calculator = calculator;
     this.repository = repository;
     this.idempotencyGuard = idempotencyGuard;
+    this.managementTokenGenerator = managementTokenGenerator;
+    this.notificationOutbox = notificationOutbox;
   }
 
   @Transactional
@@ -70,6 +76,7 @@ public class BookingRequestService {
     }
 
     Instant now = Instant.now();
+    GeneratedManagementToken managementToken = managementTokenGenerator.generate();
     BookingRequest entity =
         new BookingRequest(
             booking.guesthouseId(),
@@ -89,13 +96,15 @@ public class BookingRequestService {
             contact.preferredLanguage(),
             contact.note(),
             toEntityBreakdown(quote.priceBreakdown()),
-            managementTokenHash(),
+            managementToken.tokenHash(),
             now.plus(30, ChronoUnit.DAYS));
     booking
         .roomSelections()
         .forEach(room -> entity.addRoomSelection(room.roomTypeId(), room.quantity()));
     entity.addStatusHistory(BookingStatus.RECEIVED, now, "SYSTEM");
-    return createdResponse(repository.saveAndFlush(entity));
+    BookingRequest saved = repository.saveAndFlush(entity);
+    notificationOutbox.enqueueBookingReceived(saved, managementToken.rawToken());
+    return createdResponse(saved);
   }
 
   private void validateIdempotencyKey(String idempotencyKey) {
@@ -178,6 +187,8 @@ public class BookingRequestService {
   private BookingPriceBreakdown toEntityBreakdown(BookingPriceBreakdownResponse breakdown) {
     return new BookingPriceBreakdown(
         breakdown.accommodationTotal(),
+        breakdown.adultAccommodationTotal(),
+        breakdown.childAccommodationTotal(),
         breakdown.singleRoomSurcharge(),
         breakdown.breakfastTotal(),
         breakdown.dinnerTotal(),
@@ -199,12 +210,6 @@ public class BookingRequestService {
     byte[] bytes = new byte[8];
     SECURE_RANDOM.nextBytes(bytes);
     return "NB-" + HexFormat.of().withUpperCase().formatHex(bytes);
-  }
-
-  private String managementTokenHash() {
-    byte[] bytes = new byte[32];
-    SECURE_RANDOM.nextBytes(bytes);
-    return BookingHashing.sha256(HexFormat.of().formatHex(bytes));
   }
 
   private BigDecimal money(BigDecimal amount) {

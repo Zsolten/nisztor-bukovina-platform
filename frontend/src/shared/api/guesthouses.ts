@@ -20,6 +20,20 @@ export interface GuesthouseHistory {
   text: string
 }
 
+export interface GuesthousePageText {
+  storyEyebrow: string
+  storyTitle: string
+  diningEyebrow: string
+  diningTitle: string
+  diningDescription: string
+  amenitiesTitle: string
+  roomTypesTitle: string
+  pricingTitle: string
+  historyEyebrow: string
+  galleryTitle: string
+  galleryHint: string
+}
+
 export type GuesthouseContactType = 'PERSON' | 'PHONE' | 'EMAIL'
 
 export interface GuesthouseContact {
@@ -38,10 +52,9 @@ export interface GuesthouseAddress {
 export interface GuesthouseRoomType {
   id: string
   name: string
+  shortDescription?: string
   quantity: number
   standardOccupancy: number
-  roomsWithExtraBed: number
-  extraBedsPerEligibleRoom: number
   features: string[]
 }
 
@@ -51,10 +64,13 @@ export interface GuesthouseAmenity {
   id: string
   name: string
   description?: string
+  detailedDescription?: string
   category: AmenityCategory
+  pricingType: 'FREE' | 'PAID'
+  displayOrder?: number
 }
 
-export type PriceUnit = 'person_night' | 'person' | 'day'
+export type PriceUnit = 'person_night' | 'room_night' | 'person' | 'day'
 
 export interface GuesthousePriceItem {
   id: string
@@ -81,6 +97,7 @@ export interface GuesthousePricing {
 export interface GuesthouseDetail extends GuesthouseSummary {
   description: string
   roomDescription: string
+  pageText: GuesthousePageText
   images: GuesthouseImage[]
   history: GuesthouseHistory
   contacts: GuesthouseContact[]

@@ -54,7 +54,7 @@ const LOCALES: Record<Language, string> = {
 }
 
 // Keep aligned with booking.public.large-group-threshold in backend/src/main/resources/application.yaml.
-const LARGE_GROUP_THRESHOLD = 20
+const LARGE_GROUP_THRESHOLD = 30
 
 function NumericCounter({ label, value, min = 0, max, onChange }: NumericCounterProps) {
   return (
@@ -117,7 +117,7 @@ export default function BookingStayStep({
   )
   const roomCapacityMatches = guestTotal > 0 && selectedCapacity === guestTotal
   const dateRangeValid = hasValidStayRange(state, today)
-  const largeGroup = guestTotal >= LARGE_GROUP_THRESHOLD
+  const largeGroup = guestTotal > LARGE_GROUP_THRESHOLD
   const canRequestQuote =
     Boolean(state.guesthouseId) &&
     dateRangeValid &&
@@ -186,7 +186,8 @@ export default function BookingStayStep({
       maximumFractionDigits: 0,
     }).format(amount)
 
-  const accommodationPrice = guesthouse.pricing.items.find((item) => item.unit === 'person_night')
+  const accommodationPrice = guesthouse.pricing.items.find((item) => item.id === 'accommodation')
+  const singleRoomPrice = guesthouse.pricing.items.find((item) => item.id === 'single_room')
   const touristTaxPercentage = guesthouse.pricing.taxes[0]?.percentage
   const currentRequestKey = quoteRequest ? JSON.stringify(quoteRequest) : null
   const quoteIsCurrent = currentRequestKey !== null && quoteState.requestKey === currentRequestKey
@@ -302,6 +303,10 @@ export default function BookingStayStep({
                 )
                 .map((roomType) => {
                   const quantity = state.roomQuantities[roomType.id] ?? 0
+                  const roomPrice =
+                    roomType.standardOccupancy === 1
+                      ? singleRoomPrice?.amount
+                      : accommodationPrice && accommodationPrice.amount * roomType.standardOccupancy
                   return (
                     <article className="booking-room-row" key={roomType.id}>
                       <div>
@@ -311,10 +316,16 @@ export default function BookingStayStep({
                           {t('booking.roomCapacity', { count: roomType.standardOccupancy })}
                         </p>
                       </div>
-                      {accommodationPrice && (
+                      {roomPrice !== undefined && (
                         <p className="booking-room-price">
-                          {formatMoney(accommodationPrice.amount)}
-                          <small>{t('booking.perPersonNight')}</small>
+                          {formatMoney(roomPrice)}
+                          <small>
+                            {roomType.standardOccupancy === 1
+                              ? t('booking.perRoomNight')
+                              : t('booking.roomPriceDetail', {
+                                  amount: formatMoney(accommodationPrice?.amount ?? 0),
+                                })}
+                          </small>
                         </p>
                       )}
                       <NumericCounter

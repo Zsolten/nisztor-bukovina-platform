@@ -1,0 +1,100 @@
+package com.bukovina.platform.tourism.startour.controller;
+
+import com.bukovina.platform.tourism.startour.service.StarTourRouteService;
+import com.bukovina.platform.tourism.startour.service.StarTourRouteService.StarTourRouteResponse;
+import com.bukovina.platform.tourism.startour.service.StarTourService;
+import com.bukovina.platform.tourism.startour.service.StarTourService.StarTourPublicResponse;
+import com.bukovina.platform.tourism.startour.service.StarTourService.StarTourResponse;
+import com.bukovina.platform.tourism.startour.service.StarTourService.StarTourUpsertRequest;
+import com.bukovina.platform.tourism.startour.service.StarTourStopService;
+import com.bukovina.platform.tourism.startour.service.StarTourStopService.StopPlanResponse;
+import com.bukovina.platform.tourism.startour.service.StarTourStopService.StopPlanUpdate;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.Pattern;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class StarTourController {
+  private final StarTourService service;
+  private final StarTourRouteService routeService;
+  private final StarTourStopService stopService;
+
+  public StarTourController(
+      StarTourService service, StarTourRouteService routeService, StarTourStopService stopService) {
+    this.service = service;
+    this.routeService = routeService;
+    this.stopService = stopService;
+  }
+
+  @GetMapping("/api/admin/tourism/star-tours")
+  List<StarTourResponse> listAdmin() {
+    return service.listAdmin();
+  }
+
+  @PostMapping("/api/admin/tourism/star-tours")
+  @ResponseStatus(HttpStatus.CREATED)
+  StarTourResponse create(@RequestBody StarTourUpsertRequest request) {
+    StarTourResponse saved = service.create(request);
+    routeService.recalculateForAdmin(saved.id());
+    return service.getAdmin(saved.id());
+  }
+
+  @PutMapping("/api/admin/tourism/star-tours/{id}")
+  StarTourResponse update(@PathVariable UUID id, @RequestBody StarTourUpsertRequest request) {
+    service.update(id, request);
+    routeService.recalculateForAdmin(id);
+    return service.getAdmin(id);
+  }
+
+  @PostMapping("/api/admin/tourism/star-tours/{id}/route/recalculate")
+  StarTourResponse recalculateRoute(@PathVariable UUID id) {
+    routeService.recalculateForAdmin(id);
+    return service.getAdmin(id);
+  }
+
+  @GetMapping("/api/admin/tourism/star-tours/{id}/stops")
+  StopPlanResponse getStops(@PathVariable UUID id) {
+    return stopService.getPlan(id);
+  }
+
+  @PutMapping("/api/admin/tourism/star-tours/{id}/stops")
+  StopPlanResponse updateStops(@PathVariable UUID id, @RequestBody StopPlanUpdate request) {
+    return stopService.replaceCoreStops(id, request);
+  }
+
+  @GetMapping("/api/tourism/star-tours")
+  List<StarTourPublicResponse> listPublic(
+      @RequestParam(defaultValue = "hu") @Pattern(regexp = "hu|ro|en") String lang) {
+    return service.listPublic(lang);
+  }
+
+  @GetMapping("/api/tourism/star-tours/routes")
+  List<StarTourRouteResponse> listPublicCachedRoutes() {
+    return routeService.listPublicCachedRoutes();
+  }
+
+  @GetMapping("/api/tourism/star-tours/{slug}/route")
+  StarTourRouteResponse getPublicRoute(
+      @PathVariable String slug,
+      @RequestParam(name = "optionalStopSlug", required = false) List<String> optionalStopSlugs,
+      HttpServletRequest request) {
+    return routeService.getPublicRoute(slug, optionalStopSlugs, request.getRemoteAddr());
+  }
+
+  @GetMapping("/api/tourism/star-tours/{slug}")
+  StarTourPublicResponse getPublic(
+      @PathVariable String slug,
+      @RequestParam(defaultValue = "hu") @Pattern(regexp = "hu|ro|en") String lang) {
+    return service.getPublic(slug, lang);
+  }
+}

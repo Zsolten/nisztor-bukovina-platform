@@ -81,6 +81,9 @@ public class BookingRequest {
 
   @Column private String note;
 
+  @Column(name = "internal_note")
+  private String internalNote;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 32)
   private BookingStatus status;
@@ -95,6 +98,9 @@ public class BookingRequest {
 
   @Column(name = "management_token_expires_at", nullable = false)
   private Instant managementTokenExpiresAt;
+
+  @Column(name = "management_token_revoked_at")
+  private Instant managementTokenRevokedAt;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
@@ -249,6 +255,14 @@ public class BookingRequest {
     return note;
   }
 
+  public String getInternalNote() {
+    return internalNote;
+  }
+
+  public void updateInternalNote(String internalNote) {
+    this.internalNote = internalNote;
+  }
+
   public BookingStatus getStatus() {
     return status;
   }
@@ -265,12 +279,15 @@ public class BookingRequest {
     Objects.requireNonNull(nextStatus);
     boolean allowed =
         (status == BookingStatus.RECEIVED
+                && (nextStatus == BookingStatus.UNDER_REVIEW
+                    || nextStatus == BookingStatus.CANCELLED))
+            || (status == BookingStatus.UNDER_REVIEW
                 && (nextStatus == BookingStatus.CONFIRMED
                     || nextStatus == BookingStatus.REJECTED
                     || nextStatus == BookingStatus.CANCELLED))
             || (status == BookingStatus.CONFIRMED && nextStatus == BookingStatus.CANCELLED);
     if (!allowed) {
-      throw new IllegalStateException("Invalid booking status transition");
+      throw new InvalidBookingStatusTransitionException(status, nextStatus);
     }
     status = nextStatus;
     addStatusHistory(nextStatus, changedAt, changedBy);
@@ -282,6 +299,18 @@ public class BookingRequest {
 
   public Instant getManagementTokenExpiresAt() {
     return managementTokenExpiresAt;
+  }
+
+  public Instant getManagementTokenRevokedAt() {
+    return managementTokenRevokedAt;
+  }
+
+  public boolean hasUsableManagementTokenAt(Instant instant) {
+    return managementTokenRevokedAt == null && managementTokenExpiresAt.isAfter(instant);
+  }
+
+  public void revokeManagementToken(Instant revokedAt) {
+    managementTokenRevokedAt = Objects.requireNonNull(revokedAt);
   }
 
   public Instant getCreatedAt() {

@@ -13,10 +13,27 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+  mail:
+    host: ${MAIL_HOST:${SPRING_MAIL_HOST:}}
+    port: ${MAIL_PORT:${SPRING_MAIL_PORT:587}}
+    username: ${MAIL_USERNAME:${SPRING_MAIL_USERNAME:}}
+    password: ${MAIL_PASSWORD:${SPRING_MAIL_PASSWORD:}}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:${SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH:true}}
+          connectiontimeout: ${MAIL_SMTP_CONNECTION_TIMEOUT:${SPRING_MAIL_PROPERTIES_MAIL_SMTP_CONNECTIONTIMEOUT:5000}}
+          timeout: ${MAIL_SMTP_READ_TIMEOUT:${SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT:10000}}
+          writetimeout: ${MAIL_SMTP_WRITE_TIMEOUT:${SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOUT:10000}}
+          starttls:
+            enable: ${MAIL_STARTTLS_ENABLE:${SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE:true}}
 server:
   port: ${SERVER_PORT:8080}
 
 management:
+  health:
+    mail:
+      enabled: false
   endpoints:
     web:
       exposure:
@@ -24,4 +41,50 @@ management:
 
 booking:
   public:
-    large-group-threshold: ${BOOKING_LARGE_GROUP_THRESHOLD:20}
+    large-group-threshold: ${BOOKING_LARGE_GROUP_THRESHOLD:30}
+  notification:
+    enabled: ${NOTIFICATIONS_ENABLED:false}
+    max-attempts: ${BOOKING_NOTIFICATION_MAX_ATTEMPTS:5}
+    retry-initial-delay-seconds: ${BOOKING_NOTIFICATION_RETRY_INITIAL_DELAY_SECONDS:60}
+    worker-delay: ${BOOKING_NOTIFICATION_WORKER_DELAY:PT10S}
+    token-encryption-key: ${BOOKING_NOTIFICATION_TOKEN_ENCRYPTION_KEY:}
+    public-base-url: ${APP_PUBLIC_BASE_URL:http://localhost:5173}
+    admin-base-url: ${APP_ADMIN_BASE_URL:http://localhost:5173}
+    from-address: ${MAIL_FROM_ADDRESS:${MAIL_FROM:}}
+    from-name: ${MAIL_FROM_NAME:Nisztor-Bukovina Platform}
+
+admin:
+  authentication:
+    jwt:
+      issuer: ${ADMIN_JWT_ISSUER:nisztor-bukovina-platform}
+      secret: ${ADMIN_JWT_SECRET:}
+      access-token-ttl: ${ADMIN_JWT_ACCESS_TOKEN_TTL:PT30M}
+    bootstrap:
+      email: ${ADMIN_BOOTSTRAP_EMAIL:}
+      password: ${ADMIN_BOOTSTRAP_PASSWORD:}
+    login-rate-limit:
+      enabled: ${ADMIN_LOGIN_RATE_LIMIT_ENABLED:true}
+      capacity: ${ADMIN_LOGIN_RATE_LIMIT_CAPACITY:5}
+      refill-period: ${ADMIN_LOGIN_RATE_LIMIT_REFILL_PERIOD:PT1M}
+      cache-ttl: ${ADMIN_LOGIN_RATE_LIMIT_CACHE_TTL:PT10M}
+      max-entries: ${ADMIN_LOGIN_RATE_LIMIT_MAX_ENTRIES:10000}
+
+tourism:
+  routing:
+    base:
+      latitude: ${TOURISM_ROUTE_BASE_LATITUDE:45.8232811}
+      longitude: ${TOURISM_ROUTE_BASE_LONGITUDE:22.930933}
+    google:
+      api-key: ${GOOGLE_ROUTES_API_KEY:}
+      base-url: ${GOOGLE_ROUTES_BASE_URL:https://routes.googleapis.com}
+    star-tour:
+      failure-cooldown: ${TOURISM_STAR_TOUR_ROUTE_FAILURE_COOLDOWN:PT5M}
+      pending-timeout: ${TOURISM_STAR_TOUR_ROUTE_PENDING_TIMEOUT:PT1M}
+      rate-limit:
+        enabled: ${TOURISM_STAR_TOUR_ROUTE_RATE_LIMIT_ENABLED:true}
+        global-capacity: ${TOURISM_STAR_TOUR_ROUTE_GLOBAL_CAPACITY:10}
+        global-refill-period: ${TOURISM_STAR_TOUR_ROUTE_GLOBAL_REFILL_PERIOD:PT1M}
+        client-capacity: ${TOURISM_STAR_TOUR_ROUTE_CLIENT_CAPACITY:3}
+        client-refill-period: ${TOURISM_STAR_TOUR_ROUTE_CLIENT_REFILL_PERIOD:PT1M}
+        cache-ttl: ${TOURISM_STAR_TOUR_ROUTE_RATE_LIMIT_CACHE_TTL:PT10M}
+        max-entries: ${TOURISM_STAR_TOUR_ROUTE_RATE_LIMIT_MAX_ENTRIES:10000}

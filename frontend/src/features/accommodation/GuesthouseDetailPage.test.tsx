@@ -13,6 +13,19 @@ const detail = {
   coverImage: { path: '/cover.jpg', altText: 'Panzió', cover: true },
   description: 'A Nisztor Panzió Csernakeresztúron várja vendégeit.',
   roomDescription: 'Öt kényelmes szoba várja a vendégeket.',
+  pageText: {
+    storyEyebrow: 'Csendes pihenés Csernakeresztúron',
+    storyTitle: 'Egy kis falu, ahol megáll az idő',
+    diningEyebrow: 'Házias erdélyi ízek',
+    diningTitle: 'Ételek, amelyek visszahívják vendégeinket',
+    diningDescription: 'Hagyományos, házi készítésű ételek.',
+    amenitiesTitle: 'Szolgáltatások',
+    roomTypesTitle: 'Szobatípusok',
+    pricingTitle: 'Árak és feltételek',
+    historyEyebrow: 'Történetünk és örökségünk',
+    galleryTitle: 'Képgaléria',
+    galleryHint: 'A nagyításhoz válasszon egy képet.',
+  },
   images: [
     { path: '/cover.jpg', altText: 'Panzió', cover: true },
     { path: '/story-1.jpg', altText: 'Udvar', cover: false },
@@ -37,8 +50,6 @@ const detail = {
       name: 'Kétágyas szoba',
       quantity: 3,
       standardOccupancy: 2,
-      roomsWithExtraBed: 1,
-      extraBedsPerEligibleRoom: 1,
       features: ['private-bathroom'],
     },
   ],
@@ -93,6 +104,10 @@ describe('GuesthouseDetailPage', () => {
       screen.getByRole('heading', { name: 'Ételek, amelyek visszahívják vendégeinket' }),
     ).toBeVisible()
     expect(screen.getByRole('heading', { name: 'Szobatípusok' })).toBeVisible()
+    expect(
+      screen.getByRole('heading', { name: 'Bukovinai székely örökség Csernakeresztúron' }),
+    ).toBeVisible()
+    expect(screen.getByText('A hagyományokat nemzedékről nemzedékre továbbadják.')).toBeVisible()
     expect(screen.getByRole('heading', { name: 'Szobai kényelem' })).toBeVisible()
     expect(screen.getByRole('heading', { name: 'Étkezés és konyha' })).toBeVisible()
     expect(screen.getByText('130 RON')).toBeVisible()

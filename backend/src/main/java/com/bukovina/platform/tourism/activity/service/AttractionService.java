@@ -1,0 +1,528 @@
+package com.bukovina.platform.tourism.activity.service;
+
+import com.bukovina.platform.tourism.routing.DrivingDistanceMatrixService;
+import com.bukovina.platform.tourism.routing.DrivingDistanceMatrixService.CalculationSummary;
+import com.bukovina.platform.tourism.routing.StarTourRouteCacheInvalidator;
+import java.math.BigDecimal;
+import java.net.URI;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.server.ResponseStatusException;
+
+@Service
+public class AttractionService {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(AttractionService.class);
+  private static final Set<String> LANGUAGES = Set.of("hu", "ro", "en");
+  private static final Pattern SLUG = Pattern.compile("^[a-z0-9]+(?:-[a-z0-9]+)*$");
+  private static final int MIN_RECOMMENDED_VISIT_DURATION_MINUTES = 5;
+  private static final int MAX_RECOMMENDED_VISIT_DURATION_MINUTES = 720;
+  private final JdbcClient jdbc;
+  private final DrivingDistanceMatrixService drivingDistanceMatrix;
+  private final StarTourRouteCacheInvalidator routeCacheInvalidator;
+  private final TransactionTemplate transactionTemplate;
+
+  public AttractionService(
+      JdbcClient jdbc,
+      DrivingDistanceMatrixService drivingDistanceMatrix,
+      StarTourRouteCacheInvalidator routeCacheInvalidator,
+      PlatformTransactionManager transactionManager) {
+    this.jdbc = jdbc;
+    this.drivingDistanceMatrix = drivingDistanceMatrix;
+    this.routeCacheInvalidator = routeCacheInvalidator;
+    this.transactionTemplate = new TransactionTemplate(transactionManager);
+  }
+
+  @Transactional(readOnly = true)
+  public List<AttractionResponse> listAdmin() {
+    return jdbc
+        .sql("SELECT id FROM attraction ORDER BY updated_at DESC, slug")
+        .query(UUID.class)
+        .list()
+        .stream()
+        .map(id -> findAdmin(id, null))
+        .toList();
+  }
+
+  public AttractionResponse create(AttractionUpsertRequest request) {
+    ValidAttraction valid = validate(request, null);
+    UUID id = UUID.randomUUID();
+    transactionTemplate.executeWithoutResult(
+        status -> {
+          jdbc.sql(
+                  "INSERT INTO attraction (id, slug, latitude, longitude, google_maps_url, "
+                      + "recommended_visit_duration_minutes, active) "
+                      + "VALUES (:id, :slug, :latitude, :longitude, :mapsUrl, :recommendedVisitDurationMinutes, :active)")
+              .param("id", id)
+              .param("slug", valid.slug())
+              .param("latitude", valid.latitude())
+              .param("longitude", valid.longitude())
+              .param("mapsUrl", valid.googleMapsUrl())
+              .param("recommendedVisitDurationMinutes", valid.recommendedVisitDurationMinutes())
+              .param("active", valid.active())
+              .update();
+          replaceChildren(id, valid);
+        });
+    return findAdmin(id, recalculateDistances(id));
+  }
+
+  public AttractionResponse update(UUID id, AttractionUpsertRequest request) {
+    AttractionRow existing = findRow(id);
+    ValidAttraction valid = validate(request, id);
+    boolean coordinatesChanged = coordinatesChanged(existing, valid);
+    boolean routeInputsChanged = coordinatesChanged || existing.active() != valid.active();
+    transactionTemplate.executeWithoutResult(
+        status -> {
+          jdbc.sql(
+                  "UPDATE attraction SET slug = :slug, latitude = :latitude, longitude = :longitude, "
+                      + "google_maps_url = :mapsUrl, recommended_visit_duration_minutes = :recommendedVisitDurationMinutes, "
+                      + "active = :active, updated_at = CURRENT_TIMESTAMP WHERE id = :id")
+              .param("id", id)
+              .param("slug", valid.slug())
+              .param("latitude", valid.latitude())
+              .param("longitude", valid.longitude())
+              .param("mapsUrl", valid.googleMapsUrl())
+              .param("recommendedVisitDurationMinutes", valid.recommendedVisitDurationMinutes())
+              .param("active", valid.active())
+              .update();
+          replaceChildren(id, valid);
+          if (routeInputsChanged) {
+            routeCacheInvalidator.invalidateForAttraction(id);
+          }
+        });
+    CalculationSummary calculation = coordinatesChanged ? recalculateDistances(id) : null;
+    return findAdmin(id, calculation);
+  }
+
+  private CalculationSummary recalculateDistances(UUID attractionId) {
+    try {
+      return drivingDistanceMatrix.recalculateAffectedPairs(attractionId);
+    } catch (RuntimeException exception) {
+      LOGGER.warn(
+          "Attraction {} was saved, but its driving-distance pairs could not be recalculated",
+          attractionId,
+          exception);
+      return null;
+    }
+  }
+
+  @Transactional(readOnly = true)
+  public List<AttractionPublicResponse> listPublic(String language) {
+    return jdbc
+        .sql(publicSelect() + " WHERE attraction.active = TRUE ORDER BY name")
+        .param("language", language)
+        .query(this::mapPublicRow)
+        .list()
+        .stream()
+        .map(this::toPublicResponse)
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
+  public AttractionPublicResponse getPublic(String slug, String language) {
+    return jdbc.sql(publicSelect() + " WHERE attraction.active = TRUE AND attraction.slug = :slug")
+        .param("language", language)
+        .param("slug", slug)
+        .query(this::mapPublicRow)
+        .optional()
+        .map(this::toPublicResponse)
+        .orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ATTRACTION_NOT_FOUND"));
+  }
+
+  private AttractionResponse findAdmin(UUID id, CalculationSummary calculation) {
+    AttractionRow row = findRow(id);
+    List<Translation> translations =
+        jdbc.sql(
+                "SELECT language_code, name, short_description, detailed_description, "
+                    + "admission_information, practical_information FROM attraction_translation "
+                    + "WHERE attraction_id = :id ORDER BY language_code")
+            .param("id", id)
+            .query(
+                (rs, n) ->
+                    new Translation(
+                        rs.getString("language_code"),
+                        rs.getString("name"),
+                        rs.getString("short_description"),
+                        rs.getString("detailed_description"),
+                        rs.getString("admission_information"),
+                        rs.getString("practical_information")))
+            .list();
+    List<String> collections =
+        jdbc.sql(
+                "SELECT collection.slug FROM attraction_collection assignment "
+                    + "JOIN tourism_collection collection ON collection.id = assignment.collection_id "
+                    + "WHERE assignment.attraction_id = :id ORDER BY assignment.display_order")
+            .param("id", id)
+            .query(String.class)
+            .list();
+    return new AttractionResponse(
+        row.id(),
+        row.slug(),
+        row.latitude(),
+        row.longitude(),
+        row.googleMapsUrl(),
+        row.recommendedVisitDurationMinutes(),
+        row.active(),
+        translations,
+        collections,
+        calculation);
+  }
+
+  private AttractionRow findRow(UUID id) {
+    return jdbc.sql(
+            "SELECT id, slug, latitude, longitude, google_maps_url, recommended_visit_duration_minutes, active "
+                + "FROM attraction WHERE id = :id")
+        .param("id", id)
+        .query(
+            (rs, n) ->
+                new AttractionRow(
+                    rs.getObject("id", UUID.class),
+                    rs.getString("slug"),
+                    rs.getBigDecimal("latitude"),
+                    rs.getBigDecimal("longitude"),
+                    rs.getString("google_maps_url"),
+                    rs.getInt("recommended_visit_duration_minutes"),
+                    rs.getBoolean("active")))
+        .optional()
+        .orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ATTRACTION_NOT_FOUND"));
+  }
+
+  private ValidAttraction validate(AttractionUpsertRequest request, UUID currentId) {
+    if (request == null
+        || blank(request.slug())
+        || !SLUG.matcher(request.slug().trim()).matches()) {
+      throw badRequest("INVALID_ATTRACTION_SLUG");
+    }
+    String slug = request.slug().trim();
+    Integer duplicate =
+        currentId == null
+            ? jdbc.sql("SELECT COUNT(*) FROM attraction WHERE slug = :slug")
+                .param("slug", slug)
+                .query(Integer.class)
+                .single()
+            : jdbc.sql("SELECT COUNT(*) FROM attraction WHERE slug = :slug AND id <> :id")
+                .param("slug", slug)
+                .param("id", currentId)
+                .query(Integer.class)
+                .single();
+    if (duplicate > 0) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "ATTRACTION_SLUG_EXISTS");
+    }
+    if (request.latitude() == null
+        || request.latitude().compareTo(BigDecimal.valueOf(-90)) < 0
+        || request.latitude().compareTo(BigDecimal.valueOf(90)) > 0) {
+      throw badRequest("INVALID_LATITUDE");
+    }
+    if (request.longitude() == null
+        || request.longitude().compareTo(BigDecimal.valueOf(-180)) < 0
+        || request.longitude().compareTo(BigDecimal.valueOf(180)) > 0) {
+      throw badRequest("INVALID_LONGITUDE");
+    }
+    validateHttpUrl(request.googleMapsUrl(), "INVALID_GOOGLE_MAPS_URL");
+    if (request.recommendedVisitDurationMinutes() == null
+        || request.recommendedVisitDurationMinutes() < MIN_RECOMMENDED_VISIT_DURATION_MINUTES
+        || request.recommendedVisitDurationMinutes() > MAX_RECOMMENDED_VISIT_DURATION_MINUTES) {
+      throw badRequest("INVALID_RECOMMENDED_VISIT_DURATION");
+    }
+    if (request.active() == null) {
+      throw badRequest("ACTIVE_REQUIRED");
+    }
+
+    Map<String, Translation> translations = translations(request.translations());
+    Translation hu = translations.get("hu");
+    if (hu == null
+        || blank(hu.name())
+        || blank(hu.shortDescription())
+        || blank(hu.detailedDescription())) {
+      throw badRequest("HUNGARIAN_ATTRACTION_CONTENT_REQUIRED");
+    }
+    List<String> collectionSlugs =
+        request.collectionSlugs() == null
+            ? List.of()
+            : request.collectionSlugs().stream().map(String::trim).distinct().toList();
+    for (String collectionSlug : collectionSlugs) {
+      boolean exists =
+          jdbc.sql("SELECT EXISTS(SELECT 1 FROM tourism_collection WHERE slug = :slug)")
+              .param("slug", collectionSlug)
+              .query(Boolean.class)
+              .single();
+      if (!exists) {
+        throw badRequest("UNKNOWN_TOURISM_COLLECTION");
+      }
+    }
+    return new ValidAttraction(
+        slug,
+        request.latitude(),
+        request.longitude(),
+        request.googleMapsUrl().trim(),
+        request.recommendedVisitDurationMinutes(),
+        request.active(),
+        translations,
+        collectionSlugs);
+  }
+
+  private Map<String, Translation> translations(List<Translation> input) {
+    if (input == null) {
+      throw badRequest("HUNGARIAN_ATTRACTION_CONTENT_REQUIRED");
+    }
+    Map<String, Translation> result = new LinkedHashMap<>();
+    for (Translation translation : input) {
+      if (translation == null
+          || !LANGUAGES.contains(translation.language())
+          || result.put(translation.language(), translation) != null) {
+        throw badRequest("INVALID_TRANSLATIONS");
+      }
+    }
+    return result;
+  }
+
+  private void replaceChildren(UUID id, ValidAttraction valid) {
+    jdbc.sql("DELETE FROM attraction_translation WHERE attraction_id = :id")
+        .param("id", id)
+        .update();
+    for (Translation translation : valid.translations().values()) {
+      if (!"hu".equals(translation.language()) && blank(translation.name())) {
+        continue;
+      }
+      jdbc.sql(
+              "INSERT INTO attraction_translation (attraction_id, language_code, name, short_description, "
+                  + "detailed_description, admission_information, practical_information) "
+                  + "VALUES (:id, :language, :name, :short, :detailed, :admission, :practical)")
+          .param("id", id)
+          .param("language", translation.language())
+          .param("name", trim(translation.name()))
+          .param("short", trim(translation.shortDescription()))
+          .param("detailed", trim(translation.detailedDescription()))
+          .param("admission", nullable(translation.admissionInformation()))
+          .param("practical", nullable(translation.practicalInformation()))
+          .update();
+    }
+    Map<String, Integer> existingCollectionOrders = new LinkedHashMap<>();
+    jdbc.sql(
+            "SELECT collection.slug, assignment.display_order FROM attraction_collection assignment "
+                + "JOIN tourism_collection collection ON collection.id = assignment.collection_id "
+                + "WHERE assignment.attraction_id = :id")
+        .param("id", id)
+        .query((rs, row) -> Map.entry(rs.getString("slug"), rs.getInt("display_order")))
+        .list()
+        .forEach(entry -> existingCollectionOrders.put(entry.getKey(), entry.getValue()));
+    jdbc.sql("DELETE FROM attraction_collection WHERE attraction_id = :id")
+        .param("id", id)
+        .update();
+    for (String collectionSlug : valid.collectionSlugs()) {
+      Integer existingDisplayOrder = existingCollectionOrders.get(collectionSlug);
+      int displayOrder =
+          existingDisplayOrder == null
+              ? nextAttractionOrderInCollection(collectionSlug)
+              : existingDisplayOrder;
+      jdbc.sql(
+              "INSERT INTO attraction_collection (attraction_id, collection_id, display_order) "
+                  + "SELECT :id, id, :displayOrder FROM tourism_collection WHERE slug = :slug")
+          .param("id", id)
+          .param("displayOrder", displayOrder)
+          .param("slug", collectionSlug)
+          .update();
+    }
+  }
+
+  private int nextAttractionOrderInCollection(String collectionSlug) {
+    return jdbc.sql(
+            "SELECT COALESCE(MAX(assignment.display_order), 0) + 10 "
+                + "FROM attraction_collection assignment "
+                + "JOIN tourism_collection collection ON collection.id = assignment.collection_id "
+                + "WHERE collection.slug = :slug")
+        .param("slug", collectionSlug)
+        .query(Integer.class)
+        .single();
+  }
+
+  private String publicSelect() {
+    return "SELECT attraction.id, attraction.slug, attraction.latitude, attraction.longitude, attraction.google_maps_url, "
+        + "attraction.recommended_visit_duration_minutes, "
+        + "requested.name, requested.short_description, requested.detailed_description, "
+        + "requested.admission_information, requested.practical_information "
+        + "FROM attraction JOIN attraction_translation requested ON requested.attraction_id = attraction.id "
+        + "AND requested.language_code = :language";
+  }
+
+  private PublicAttractionRow mapPublicRow(java.sql.ResultSet rs, int row)
+      throws java.sql.SQLException {
+    return new PublicAttractionRow(
+        rs.getObject("id", UUID.class),
+        rs.getString("slug"),
+        rs.getString("name"),
+        rs.getString("short_description"),
+        rs.getString("detailed_description"),
+        rs.getString("admission_information"),
+        rs.getString("practical_information"),
+        rs.getBigDecimal("latitude"),
+        rs.getBigDecimal("longitude"),
+        rs.getString("google_maps_url"),
+        rs.getInt("recommended_visit_duration_minutes"));
+  }
+
+  @Transactional(readOnly = true)
+  public List<CollectionResponse> listCollections(String language) {
+    return jdbc.sql(
+            "SELECT collection.slug, requested.name, requested.short_description "
+                + "FROM tourism_collection collection "
+                + "JOIN tourism_collection_translation requested ON requested.collection_id = collection.id "
+                + "AND requested.language_code = :language WHERE collection.active = TRUE ORDER BY collection.display_order")
+        .param("language", language)
+        .query(
+            (rs, row) ->
+                new CollectionResponse(
+                    rs.getString("slug"), rs.getString("name"), rs.getString("short_description")))
+        .list();
+  }
+
+  private AttractionPublicResponse toPublicResponse(PublicAttractionRow row) {
+    return new AttractionPublicResponse(
+        row.slug(),
+        row.name(),
+        row.shortDescription(),
+        row.detailedDescription(),
+        row.admissionInformation(),
+        row.practicalInformation(),
+        row.latitude(),
+        row.longitude(),
+        row.googleMapsUrl(),
+        row.recommendedVisitDurationMinutes(),
+        collectionSlugsFor(row.id()));
+  }
+
+  private List<String> collectionSlugsFor(UUID id) {
+    return jdbc.sql(
+            "SELECT collection.slug FROM attraction_collection assignment "
+                + "JOIN tourism_collection collection ON collection.id = assignment.collection_id "
+                + "WHERE assignment.attraction_id = :id AND collection.active = TRUE "
+                + "ORDER BY assignment.display_order")
+        .param("id", id)
+        .query(String.class)
+        .list();
+  }
+
+  private static boolean coordinatesChanged(AttractionRow existing, ValidAttraction valid) {
+    return existing.latitude().compareTo(valid.latitude()) != 0
+        || existing.longitude().compareTo(valid.longitude()) != 0;
+  }
+
+  private static void validateHttpUrl(String value, String error) {
+    try {
+      URI uri = URI.create(value == null ? "" : value.trim());
+      if (!("https".equals(uri.getScheme()) || "http".equals(uri.getScheme()))
+          || uri.getHost() == null) {
+        throw badRequest(error);
+      }
+    } catch (IllegalArgumentException exception) {
+      throw badRequest(error);
+    }
+  }
+
+  private static ResponseStatusException badRequest(String reason) {
+    return new ResponseStatusException(HttpStatus.BAD_REQUEST, reason);
+  }
+
+  private static boolean blank(String value) {
+    return value == null || value.isBlank();
+  }
+
+  private static String trim(String value) {
+    return value == null ? "" : value.trim();
+  }
+
+  private static String nullable(String value) {
+    return blank(value) ? null : value.trim();
+  }
+
+  public record Translation(
+      String language,
+      String name,
+      String shortDescription,
+      String detailedDescription,
+      String admissionInformation,
+      String practicalInformation) {}
+
+  public record AttractionUpsertRequest(
+      String slug,
+      BigDecimal latitude,
+      BigDecimal longitude,
+      String googleMapsUrl,
+      Integer recommendedVisitDurationMinutes,
+      Boolean active,
+      List<Translation> translations,
+      List<String> collectionSlugs) {}
+
+  public record AttractionResponse(
+      UUID id,
+      String slug,
+      BigDecimal latitude,
+      BigDecimal longitude,
+      String googleMapsUrl,
+      int recommendedVisitDurationMinutes,
+      boolean active,
+      List<Translation> translations,
+      List<String> collectionSlugs,
+      CalculationSummary distanceCalculation) {}
+
+  public record AttractionPublicResponse(
+      String slug,
+      String name,
+      String shortDescription,
+      String detailedDescription,
+      String admissionInformation,
+      String practicalInformation,
+      BigDecimal latitude,
+      BigDecimal longitude,
+      String googleMapsUrl,
+      int recommendedVisitDurationMinutes,
+      List<String> collectionSlugs) {}
+
+  public record CollectionResponse(String slug, String name, String shortDescription) {}
+
+  private record AttractionRow(
+      UUID id,
+      String slug,
+      BigDecimal latitude,
+      BigDecimal longitude,
+      String googleMapsUrl,
+      int recommendedVisitDurationMinutes,
+      boolean active) {}
+
+  private record PublicAttractionRow(
+      UUID id,
+      String slug,
+      String name,
+      String shortDescription,
+      String detailedDescription,
+      String admissionInformation,
+      String practicalInformation,
+      BigDecimal latitude,
+      BigDecimal longitude,
+      String googleMapsUrl,
+      int recommendedVisitDurationMinutes) {}
+
+  private record ValidAttraction(
+      String slug,
+      BigDecimal latitude,
+      BigDecimal longitude,
+      String googleMapsUrl,
+      int recommendedVisitDurationMinutes,
+      boolean active,
+      Map<String, Translation> translations,
+      List<String> collectionSlugs) {}
+}

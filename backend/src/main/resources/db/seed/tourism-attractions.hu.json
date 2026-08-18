@@ -1,0 +1,420 @@
+{
+  "schema_version": 1,
+  "default_language": "hu",
+  "supported_languages": ["hu", "ro", "en"],
+  "source": {
+    "title": "Hunyad megye és környéke – turisztikai objektumok",
+    "coordinate_note": "A koordináták tájékoztató jellegű, közelítő helymeghatározások."
+  },
+  "collections": [
+    {
+      "key": "maros-mente",
+      "sort_order": 10,
+      "active": true,
+      "translations": {
+        "hu": {
+          "name": "A Maros mentén",
+          "short_description": null
+        }
+      }
+    },
+    {
+      "key": "arany-nyomaban",
+      "sort_order": 20,
+      "active": true,
+      "translations": {
+        "hu": {
+          "name": "Az arany nyomában",
+          "short_description": null
+        }
+      }
+    },
+    {
+      "key": "hunyadiak-hagyateka-hatszegi-medence",
+      "sort_order": 30,
+      "active": true,
+      "translations": {
+        "hu": {
+          "name": "A Hunyadiak hagyatéka és a Hátszegi-medence",
+          "short_description": null
+        }
+      }
+    }
+  ],
+  "categories": [
+    {
+      "key": "castle",
+      "icon_key": "castle",
+      "sort_order": 10,
+      "active": true,
+      "translations": {
+        "hu": {
+          "name": "Vár"
+        }
+      }
+    },
+    {
+      "key": "museum",
+      "icon_key": "landmark",
+      "sort_order": 20,
+      "active": true,
+      "translations": {
+        "hu": {
+          "name": "Múzeum"
+        }
+      }
+    },
+    {
+      "key": "nature",
+      "icon_key": "mountain",
+      "sort_order": 30,
+      "active": true,
+      "translations": {
+        "hu": {
+          "name": "Természet"
+        }
+      }
+    },
+    {
+      "key": "church",
+      "icon_key": "church",
+      "sort_order": 40,
+      "active": true,
+      "translations": {
+        "hu": {
+          "name": "Egyházi emlék"
+        }
+      }
+    },
+    {
+      "key": "cave",
+      "icon_key": "cave",
+      "sort_order": 50,
+      "active": true,
+      "translations": {
+        "hu": {
+          "name": "Barlang"
+        }
+      }
+    },
+    {
+      "key": "waterfall",
+      "icon_key": "waves",
+      "sort_order": 60,
+      "active": true,
+      "translations": {
+        "hu": {
+          "name": "Vízesés"
+        }
+      }
+    }
+  ],
+  "attractions": [
+    {
+      "external_id": "paring-hegység",
+      "slug": "paring-hegység",
+      "category_key": "nature",
+      "recommended_visit_duration_minutes": 120,
+      "collection_keys": ["hunyadiak-hagyateka-hatszegi-medence"],
+      "coordinates": {
+        "latitude": 45.3935791,
+        "longitude": 23.4461405
+      },
+      "google_maps_link": "https://www.google.com/maps/place/Telescaun+Par%C3%A2ng/@45.6926924,23.0696974,9.96z/data=!4m6!3m5!1s0x474dc72754b8f21f:0xf70e327de2828148!8m2!3d45.3935791!4d23.4461405!16s%2Fg%2F1tgx5cvr?authuser=0&entry=ttu",
+      "translations": {
+        "hu": {
+          "title": "Páring-hegység",
+          "short_description": "A Déli-Kárpátok harmadik legnagyobb hegysége, glaciális tavakkal és síközponttal.",
+          "detailed_description": "„…Pásztorkunyhóm meredek havasi rét aljára épült. A meredek hegyoldal grandiózus templom tetejére emlékeztetett, mely fölött több száz méteres sziklafal, mint templomtorony emelkedett a csillagos ég felé A kunyhó mellett cirbolyafák álltak őrt, alatta sötét fenyves terült el: érintetlen őserdő…” (Maderspach Viktor, Váradi Péter Pál hivatkozása)\nVáradi Péter Pál Erdély, Kárpátok koronája könyvében olvashatjuk Maderspach Viktor sorait melyből kitűnik, hogy a Páring-hegység egy érintetlen vadregényes térség.\nA glaciális domborzat alkotta térség, a Déli-Kárpátok harmadik legnagyobb hegysége. Legmagasabb csúcsa a Nagy-Páring 2519 méter. A gerincet egységes magas felszín jellemzi, a könnyű megközelíthetőségével és a viszonylag\nA Zsil folyó bal oldalán fekvő hegység könnyen megközelíthető a Petrozsényi-medence felől, mely térség oly híres volt bányászatáról. Északon a Zsil és Lotru mellékvizeinek völgyei szelik át. A keleti főgerinc a Kapacina vonulatához kapcsolódik. A hegységet körülveszik a Vulkán-, Retyezát-hegységek és a Kudzsiri- meg a Szebeni-havasok.\nA Páring nyugati lejtőjén síközpont terül el. A hegység turizmusa az 1900-as évek kezdetén kezd kibontakozni. Ekkor építik meg az első menedékházat. Az 1969-1972 között épült felvonó 1073 méterről 1685 méterre szállítja a turistákat. Innen könnyű megközelíteni a 2074 méteren levő Kis-Páringot. Jelenleg körülbelül 6,8 kilométer sípálya és sok vendégfogadóhely várja az érdeklődőket. (Nagy Balázs, 2010:9-23)",
+          "admission_information": "Libegőzés 1700 méteres magasságig: 42 lej/fő oda-vissza.",
+          "practical_information": null
+        }
+      },
+      "media": {
+        "thumbnail": {
+          "path": null,
+          "translations": {
+            "hu": {
+              "alt_text": "Páring-hegység libegője és hegyi táj"
+            }
+          }
+        },
+        "gallery": []
+      },
+      "publication_status": "DRAFT",
+      "sort_order": 10
+    },
+    {
+      "external_id": "veka-szurdok",
+      "slug": "veka-szurdok",
+      "category_key": "nature",
+      "recommended_visit_duration_minutes": 30,
+      "collection_keys": ["hunyadiak-hagyateka-hatszegi-medence"],
+      "coordinates": {
+        "latitude": 45.5333,
+        "longitude": 23.0833
+      },
+      "google_maps_link": "https://maps.app.goo.gl/QLx9tLovDLkFTfHr5",
+      "translations": {
+        "hu": {
+          "title": "Véka-szurdok",
+          "short_description": "A Buta-patak vájta keskeny, 100 méteres szurdok a Gredistye-Muncsel Csoklovina Nemzeti Parkban.",
+          "detailed_description": "A Véka-szurdokot a Buta-patak képezte mielőtt a Zsilbe ömlik. A Gredistye-Muncsel Csoklovina Nemzeti Parkhoz tartozik. Természeti különlegesség. A 100 méteres szurdok szélessége csupán pár méter. Különlegessége, hogy a szűk szorost magas falak követik, melyet a víz kedvére alakított az idő során. (Dorina Niță, 2015:130)",
+          "admission_information": "Belépő: 5 lej/fő.",
+          "practical_information": "Amennyiben az időjárás engedi, a szurdok szandálban vagy mezítláb is bejárható. Papucs használatát nem ajánlom, mivel a pataknak van egy kis sodrása."
+        }
+      },
+      "media": {
+        "thumbnail": {
+          "path": null,
+          "translations": {
+            "hu": {
+              "alt_text": "Véka-szurdok keskeny sziklafalai között"
+            }
+          }
+        },
+        "gallery": []
+      },
+      "publication_status": "DRAFT",
+      "sort_order": 20
+    },
+    {
+      "external_id": "boli-barlang",
+      "slug": "boli-barlang",
+      "category_key": "cave",
+      "recommended_visit_duration_minutes": 60,
+      "collection_keys": ["hunyadiak-hagyateka-hatszegi-medence"],
+      "coordinates": {
+        "latitude": 45.5719,
+        "longitude": 22.98
+      },
+      "google_maps_link": "https://maps.app.goo.gl/ZGbmEQxgpEjcWQ4r6",
+      "translations": {
+        "hu": {
+          "title": "Bóli-barlang",
+          "short_description": "Erdély egyik legnagyobb barlangja, 455 méter hosszú, kiváló akusztikával.",
+          "detailed_description": "Úgy tartják elnevezése a Boli családtól származik, mely a XV. században jelent meg a környéken. A Hátszeg felől Zsil völgye felé haladó főút mellett helyezkedik el a barlang. A Gredistye-Muncsel Csoklovina Nemzeti Park része. Erdély egyik legnagyobb barlangja, hosszúsága 455 méter, 2-3 méteres szintkülönbséggel. A barlang átlagmagassága 10-12 méter, melyet egy patak alakított az évezredek során.\nKitűnő akusztikájának köszönhetően rendezvények színterévé válik olykor. A Zsil völgyi bányászok sokszor elzarándokoltak ide, így egy Rozália oltár is található a barlangban. (Dorina Niță, 2015:132)",
+          "admission_information": "Belépő: 10 lej/felnőtt, 5 lej/nyugdíjas és gyerek.",
+          "practical_information": null
+        }
+      },
+      "media": {
+        "thumbnail": {
+          "path": null,
+          "translations": {
+            "hu": {
+              "alt_text": "Bóli-barlang bejárata"
+            }
+          }
+        },
+        "gallery": []
+      },
+      "publication_status": "DRAFT",
+      "sort_order": 30
+    },
+    {
+      "external_id": "vajdahunyadi-kastely",
+      "slug": "vajdahunyadi-kastely",
+      "category_key": "castle",
+      "recommended_visit_duration_minutes": 90,
+      "collection_keys": ["hunyadiak-hagyateka-hatszegi-medence"],
+      "coordinates": {
+        "latitude": 45.7489,
+        "longitude": 22.9017
+      },
+      "google_maps_link": "https://www.google.com/maps?q=45.7489,22.9017",
+      "translations": {
+        "hu": {
+          "title": "Vajdahunyadi kastély",
+          "short_description": "A Hunyadi család gótikus-reneszánsz várkastélya, Erdély egyik legszebb műemléke.",
+          "detailed_description": "„Ha Visegrád a királyok vára, akkor Vajdahunyad a várak királya!”-Mikszáth Kálmán\nHunyad neve 1265-ös okiratokban tűnik fel először. Bóna István szerint Hunyadvár feltételezhetően Hunod nevű főispán nevéből származtatható. Kuun Géza szerint az is lehetséges, hogy nevének eredete Attila hunjainak nevét őrzi.\nA mai vár helyén már a XIII. században állt egy egyszerű vár, melynek a helyére építette Hunyadi János várkastélyát. A római út is ide irányul, így azt is feltételezhetjük, hogy római erőd is létezett a településen. A város feletti bányákban fellelhető a rómaiak bányászata is.\n1409-ben Zsigmond király egy adományozó levélben Wajk Buthi királyi katonának, családjának és fiának, akit Hunyadinak nevez, rendelteti a várat.\nHunyadi János két szakaszban építteti a várat. 1441-1446 között megerősíti védelmi rendszerét. 1446-1453 között viszont kibővíti a várat, lakályossá teszi. Ekkor épül a várkápolna, a palotaszárny, a lovagterem és az országházának nevezett díszes terem is.\nA XVII. században Bethlen Gábor folytatja a munkálatokat. Saját kedvére alakíttatja a várat. Az ő építkezési szakaszához köthető a Bethlen-szárny megépülése. Hunyad várának számos várura volt, Schreiber István történész úgy tartja, hogy összesen huszonkettő, és a várkastély első urának Hunyadi Jánost nevezi. Az uradalom róla Hunyadi Mátyásra majd Corvin Jánosra szállt. De a Török család is több várurat adott Hunyadnak. A Bethlen család tulajdonában is hosszú évtizedekig volt. I. és II. Apafi Mihály is bírta a várat, utolsó tulajdonosa pedig Bethlen Kata volt. A halálával egy időben a vár a kincstárra szállt.\nAz 1800-as években többször is restaurálták a várat, majd 1854. április 13-án Dombrády járási főnök gondatlansága miatt tűz ütött ki, és leégett a várkastély. Ezt követően a szebeni helytartóság ráfordításával elvégezték a legszükségesebb munkálatokat majd Dr. Arányi Lajos budapesti egyetemi tanár karolta fel a vár ügyét. Később Trefor Ágost kultuszminiszter és Hegedüs Candid Lajos műemléki referens folyatták a munkálatokat. Möller István keze alatt pedig megújult a Lovagterem és a Mátyás-traktus. (Schreiber István, 2006:5-25)",
+          "admission_information": "Egyéni ár: 55 lej/felnőtt, 30 lej/nyugdíjas, 15 lej/gyerek. Csoportos ár (20 fő felett): 45 lej/felnőtt, 25 lej/nyugdíjas, 10 lej/gyerek.",
+          "practical_information": null
+        }
+      },
+      "media": {
+        "thumbnail": {
+          "path": null,
+          "translations": {
+            "hu": {
+              "alt_text": "Vajdahunyadi kastély külső nézete"
+            }
+          }
+        },
+        "gallery": []
+      },
+      "publication_status": "DRAFT",
+      "sort_order": 40
+    },
+    {
+      "external_id": "oraljaboldogfalvi-reformatus-templom",
+      "slug": "oraljaboldogfalvi-reformatus-templom",
+      "category_key": "church",
+      "recommended_visit_duration_minutes": 30,
+      "collection_keys": ["hunyadiak-hagyateka-hatszegi-medence"],
+      "coordinates": {
+        "latitude": 45.590558,
+        "longitude": 22.970021
+      },
+      "google_maps_link": "https://www.google.com/maps/place/Biserica+Reformat%C4%83/@45.6926924,23.0696974,9.96z/data=!4m6!3m5!1s0x474e7adca87d0cb9:0x7270a5142a81c5a0!8m2!3d45.590558!4d22.970021!16s%2Fg%2F119pgzwt2?authuser=0&entry=ttu",
+      "translations": {
+        "hu": {
+          "title": "Őraljaboldogfalvi református templom",
+          "short_description": "Középkori műemléktemplom Erdély legrégebbi falfestményeivel, szemben a Kendeffy-kastéllyal.",
+          "detailed_description": "A települést a XIV. században említik először. 1447-ben A Kende család adományként kapja a helységet Hunyadi Jánostól. A templom a hátszegi királyi várat szolgáló szent helyiség volt, művészettörténészek XIII. századinak vélik. A román építészeti stílus és a gótika vonásai fellelhetőek a templomon, így a két stílus közötti átmeneti időszakban épülhetett. Az egyhajós templom ajtaja félköríves, románkori, felette pedig egy késői gótikus ablak pompázik. Az érdekes műemléktemplom középkori falfestményeket rejt. Erdély legrégebbi falfestményei közé sorolható, korát az 1311-1400 évek közé teszik. Az első szakaszban csak konszekrációs keresztet festettek a falaira, majd az egész templomot újra festették. A falfestmények jellege az olasz mesterek módszerére utal. Piros színárnyalat jellemzi a jeleneteket, melyek fehérrel lettek társítva. A falfestmények vallásos jellegűktől fogva Jézus isteni lényét hivatottak kiemelni (északi oldal felső részében), de a megtestesülés témája és a Boldogságos Szűz ábrázolása is megjelenik (az északi és a déli oldalon). A déli falon az utolsó vacsora jelenete is megtalálható. A XIV. század végén újabb festményekkel egészítették ki a kórusi részt. A templom kezdetben római katolikus volt, Szent Benedek rendjének temploma. A XVIII. századtól már a református egyházhoz tartozott. Ebben a korszakban feltehetően a freskókat mészréteggel vonták be, melyet Rommer Flóris fedezett fel. A feltárást Möller István végezte 1908-ban.\nA XX. században minimális karbantartást végeztek a templom állapotán, viszont a falfestmények szakszerű konzerválása még napjainkban sem került sor. (Schreiber István, 2010:8-11)\nA templommal szemben található a Kendeffy kastély. A Kendeffy család, mint a Hátszegi-medence és a Zsil völgyének nagyrészű birtoklói, áldozatok árán tettek szert a titulusra.\nHunyadi János kormányzó, 1447. évi levelében felsorolja a hadjáratokat melyekben a Kendeffyek érdemeket szereztek és ennek köszönhetően adományba kapják Boldogasszonyfalvát és további birtokokat.\nHunyadi Mátyás király 1462-ben Körösbányán felsorolja a Kendeffyek hadi érdemeiket és nekik adományozza Várallja birtokot.\nII. Ulászló király 1493-ban malomvizi Kendeffy Mihálynak adományozza a Zsil-folyó mentén Pterela, Malee, Ratond, Mwrylowar és Nyak-mezew nezű szántó-, kaszáló- és legeltetőhelyeket.\nA Kendeffyek őraljaboldogfalvi kastélyát az 1870-es években építette Kendeffy Árpád neogótikus stílusban angol parkkal körülvéve. (Sólyom-Fekete Ferencz, 1888:75-94)",
+          "admission_information": "Belépő: 10 lej/fő.",
+          "practical_information": "Ha marad idő a csillagtúrán, érdemes megtekinteni."
+        }
+      },
+      "media": {
+        "thumbnail": {
+          "path": null,
+          "translations": {
+            "hu": {
+              "alt_text": "Őraljaboldogfalvi református templom"
+            }
+          }
+        },
+        "gallery": []
+      },
+      "publication_status": "DRAFT",
+      "sort_order": 50
+    },
+    {
+      "external_id": "demsusi-kotemplom",
+      "slug": "demsusi-kotemplom",
+      "category_key": "church",
+      "recommended_visit_duration_minutes": 30,
+      "collection_keys": ["hunyadiak-hagyateka-hatszegi-medence"],
+      "coordinates": {
+        "latitude": 45.5819122,
+        "longitude": 22.8046525
+      },
+      "google_maps_link": "https://www.google.com/maps/place/Densu%C8%99+Church/@45.6926924,23.0696974,9.96z/data=!4m6!3m5!1s0x474e68b07b41c453:0x69ea451767d93c05!8m2!3d45.5819122!4d22.8046525!16zL20vMDU1dGxw?authuser=0&entry=ttu",
+      "translations": {
+        "hu": {
+          "title": "Demsusi kőtemplom",
+          "short_description": "Erdély egyik legkülönlegesebb, római eredetű elemeket is őrző műemléktemploma.",
+          "detailed_description": "Demsus településen található Erdély egyik legkülönlegesebb műemlék temploma. A falu nevét a Kendeffy család leveleiben Domsos, Demses, Damsus néven írják. A XVII. században Demsus tulajdonosai sorában megjelenik egy Lukács de Demptes nevű család, mely a Zeyk, Kenderesi, Mara, Macsesdi, Csongrád, Naláczi, báró Kemény családokkal állt rokonságban. A különleges templom építésének ideje nem egyértelmű, ugyanis falaiban római eredetű feliratok, domborművek láthatóak, így egyes művészettörténészek eredetét a római uralomhoz kötik. A templom építészetileg egy bizáncias és centrális építmény, fellelhetőek rajta a román építészeti stílus jegyei is, a középen elhelyezett tornya pedig arra enged következtetni, hogy XIII. századi építmény. Téglás Gábor történész szerint a freskós a templom katolikus jellegét hangsúlyozzák. A templom legbizarabb része, a templom közepében helyezkedik el, a négyzetes alaprajzú épületrész, mely négy tartóoszlopból áll, erre pedig egy torony nehezedik. Ez a templom legrégebbi része. Később, a XIX. században megjelentek a római oszlopokból emelt támfalak, és valószínűleg ekkor helyezték az apszis tetejére a római kőoroszlánokat is. A legrégebbi falfestmény a bejáratnál látható, Szent Miklós és Szűz Mária ölében tartja a gyermek Jézust. Tehát ez arra utal, hogy a templomot az ők tiszteletükre szentelték fel. A tartóoszlopokon Szent Marina, A Szentháromság és Szent Bertalan képe jelenik meg. A keleti fal felső részén az angyali üdvözlet, és katonaszentek láthatóak. Az oltár körül pedig a trónon ülő gyermek Jézust tartó Szűz Mária, az Apostolok szentáldozása továbbá próféták, főpapok és Jézus van ábrázolva. A falfestmények fő készítője a falra felírt Stefan mestert. A freskók hagyományos példái a középkori erdélyi freskódíszítésnek.\nA vidék kiemelkedő családjai a demsusi és reketyefalvi Muzsinák voltak. A család eltűnésével megfigyelhető volt a község vallási megoszlása, megjelent a kálvinista nemesség. A parókiát felváltva használták, Demsuson 1701-ben két pap szolgát, egy görög-katolikus és egy kálvinista. Téglás Gábor 1902-es írásaiban egy anekdótát olvashatunk, miszerint „Befordították az ikonokat a fal felé. Egy óra múlva jött a pópa és visszafordította mindet... ”\nA templomban a XX. században több restaurációs munkálatot is végeztek. (Schreiber István, 2010:22-26)",
+          "admission_information": "Ingyenes.",
+          "practical_information": "Ha marad idő a csillagtúrán, érdemes megtekinteni."
+        }
+      },
+      "media": {
+        "thumbnail": {
+          "path": null,
+          "translations": {
+            "hu": {
+              "alt_text": "Demsusi kőtemplom"
+            }
+          }
+        },
+        "gallery": []
+      },
+      "publication_status": "DRAFT",
+      "sort_order": 60
+    },
+    {
+      "external_id": "deva-vara",
+      "slug": "deva-vara",
+      "category_key": "castle",
+      "recommended_visit_duration_minutes": 120,
+      "collection_keys": ["maros-mente"],
+      "coordinates": {
+        "latitude": 45.8763,
+        "longitude": 22.9008
+      },
+      "google_maps_link": "https://www.google.com/maps?q=45.8763,22.9008",
+      "translations": {
+        "hu": {
+          "title": "Déva vára",
+          "short_description": "A Maros völgye fölé magasodó középkori várrom, amely számos történelmi esemény színhelye volt.",
+          "detailed_description": "„Tizenkét kőmíves összetanakodék\nMagos Déva várát hogy fölépítenék.\nHogy fölépítenék fél véka ezüstér,\nFél véka ezüstér, fél véka aranyér.\nMagos Déva várhoz hezzá is kezdöttek\nAmit raktak délig leomlott estére\nAmit estig raktak leomlott röggelre”-részlet a Kőműves Kelemenné balladából\n\nKőműves Kelemenné balladájának udvarhelyszéki változata mindenki fülében ismerősen csenghet és ez is hozzájárult a vár népszerűségéhez. Jó elhelyezkedésének köszönhetően a történelemben sok csata részesévé vált. A 184 méter magasban lévő vár már messziről látható, és a várhegyről is belátható a Maros völgye és a Dévai-medence. Az őstörténeti adatok tanúi annak, hogy a Várhegy az ősember idejében is jelentős hely volt. A dákok idejében már őrhely állott a helyén. A rómaiak is birtokba vették az erődítményt, a vár alatt haladt át a hadi út is. Erdély első királyi vára az Árpád-házi királyok idejében Déván épülhetett, feltételezhető, hogy Szent László és Salamon királyok alatt, mely később a tatárjárás áldozatává vált. Az első írásos bizonyíték 1269-ből, IV. Béla király korából való. Több tény is utal arra, hogy a vár már korábban is létezett. A vár első ismert várnagya László mester.\nA vegyes házi királyok idejében többször is gazdát cserélt a vár. 1385-től kincstári tulajdonná válik és az erdélyi vajdák székhelye volt. 1440-ben a vár a Hunyadi család tulajdonába kerül I Ulászló király adománya által, és 1504-ig, Corvin János haláláig, a család birtokában maradt.\nA következő gondos várúr Szapolyai János volt. Róla fiára János Zsigmondra szállt az uradalom és felesége Izabella királyné többször is megfordult a várban. A várhely és a város virágzása a Hunyadi és Szapolyai családoknak köszönhető, az ők eltűnésükkel egy időben a város jóléte is elkezdett hanyatlani.\nA török hadak Erdélyt fenyegették és a dévai várig is elértek. 1550-ben Török János itt vívta meg csatáját az országba benyomulni törekvő sereggel. A sikeres rajtaütést Tinódi Lantos Sebestyén Török János vitézségéről című verses krónikájában énekli meg. A törökök ellen Déva vára volt akkor Erdély legfőbb védelmi pontja. A vár 1551-ben Ferdinánd király szolgálatába került, és hosszú évtizedeken keresztül próbálta a törököket kiszorítani Erdélyből, mígnem 1557-ben Szolimán szultán elfoglalta a várat.\n1571-ben Báthory István lett erdély fejedelme. Ez idő alatt raboskodott és halt meg a dévai vár tömlöcében a hitújító, Dávid Ferenc, aki az unitárius egyház megalapítója és első püspöke is volt egyben.\nBethlen Gábor idejében nem csak Erdély, hanem Déva vára és a város is virágzásnak indult. Felépítette a vár lábánál fekvő híres Magna Curiát és a várra is figyelmet fordított. I. és II. Rákóczy György is magáénak tudhatta a várat, ezután pedig az erdélyi fejedelmek birtokát képezte.\nOsztrák fennhatóság alá került a vár. Ez idő alatt Gróf Stefan von Steinville generális megerősítette a várat. Az 1784-es Horea, Cloșca és Crișan vezette román parsztfelkelés idején az ide menekülő nemesség védelmét szolgálta.\n1817-ben I. Ferenc császár elrendelte a pusztulásnak indult vár restaurálását.\nAz 1848-1849-es szabadságharc idejében a vár a császáriak kezében volt, onnan ágyúzták az átvonuló honvédeket. A császáriak kivonulása után a honvédek vették birtokukba a térséget.\n1849 augusztus 13-án ismeretlen okból felrobbant a várhegy, ez pedig a vár dicső történelmének a végét jelentette. (Schreiber István, 2005)",
+          "admission_information": "Jegyár: 9 lej/fő.",
+          "practical_information": "A felvonó jelenleg nem működik, ezért a látogatókat kisbusz szállítja fel a vár első kapujához."
+        }
+      },
+      "media": {
+        "thumbnail": {
+          "path": null,
+          "translations": {
+            "hu": {
+              "alt_text": "Déva várának romjai a várhegy tetején"
+            }
+          }
+        },
+        "gallery": []
+      },
+      "publication_status": "DRAFT",
+      "sort_order": 70
+    },
+    {
+      "external_id": "algyogyfurdo",
+      "slug": "algyogyfurdo",
+      "category_key": "nature",
+      "recommended_visit_duration_minutes": 120,
+      "collection_keys": ["maros-mente"],
+      "coordinates": {
+        "latitude": 45.9219,
+        "longitude": 23.1725
+      },
+      "google_maps_link": "https://maps.app.goo.gl/2fj1HtrgNfQpdVt96",
+      "translations": {
+        "hu": {
+          "title": "Algyógyfürdő",
+          "short_description": "Már a rómaiak által is használt gyógyvizes fürdőhely négy forrással és a Clocota-vízeséssel.",
+          "detailed_description": "Algyógy közelében négy forrás tör a felszínre. A gyógyvizet már a római korban használták bizonyíték rá az ősrégi medence a fürdőtelep központjában. Jelenleg nem tartalmaz meleg vizet, ugyanis a forrásnál magasabban helyezkedik el. A mai forrás folyamatosan vágja magát be a hegybe, s a kifolyása időszakonként alább kerül. A víz hőmérséklete 31 fok körül ingadozik. A gyógyvíz lefolyása helyenként mésztufás képződményeket hozott létre. Egy vízesés található a Feredőgyógy központjától nem messze, a források lefolyásából, egy meredekebb oldalon vízesés alakult, érdekessége pedig a lerakódott mésztufa a vízesés aljában.\nA fürdőtelep már a középkorban is közkedvelt hely volt, Apafi Mihály és Bethlen Gábornak is kedvelt üdülőhelye volt. (Hankó Vilmos, 1884)",
+          "admission_information": "A római fürdők és a Clocota-vízesés megtekintése ingyenes.",
+          "practical_information": "Római fürdők: https://maps.app.goo.gl/2fj1HtrgNfQpdVt96. Clocota-vízesés: https://maps.app.goo.gl/61UupBL7wxYkLjm1A."
+        }
+      },
+      "media": {
+        "thumbnail": {
+          "path": null,
+          "translations": {
+            "hu": {
+              "alt_text": "Algyógyfürdő római fürdőmaradványai"
+            }
+          }
+        },
+        "gallery": []
+      },
+      "publication_status": "DRAFT",
+      "sort_order": 80
+    },
+    {
+      "external_id": "gyulafehervar",
+      "slug": "gyulafehervar",
+      "category_key": "castle",
+      "recommended_visit_duration_minutes": 120,
+      "collection_keys": ["maros-mente"],
+      "coordinates": {
+        "latitude": 46.0733,
+        "longitude": 23.58
+      },
+      "google_maps_link": "https://www.google.com/maps/place/%22Saint+Michael%22+Cathedral/@46.0680608,23.5662908,16z/data=!4m15!1m8!3m7!1s0x474ea7de25aaeb41:0xeb66ea9250c4464c!2sCetatea+Bastionar%C4%83+Alba+Carolina,+Alba+Iulia!3b1!8m2!3d46.0682065!4d23.5702587!16s%2Fg%2F1ptyl7vls!3m5!1s0x474ea7de727b56cb:0x5e65818a9697c490!8m2!3d46.067558!4d23.569844!16s%2Fm%2F0hzn_h0?authuser=0&entry=ttu",
+      "translations": {
+        "hu": {
+          "title": "Gyulafehérvár",
+          "short_description": "Vauban-rendszerű erődítmény és középkori székesegyház, Erdély fejedelmeinek egykori székhelye.",
+          "detailed_description": "Gyulafehérvár már római időben lakott volt, Apullum néven. 1007-ben már itt székelt az erdélyi vajda. A középkori vár a castrum maradványainak felhasználásával épült. Bethlen Gábor megerősített a vár falait, vizes árkot készítettet és két olaszbástyát. A mai Vauban-rendszerű erődítményt Giovanni Morando Visconti császári hadiépítész tervezte. Az 1714-1738 között épült hétágú csillag alaprajzú erődítmény Erdély legnagyobb ilyen jellegű építménye. A bástyák homlokzatán Steinville, Savoyai Jenő és a Habsburgok címere látható. Az erődítmény nagy nyílású kapui igazolják, hogy a várat inkább az ostromágyúk ellen építették mintsem a közelharc vívására. A kapuk gazdagsága a szobrokban mutatkozik. A készítő mester Johannes König. A kapuk közül kiemelkedik a harmadik, amely a keleti kötőgát vonalában helyezkedik el. A hármas nyílású kapuzat tetején III. Károly lovasszobra áll. A kapun látható domborművek Savoyai Jenő herceg török ellenes, győzelmes csatáit ábrázolják.\nA székesegyház története kapcsolódik a püspökség történetéhez. A legkorábbi templomot a XI. századra teszik, Szent László király uralkodásának idejére. A XII-XIII században a székesegyházat átépítették három hajóssá és két nyugati toronnyal látták el. Az 1241-es tatárjárást követően a helyreállítási munkák részeként a szentélyt meghosszabbították és ablakait gótikus mérművekkel látták el. 1277-ben a szászok támadnak a püspökségre és olyan mértékű pusztítást végeznek, hogy az oklevelekben még a XV. században is megemlítik. A XV. században Hunyadi János finanszírozta a munkálatokat. 1512-ben a déli bejáratot Lázói (Lászai) János kápolnává alakítatta és korai reneszánsz stílusban egy egyedi építészeti alkotást hozott létre. Ettől a bejárattól keletre pedig Várday Ferenc építetett kápolnát. Amikor 1542-ben a török Budát fenyegette Izabella királyné Erdélybe menekült és Gyulafehérváron telepedett le. A püspöki kápolna egy részébe rendeztek be neki lakhelyet. János Zsigmond idejében a székesegyház a protestánsok kezére kerül és a katolikusok csak 1715-ben kapták vissza. Barokk elemek is találhatók a székesegyházban: a bejárat oromzatán a négy szentet ábrázoló szobor, a sekrestye, a kanonoki stallumok és a főoltár. Erdély legértékesebb történelmi síremlékei itt találhatóak, ugyanis a templom belsejébe folyamatosan temetkeztek. A székesegyházban található: XIV. századi püspöki sírkövek, Hunyadi-tumbák, János Zsigmond és Izabella királyné szarkofágja. Erdély egyik legértékesebb műemléke a gyulafehérvári székesegyház. (Weisz Attila, 2007: 82-84, 174-176, 205-208)",
+          "admission_information": "A Habsburg vár területén található katolikus és ortodox székesegyház megtekintése ingyenes.",
+          "practical_information": null
+        }
+      },
+      "media": {
+        "thumbnail": {
+          "path": null,
+          "translations": {
+            "hu": {
+              "alt_text": "Gyulafehérvári Alba Carolina erőd és székesegyház"
+            }
+          }
+        },
+        "gallery": []
+      },
+      "publication_status": "DRAFT",
+      "sort_order": 90
+    }
+  ]
+}

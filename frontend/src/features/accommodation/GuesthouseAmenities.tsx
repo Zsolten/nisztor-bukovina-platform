@@ -3,6 +3,7 @@ import type { AmenityCategory, GuesthouseAmenity } from '../../shared/api/guesth
 
 interface GuesthouseAmenitiesProps {
   amenities: GuesthouseAmenity[]
+  title: string
 }
 
 const CATEGORY_ORDER: AmenityCategory[] = [
@@ -19,7 +20,7 @@ const CATEGORY_LABELS = {
   PROGRAM_GROUP: 'guesthouses.amenityCategories.PROGRAM_GROUP',
 } as const
 
-export default function GuesthouseAmenities({ amenities }: GuesthouseAmenitiesProps) {
+export default function GuesthouseAmenities({ amenities, title }: GuesthouseAmenitiesProps) {
   const { t } = useTranslation()
 
   if (amenities.length === 0) return null
@@ -31,11 +32,19 @@ export default function GuesthouseAmenities({ amenities }: GuesthouseAmenitiesPr
     >
       <header className="detail-sheet-heading">
         <p className="section-index">03</p>
-        <h2 id="amenities-heading">{t('guesthouses.amenities')}</h2>
+        <h2 id="amenities-heading">{title}</h2>
       </header>
       <div className="amenity-groups">
         {CATEGORY_ORDER.map((category) => {
-          const categoryAmenities = amenities.filter((amenity) => amenity.category === category)
+          const categoryAmenities = amenities
+            .map((amenity, index) => ({ amenity, index }))
+            .filter(({ amenity }) => amenity.category === category)
+            .sort(
+              (left, right) =>
+                (left.amenity.displayOrder ?? left.index) -
+                (right.amenity.displayOrder ?? right.index),
+            )
+            .map(({ amenity }) => amenity)
           if (categoryAmenities.length === 0) return null
 
           return (
@@ -44,8 +53,15 @@ export default function GuesthouseAmenities({ amenities }: GuesthouseAmenitiesPr
               <ul>
                 {categoryAmenities.map((amenity) => (
                   <li key={amenity.id}>
-                    <strong>{amenity.name}</strong>
-                    {amenity.description && <span>{amenity.description}</span>}
+                    <div className="amenity-name-row">
+                      <strong>{amenity.name}</strong>
+                    </div>
+                    {amenity.description && (
+                      <span className="amenity-description">{amenity.description}</span>
+                    )}
+                    {amenity.pricingType === 'PAID' && (
+                      <span className="amenity-paid-tag">{t('guesthouses.paidService')}</span>
+                    )}
                   </li>
                 ))}
               </ul>

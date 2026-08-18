@@ -27,12 +27,14 @@ class BookingPriceCalculatorTests {
   }
 
   @Test
-  void includesSingleRoomUseInTheAccommodationPrice() {
+  void chargesSingleRoomsAsRoomsRatherThanAsASurcharge() {
     BookingQuoteResponse quote = calculator.calculate(booking(5, 1, 0, 0), "hu");
 
-    assertEquals(new BigDecimal("1950.00"), quote.priceBreakdown().accommodationTotal());
+    assertEquals(new BigDecimal("2160.00"), quote.priceBreakdown().accommodationTotal());
     assertEquals(new BigDecimal("0.00"), quote.priceBreakdown().singleRoomSurcharge());
-    assertEquals(new BigDecimal("1950.00"), quote.priceBreakdown().totalPayable());
+    assertEquals(new BigDecimal("2160.00"), quote.priceBreakdown().totalPayable());
+    assertEquals("single_room", quote.lines().get(1).code());
+    assertEquals(new BigDecimal("200.00"), quote.lines().get(1).unitAmount());
   }
 
   @Test
@@ -48,6 +50,8 @@ class BookingPriceCalculatorTests {
     BookingQuoteResponse quote = calculator.calculate(booking(2, 1, 1, 0, 0, 0), "hu");
 
     assertEquals(new BigDecimal("1072.50"), quote.priceBreakdown().accommodationTotal());
+    assertEquals(new BigDecimal("780.00"), quote.priceBreakdown().adultAccommodationTotal());
+    assertEquals(new BigDecimal("292.50"), quote.priceBreakdown().childAccommodationTotal());
     assertEquals(new BigDecimal("1072.50"), quote.priceBreakdown().totalPayable());
     assertEquals("children_under_10_accommodation", quote.lines().get(1).code());
     assertEquals(new BigDecimal("97.50"), quote.lines().get(1).unitAmount());
@@ -92,8 +96,7 @@ class BookingPriceCalculatorTests {
             List.of(
                 new PricingView.Item(
                     "accommodation", "Accommodation", new BigDecimal("130"), "person_night"),
-                new PricingView.Item(
-                    "single_occupancy_room", "Single", new BigDecimal("200"), "person_night"),
+                new PricingView.Item("single_room", "Single", new BigDecimal("200"), "room_night"),
                 new PricingView.Item("breakfast", "Breakfast", new BigDecimal("45"), "person"),
                 new PricingView.Item("dinner", "Dinner", new BigDecimal("75"), "person")),
             List.of(new PricingView.Adjustment("city_tax", "City tax", new BigDecimal("99"))),

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 public class BookingPriceCalculator {
 
   private static final String CHILDREN_UNDER_TEN_DISCOUNT = "children_under_10";
+  private static final String SINGLE_ROOM = "single_room";
   private final PricingQuery pricingQuery;
 
   public BookingPriceCalculator(PricingQuery pricingQuery) {
@@ -30,18 +31,24 @@ public class BookingPriceCalculator {
         pricing.items().stream()
             .collect(Collectors.toMap(PricingView.Item::id, Function.identity()));
     BigDecimal accommodationRate = requiredItem(items, "accommodation").amount();
+    BigDecimal singleRoomRate = requiredItem(items, SINGLE_ROOM, "room_night").amount();
     BigDecimal childAccommodationRate =
         booking.childrenAge3to10() == 0
             ? BigDecimal.ZERO
             : discountedAccommodationRate(pricing, accommodationRate);
-    long adultAccommodationUnits = (long) booking.adults() * booking.nights();
+    long adultAccommodationUnits =
+        (long) (booking.adults() - booking.singleRoomCount()) * booking.nights();
     long childAccommodationUnits = (long) booking.childrenAge3to10() * booking.nights();
     long freeChildAccommodationUnits = (long) booking.childrenAge0to3() * booking.nights();
+    long singleRoomUnits = (long) booking.singleRoomCount() * booking.nights();
+    BigDecimal adultAccommodationTotal =
+        money(accommodationRate.multiply(BigDecimal.valueOf(adultAccommodationUnits)));
+    BigDecimal childAccommodationTotal =
+        money(childAccommodationRate.multiply(BigDecimal.valueOf(childAccommodationUnits)));
+    BigDecimal singleRoomTotal =
+        money(singleRoomRate.multiply(BigDecimal.valueOf(singleRoomUnits)));
     BigDecimal accommodationTotal =
-        money(
-            accommodationRate
-                .multiply(BigDecimal.valueOf(adultAccommodationUnits))
-                .add(childAccommodationRate.multiply(BigDecimal.valueOf(childAccommodationUnits))));
+        money(adultAccommodationTotal.add(childAccommodationTotal).add(singleRoomTotal));
     BigDecimal singleRoomSurcharge = money(BigDecimal.ZERO);
     BigDecimal breakfastTotal =
         serviceTotal(items, "breakfast", booking.breakfastParticipants(), booking.nights());
@@ -57,6 +64,11 @@ public class BookingPriceCalculator {
               adultAccommodationUnits,
               money(accommodationRate),
               money(accommodationRate.multiply(BigDecimal.valueOf(adultAccommodationUnits)))));
+    }
+    if (singleRoomUnits > 0) {
+      lines.add(
+          new BookingPriceLineResponse(
+              SINGLE_ROOM, singleRoomUnits, money(singleRoomRate), singleRoomTotal));
     }
     if (childAccommodationUnits > 0) {
       lines.add(
@@ -91,7 +103,13 @@ public class BookingPriceCalculator {
         booking.selectedCapacity(),
         List.copyOf(lines),
         new BookingPriceBreakdownResponse(
-            accommodationTotal, singleRoomSurcharge, breakfastTotal, dinnerTotal, totalPayable),
+            accommodationTotal,
+            adultAccommodationTotal,
+            childAccommodationTotal,
+            singleRoomSurcharge,
+            breakfastTotal,
+            dinnerTotal,
+            totalPayable),
         true);
   }
 
@@ -139,8 +157,13 @@ public class BookingPriceCalculator {
   }
 
   private PricingView.Item requiredItem(Map<String, PricingView.Item> items, String code) {
+    return requiredItem(items, code, "person_night");
+  }
+
+  private PricingView.Item requiredItem(
+      Map<String, PricingView.Item> items, String code, String expectedUnit) {
     PricingView.Item item = items.get(code);
-    if (item == null || !"person_night".equals(item.unit())) {
+    if (item == null || !expectedUnit.equals(item.unit())) {
       throw new IllegalStateException("Required booking price is not configured");
     }
     return item;

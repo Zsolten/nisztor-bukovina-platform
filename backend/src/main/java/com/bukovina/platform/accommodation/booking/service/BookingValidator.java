@@ -71,7 +71,8 @@ public class BookingValidator {
             .filter(room -> room.standardOccupancy() == 1)
             .mapToInt(ValidatedBooking.ValidatedRoomSelection::quantity)
             .sum();
-    validateCapacity(totalGuests, selectedRoomCount, selectedCapacity, singleRoomCount, problems);
+    validateCapacity(
+        adults, totalGuests, selectedRoomCount, selectedCapacity, singleRoomCount, problems);
 
     BookingServicesRequest services = input.services();
     int breakfastParticipants =
@@ -152,7 +153,7 @@ public class BookingValidator {
     } else if (adults == 0) {
       problems.add(problem("ADULT_REQUIRED", "adults", "adultRequired"));
     }
-    if (totalGuests >= largeGroupThreshold) {
+    if (totalGuests > largeGroupThreshold) {
       problems.add(problem("LARGE_GROUP_OFFLINE_ONLY", "guestCounts", "largeGroupThreshold"));
     }
     if (totalGuests > Integer.MAX_VALUE) {
@@ -213,6 +214,7 @@ public class BookingValidator {
   }
 
   private void validateCapacity(
+      int adults,
       int totalGuests,
       int selectedRoomCount,
       int selectedCapacity,
@@ -224,8 +226,8 @@ public class BookingValidator {
     if (selectedRoomCount > totalGuests) {
       problems.add(problem("TOO_MANY_ROOMS", "roomSelections", "guestPerRoom"));
     }
-    if (singleRoomCount > totalGuests) {
-      problems.add(problem("TOO_MANY_SINGLE_ROOMS", "roomSelections", "singleGuestPerRoom"));
+    if (singleRoomCount > adults) {
+      problems.add(problem("TOO_MANY_SINGLE_ROOMS", "roomSelections", "singleRoomRequiresAdult"));
     }
   }
 

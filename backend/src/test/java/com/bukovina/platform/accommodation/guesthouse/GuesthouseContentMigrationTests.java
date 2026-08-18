@@ -19,7 +19,7 @@ class GuesthouseContentMigrationTests {
   void seedsNormalizedLocalizedGuesthouseContent() {
     assertEquals(6, count("guesthouse_translation"));
     assertEquals(78, count("guesthouse_image_translation"));
-    assertEquals(6, count("room_type"));
+    assertEquals(8, count("room_type"));
     assertEquals(23, count("amenity"));
     assertEquals(46, count("guesthouse_amenity"));
     assertEquals(18, count("price_item"));
@@ -45,12 +45,14 @@ class GuesthouseContentMigrationTests {
 
   @Test
   void seedsRoomInventoriesForBothGuesthouses() {
-    assertEquals(3, roomTypeQuantity("nisztor-panzio", "double"));
-    assertEquals(1, roomTypeQuantity("nisztor-panzio", "triple"));
-    assertEquals(1, roomTypeQuantity("nisztor-panzio", "quadruple"));
-    assertEquals(6, roomTypeQuantity("bukovina-panzio", "double"));
-    assertEquals(5, roomTypeQuantity("bukovina-panzio", "triple"));
-    assertEquals(1, roomTypeQuantity("bukovina-panzio", "quadruple"));
+    assertEquals(15, roomTypeQuantity("nisztor-panzio", "single"));
+    assertEquals(15, roomTypeQuantity("nisztor-panzio", "double"));
+    assertEquals(15, roomTypeQuantity("nisztor-panzio", "triple"));
+    assertEquals(15, roomTypeQuantity("nisztor-panzio", "quadruple"));
+    assertEquals(15, roomTypeQuantity("bukovina-panzio", "single"));
+    assertEquals(15, roomTypeQuantity("bukovina-panzio", "double"));
+    assertEquals(15, roomTypeQuantity("bukovina-panzio", "triple"));
+    assertEquals(15, roomTypeQuantity("bukovina-panzio", "quadruple"));
   }
 
   @Test

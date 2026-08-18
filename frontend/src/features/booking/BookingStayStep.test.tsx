@@ -15,6 +15,19 @@ const guesthouse = {
   coverImage: { path: '/cover.jpg', altText: 'Nisztor Panzió', cover: true },
   description: 'Leírás',
   roomDescription: 'Szobák',
+  pageText: {
+    storyEyebrow: '',
+    storyTitle: '',
+    diningEyebrow: '',
+    diningTitle: '',
+    diningDescription: '',
+    amenitiesTitle: '',
+    roomTypesTitle: '',
+    pricingTitle: '',
+    historyEyebrow: '',
+    galleryTitle: '',
+    galleryHint: '',
+  },
   images: [],
   history: { title: 'Történet', text: 'Szöveg' },
   contacts: [],
@@ -25,15 +38,13 @@ const guesthouse = {
       name: 'Kétágyas szoba',
       quantity: 3,
       standardOccupancy: 2,
-      roomsWithExtraBed: 0,
-      extraBedsPerEligibleRoom: 0,
       features: [],
     },
   ],
   amenities: [],
   pricing: {
     currency: 'RON',
-    items: [{ id: 'lodging', label: 'Szállás', amount: 130, unit: 'person_night' }],
+    items: [{ id: 'accommodation', label: 'Szállás', amount: 130, unit: 'person_night' }],
     taxes: [{ id: 'city-tax', label: 'Idegenforgalmi adó', percentage: 1 }],
     surcharges: [],
     discounts: [],
@@ -71,11 +82,18 @@ function renderStep(adults: number, roomQuantity: number) {
 }
 
 describe('BookingStayStep', () => {
-  it('replaces continue with phone contact at the large-group boundary', async () => {
+  it('shows the total nightly price of a multi-bed room with its per-person detail', () => {
+    renderStep(2, 0)
+
+    expect(screen.getByText(/260/)).toBeVisible()
+    expect(screen.getByText(/130.*fő.*éj/)).toBeVisible()
+  })
+
+  it('replaces continue with phone contact above thirty guests', async () => {
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
 
-    renderStep(20, 0)
+    renderStep(31, 0)
 
     expect(await screen.findByText('Egyeztessünk telefonon')).toBeVisible()
     expect(screen.getByRole('link', { name: '+40 743 677 812' })).toHaveAttribute(
@@ -99,6 +117,8 @@ describe('BookingStayStep', () => {
             lines: [],
             priceBreakdown: {
               accommodationTotal: 780,
+              adultAccommodationTotal: 780,
+              childAccommodationTotal: 0,
               singleRoomSurcharge: 0,
               breakfastTotal: 0,
               dinnerTotal: 0,

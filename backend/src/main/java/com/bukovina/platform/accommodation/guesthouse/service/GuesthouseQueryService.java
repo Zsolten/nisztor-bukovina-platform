@@ -8,6 +8,7 @@ import com.bukovina.platform.accommodation.guesthouse.dto.AmenityResponse;
 import com.bukovina.platform.accommodation.guesthouse.dto.GuesthouseDetailResponse;
 import com.bukovina.platform.accommodation.guesthouse.dto.GuesthouseHistoryResponse;
 import com.bukovina.platform.accommodation.guesthouse.dto.GuesthouseImageResponse;
+import com.bukovina.platform.accommodation.guesthouse.dto.GuesthousePageTextResponse;
 import com.bukovina.platform.accommodation.guesthouse.dto.GuesthousePricingResponse;
 import com.bukovina.platform.accommodation.guesthouse.dto.GuesthouseSummaryResponse;
 import com.bukovina.platform.accommodation.guesthouse.dto.PriceItemResponse;
@@ -24,7 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class GuesthouseQueryService implements GuesthouseBookingQuery {
+public class GuesthouseQueryService implements GuesthouseBookingQuery, GuesthouseExistenceQuery {
 
   private static final String DEFAULT_LANGUAGE = "hu";
 
@@ -60,6 +61,12 @@ public class GuesthouseQueryService implements GuesthouseBookingQuery {
     return guesthouseRepository.existsByIdAndActiveTrue(guesthouseId);
   }
 
+  @Override
+  @Transactional(readOnly = true)
+  public boolean exists(java.util.UUID guesthouseId) {
+    return guesthouseRepository.existsById(guesthouseId);
+  }
+
   @Transactional(readOnly = true)
   public GuesthouseDetailResponse getActive(String slug, String language) {
     Guesthouse guesthouse =
@@ -79,6 +86,18 @@ public class GuesthouseQueryService implements GuesthouseBookingQuery {
         coverImage(images),
         translation.getDescription(),
         translation.getRoomDescription(),
+        new GuesthousePageTextResponse(
+            translation.getStoryEyebrow(),
+            translation.getStoryTitle(),
+            translation.getDiningEyebrow(),
+            translation.getDiningTitle(),
+            translation.getDiningDescription(),
+            translation.getAmenitiesTitle(),
+            translation.getRoomTypesTitle(),
+            translation.getPricingTitle(),
+            translation.getHistoryEyebrow(),
+            translation.getGalleryTitle(),
+            translation.getGalleryHint()),
         images,
         new GuesthouseHistoryResponse(translation.getHistoryTitle(), translation.getHistoryText()),
         contentQueryDao.findContacts(guesthouse.getId(), language),
@@ -126,16 +145,21 @@ public class GuesthouseQueryService implements GuesthouseBookingQuery {
     return new RoomTypeResponse(
         roomType.id(),
         roomType.name(),
+        roomType.shortDescription(),
         roomType.quantity(),
         roomType.standardOccupancy(),
-        roomType.roomsWithExtraBed(),
-        roomType.extraBedsPerEligibleRoom(),
         roomType.features());
   }
 
   private AmenityResponse toAmenity(AmenityView amenity) {
     return new AmenityResponse(
-        amenity.id(), amenity.name(), amenity.description(), amenity.category());
+        amenity.id(),
+        amenity.name(),
+        amenity.description(),
+        amenity.detailedDescription(),
+        amenity.category(),
+        amenity.pricingType(),
+        amenity.displayOrder());
   }
 
   private GuesthousePricingResponse toPricing(PricingView pricing) {
