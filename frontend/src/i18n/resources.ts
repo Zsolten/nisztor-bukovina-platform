@@ -368,6 +368,7 @@ export const resources = {
           title: 'Javasolt kirándulási irányok',
           introduction:
             'Csernakeresztúrról történelmi városok, ipartörténeti emlékek és hegyvidéki tájak is kényelmesen elérhetők.',
+          exploreAttractions: 'Látnivalók felfedezése',
           items: {
             heritage: {
               title: 'Déva, Vajdahunyad, Gyulafehérvár',
@@ -773,6 +774,7 @@ export const resources = {
           title: 'Direcții recomandate pentru excursii',
           introduction:
             'Din Cristur se ajunge ușor la orașe istorice, locuri ale patrimoniului industrial și peisaje montane.',
+          exploreAttractions: 'Descoperă atracțiile',
           items: {
             heritage: {
               title: 'Deva, Hunedoara, Alba Iulia',
@@ -1183,6 +1185,7 @@ export const resources = {
           title: 'Suggested day-trip directions',
           introduction:
             'Historic towns, industrial heritage and mountain landscapes are all within easy reach of Cristur.',
+          exploreAttractions: 'Explore attractions',
           items: {
             heritage: {
               title: 'Deva, Hunedoara, Alba Iulia',

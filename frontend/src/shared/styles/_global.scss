@@ -2494,9 +2494,63 @@ img {
   color: #e0b46d;
 }
 
-.surroundings-section .homepage-heading > div > p:last-child,
+.surroundings-section .homepage-heading > div {
+  grid-template-areas:
+    'eyebrow eyebrow'
+    'title action'
+    'introduction .';
+}
+
+.surroundings-section .homepage-heading .eyebrow {
+  grid-area: eyebrow;
+}
+
+.surroundings-section .homepage-heading h2 {
+  grid-area: title;
+}
+
+.surroundings-introduction,
 .destination-copy p {
   color: rgba(255, 255, 255, 0.7);
+}
+
+.surroundings-introduction {
+  grid-area: introduction;
+  margin: 2rem 0 0;
+  line-height: 1.8;
+}
+
+.surroundings-cta {
+  grid-area: action;
+  align-self: end;
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 2rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(224, 180, 109, 0.82);
+  color: var(--paper-light);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition:
+    background-color 180ms var(--ease),
+    color 180ms var(--ease),
+    border-color 180ms var(--ease);
+}
+
+.surroundings-cta:hover,
+.surroundings-cta:focus-visible {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: var(--ink);
+}
+
+.surroundings-cta svg {
+  flex: 0 0 auto;
 }
 
 .surroundings-grid {
@@ -2512,6 +2566,12 @@ img {
 .destination-image-wrap {
   position: relative;
   aspect-ratio: 16 / 10;
+  display: block;
+}
+
+.destination-image-wrap:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 4px;
 }
 
 .destination-copy {
@@ -2778,6 +2838,13 @@ img {
   .homepage-heading > div {
     grid-template-columns: 1fr;
     gap: 1.25rem;
+  }
+  .surroundings-section .homepage-heading > div {
+    grid-template-areas:
+      'eyebrow'
+      'title'
+      'introduction'
+      'action';
   }
   .review-layout {
     grid-template-columns: 1fr;

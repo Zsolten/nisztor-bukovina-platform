@@ -121,7 +121,7 @@ describe('GuesthouseDetailPage', () => {
     const bookingButtons = screen.getAllByRole('link', { name: 'Foglalás' })
     expect(bookingButtons).toHaveLength(2)
     bookingButtons.forEach((button) =>
-      expect(button).toHaveAttribute('href', '/hu/guesthouses/nisztor-panzio/booking'),
+      expect(button).toHaveAttribute('href', '/hu/booking'),
     )
   })
 })

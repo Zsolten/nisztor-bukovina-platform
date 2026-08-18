@@ -215,6 +215,21 @@ describe('TourismMapPage', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   })
 
+  it('opens the attractions view from a shared homepage link', async () => {
+    const router = createMemoryRouter(appRoutes, {
+      initialEntries: ['/hu/star-tours?view=attractions'],
+    })
+    render(
+      <AppProviders>
+        <RouterProvider router={router} />
+      </AppProviders>,
+    )
+
+    expect(await screen.findByRole('heading', { level: 2, name: 'Látnivalók' })).toBeVisible()
+    expect(screen.getByRole('tab', { name: 'Látnivalók' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByText('Déva vára')).toBeVisible()
+  })
+
   it('uses the Csernakeresztúri tájház as the initial attraction when available', async () => {
     vi.stubGlobal(
       'fetch',

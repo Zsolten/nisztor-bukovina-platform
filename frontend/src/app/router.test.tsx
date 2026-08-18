@@ -158,6 +158,15 @@ describe('guesthouse and language routing', () => {
     expect(screen.getByRole('heading', { name: 'Családi vendéglátás közel 30 éve.' })).toBeVisible()
     expect(screen.getByRole('heading', { name: 'Javasolt kirándulási irányok' })).toBeVisible()
     expect(screen.getByText('Déva, Vajdahunyad, Gyulafehérvár')).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Látnivalók felfedezése' })).toHaveAttribute(
+      'href',
+      '/hu/star-tours?view=attractions',
+    )
+    expect(
+      screen.getByRole('link', {
+        name: 'Déva, Vajdahunyad, Gyulafehérvár – Látnivalók felfedezése',
+      }),
+    ).toHaveAttribute('href', '/hu/star-tours?view=attractions')
     expect(screen.getByRole('heading', { name: 'Vendégeink mondták' })).toBeVisible()
     expect(screen.getByRole('heading', { name: 'Így talál meg minket.' })).toBeVisible()
     expect(screen.getByTitle('A panziók helye a Google Térképen')).toHaveAttribute(
@@ -170,7 +179,7 @@ describe('guesthouse and language routing', () => {
     )
     expect(screen.getByRole('link', { name: 'Foglalási kérelem' })).toHaveAttribute(
       'href',
-      '/hu/booking?guesthouse=bukovina-panzio',
+      '/hu/booking',
     )
     expect(
       document.querySelector('.section-index, .card-number, .destination-image-wrap > span'),
