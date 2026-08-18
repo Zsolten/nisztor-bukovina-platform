@@ -1,10 +1,13 @@
 import { useTranslation } from 'react-i18next'
-import { Link, useOutletContext } from 'react-router-dom'
-import type { LanguageOutletContext } from '../../app/LanguageLayout'
+import { Link } from 'react-router-dom'
+import type { Language } from '../../i18n/languages'
 
-export default function BookingPlaceholderButton() {
+interface BookingPlaceholderButtonProps {
+  language: Language
+}
+
+export default function BookingPlaceholderButton({ language }: BookingPlaceholderButtonProps) {
   const { t } = useTranslation()
-  const { language } = useOutletContext<LanguageOutletContext>()
 
   return (
     <Link

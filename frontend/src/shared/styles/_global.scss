@@ -784,6 +784,79 @@ img {
   color: var(--muted);
 }
 
+.application-error-page {
+  display: grid;
+  min-height: 100dvh;
+  padding: clamp(2rem, 8vw, 7rem) max(1.5rem, calc((100vw - 1120px) / 2));
+  align-content: center;
+  background: var(--paper);
+}
+
+.application-error-content {
+  width: min(100%, 46rem);
+  padding: clamp(1.5rem, 4vw, 3.5rem) 0 clamp(1.5rem, 4vw, 3.5rem) clamp(1.25rem, 3vw, 2.5rem);
+  border-left: 3px solid var(--gold);
+}
+
+.application-error-content h1 {
+  max-width: 12ch;
+  margin: 0.35rem 0 1rem;
+  font-family: var(--serif);
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 400;
+  line-height: 1.04;
+}
+
+.application-error-content > p:not(.eyebrow) {
+  max-width: 52ch;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.application-error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.application-error-actions button,
+.application-error-actions a {
+  display: inline-flex;
+  min-height: 44px;
+  padding: 0.65rem 0.9rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid var(--forest);
+  border-radius: 0;
+  background: var(--forest);
+  color: var(--paper-light);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.application-error-actions a {
+  background: transparent;
+  color: var(--forest);
+}
+
+.application-error-actions button:hover,
+.application-error-actions button:focus-visible {
+  background: transparent;
+  color: var(--forest);
+}
+
+.application-error-actions a:hover,
+.application-error-actions a:focus-visible {
+  background: var(--forest);
+  color: var(--paper-light);
+}
+
 .guesthouse-detail {
   width: min(100% - 3rem, 1280px);
   margin: 0 auto;

@@ -17,6 +17,14 @@ export const resources = {
           menu: 'Menü megnyitása',
           closeMenu: 'Menü bezárása',
         },
+        error: {
+          eyebrow: 'Váratlan hiba',
+          title: 'Egy pillanatra megakadtunk.',
+          description: 'Az oldal most nem tölthető be megfelelően. Próbálja újra, vagy térjen vissza a főoldalra.',
+          retry: 'Újrapróbálom',
+          homeReturn: 'Vissza a főoldalra',
+          adminReturn: 'Vissza a belépéshez',
+        },
         footer: {
           message: 'Családias vendéglátás Csernakeresztúron.',
           copyright: 'Nisztor–Bukovina Panziók',
@@ -433,6 +441,14 @@ export const resources = {
           menu: 'Deschide meniul',
           closeMenu: 'Închide meniul',
         },
+        error: {
+          eyebrow: 'Eroare neașteptată',
+          title: 'Am întâmpinat o mică problemă.',
+          description: 'Pagina nu se poate încărca în acest moment. Încearcă din nou sau revino la pagina principală.',
+          retry: 'Încearcă din nou',
+          homeReturn: 'Înapoi la pagina principală',
+          adminReturn: 'Înapoi la autentificare',
+        },
         footer: {
           message: 'Ospitalitate familială în Cristur.',
           copyright: 'Pensiunile Nisztor–Bukovina',
@@ -843,6 +859,14 @@ export const resources = {
           languages: 'Language selection',
           menu: 'Open menu',
           closeMenu: 'Close menu',
+        },
+        error: {
+          eyebrow: 'Unexpected error',
+          title: 'We hit a small snag.',
+          description: 'This page cannot be loaded right now. Please try again or return to the home page.',
+          retry: 'Try again',
+          homeReturn: 'Back to home',
+          adminReturn: 'Back to sign in',
         },
         footer: {
           message: 'Family hospitality in Cristur.',

@@ -1,10 +1,12 @@
 import Col from 'react-bootstrap/Col'
 import Row from 'react-bootstrap/Row'
 import { useTranslation } from 'react-i18next'
+import type { Language } from '../../i18n/languages'
 import type { GuesthousePricing as Pricing } from '../../shared/api/guesthouses'
 import BookingPlaceholderButton from './BookingPlaceholderButton'
 
 interface GuesthousePricingProps {
+  language: Language
   pricing: Pricing
   title: string
 }
@@ -16,7 +18,7 @@ const UNIT_LABELS = {
   day: 'guesthouses.priceUnits.day',
 } as const
 
-export default function GuesthousePricing({ pricing, title }: GuesthousePricingProps) {
+export default function GuesthousePricing({ language, pricing, title }: GuesthousePricingProps) {
   const { t } = useTranslation()
 
   if (pricing.items.length === 0) return null
@@ -28,7 +30,7 @@ export default function GuesthousePricing({ pricing, title }: GuesthousePricingP
     >
       <header className="detail-sheet-heading pricing-heading">
         <h2 id="pricing-heading">{title}</h2>
-        <BookingPlaceholderButton />
+        <BookingPlaceholderButton language={language} />
       </header>
       <Row className="pricing-grid">
         <Col xs={12} lg={8}>

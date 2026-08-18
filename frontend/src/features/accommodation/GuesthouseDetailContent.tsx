@@ -61,6 +61,7 @@ export default function GuesthouseDetailContent({
             description={data.description}
             eyebrow={data.pageText.storyEyebrow}
             images={storyImages}
+            language={language}
             title={data.pageText.storyTitle}
           />,
         )}
@@ -86,7 +87,11 @@ export default function GuesthouseDetailContent({
         )}
         {wrapSection(
           'pricing',
-          <GuesthousePricing pricing={data.pricing} title={data.pageText.pricingTitle} />,
+          <GuesthousePricing
+            language={language}
+            pricing={data.pricing}
+            title={data.pageText.pricingTitle}
+          />,
         )}
         {wrapSection(
           'history',
