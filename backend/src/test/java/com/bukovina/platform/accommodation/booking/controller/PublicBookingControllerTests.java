@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest(
     properties = {
       "DB_PASSWORD=test-password",
+      "booking.public.rate-limit.enabled=false",
       "booking.notification.enabled=true",
       "booking.notification.token-encryption-key=MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=",
       "booking.notification.from-address=sender@example.com",

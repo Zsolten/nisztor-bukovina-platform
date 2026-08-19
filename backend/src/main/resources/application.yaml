@@ -28,7 +28,7 @@ spring:
           starttls:
             enable: ${MAIL_STARTTLS_ENABLE:${SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE:true}}
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${PORT:${SERVER_PORT:8080}}
 
 management:
   health:
@@ -42,6 +42,16 @@ management:
 booking:
   public:
     large-group-threshold: ${BOOKING_LARGE_GROUP_THRESHOLD:30}
+    rate-limit:
+      enabled: ${BOOKING_PUBLIC_RATE_LIMIT_ENABLED:true}
+      quote-client-capacity: ${BOOKING_PUBLIC_QUOTE_RATE_LIMIT_CAPACITY:30}
+      quote-client-refill-period: ${BOOKING_PUBLIC_QUOTE_RATE_LIMIT_REFILL_PERIOD:PT1M}
+      request-client-capacity: ${BOOKING_PUBLIC_REQUEST_RATE_LIMIT_CAPACITY:10}
+      request-client-refill-period: ${BOOKING_PUBLIC_REQUEST_RATE_LIMIT_REFILL_PERIOD:PT1H}
+      request-email-capacity: ${BOOKING_PUBLIC_REQUEST_EMAIL_RATE_LIMIT_CAPACITY:3}
+      request-email-refill-period: ${BOOKING_PUBLIC_REQUEST_EMAIL_RATE_LIMIT_REFILL_PERIOD:P1D}
+      cache-ttl: ${BOOKING_PUBLIC_RATE_LIMIT_CACHE_TTL:P1D}
+      max-entries: ${BOOKING_PUBLIC_RATE_LIMIT_MAX_ENTRIES:10000}
   notification:
     enabled: ${NOTIFICATIONS_ENABLED:false}
     max-attempts: ${BOOKING_NOTIFICATION_MAX_ATTEMPTS:5}
@@ -60,6 +70,7 @@ admin:
       secret: ${ADMIN_JWT_SECRET:}
       access-token-ttl: ${ADMIN_JWT_ACCESS_TOKEN_TTL:PT30M}
     bootstrap:
+      enabled: ${ADMIN_BOOTSTRAP_ENABLED:false}
       email: ${ADMIN_BOOTSTRAP_EMAIL:}
       password: ${ADMIN_BOOTSTRAP_PASSWORD:}
     login-rate-limit:

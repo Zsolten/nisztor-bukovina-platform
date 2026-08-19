@@ -6,6 +6,8 @@ import com.bukovina.platform.accommodation.booking.dto.BookingRequestCreatedResp
 import com.bukovina.platform.accommodation.booking.dto.CreateBookingRequest;
 import com.bukovina.platform.accommodation.booking.service.BookingQuoteService;
 import com.bukovina.platform.accommodation.booking.service.BookingRequestService;
+import com.bukovina.platform.accommodation.booking.service.PublicBookingRateLimiter;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,15 +20,21 @@ public class PublicBookingController {
 
   private final BookingQuoteService quoteService;
   private final BookingRequestService requestService;
+  private final PublicBookingRateLimiter rateLimiter;
 
   public PublicBookingController(
-      BookingQuoteService quoteService, BookingRequestService requestService) {
+      BookingQuoteService quoteService,
+      BookingRequestService requestService,
+      PublicBookingRateLimiter rateLimiter) {
     this.quoteService = quoteService;
     this.requestService = requestService;
+    this.rateLimiter = rateLimiter;
   }
 
   @PostMapping("/api/booking-quotes")
-  public BookingQuoteResponse quote(@RequestBody BookingQuoteRequest request) {
+  public BookingQuoteResponse quote(
+      @RequestBody BookingQuoteRequest request, HttpServletRequest httpRequest) {
+    rateLimiter.consumeQuote(httpRequest.getRemoteAddr());
     return quoteService.quote(request);
   }
 
@@ -34,7 +42,9 @@ public class PublicBookingController {
   @ResponseStatus(HttpStatus.CREATED)
   public BookingRequestCreatedResponse create(
       @RequestBody CreateBookingRequest request,
-      @RequestHeader(name = "Idempotency-Key", required = false) String idempotencyKey) {
+      @RequestHeader(name = "Idempotency-Key", required = false) String idempotencyKey,
+      HttpServletRequest httpRequest) {
+    rateLimiter.consumeRequest(httpRequest.getRemoteAddr(), request.contactEmail());
     return requestService.create(request, idempotencyKey);
   }
 }

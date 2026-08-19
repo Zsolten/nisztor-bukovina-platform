@@ -71,6 +71,8 @@ paths:
                 $ref: '#/components/schemas/BookingQuote'
         '400':
           $ref: '#/components/responses/BookingValidationError'
+        '429':
+          $ref: '#/components/responses/BookingRateLimitError'
   /booking-requests:
     post:
       operationId: createBookingRequest
@@ -107,6 +109,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BookingError'
+        '429':
+          $ref: '#/components/responses/BookingRateLimitError'
   /booking-management/{token}:
     get:
       operationId: getBookingManagementSummary
@@ -894,6 +898,18 @@ components:
   responses:
     BookingValidationError:
       description: One or more request fields or cross-field booking rules are invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BookingError'
+    BookingRateLimitError:
+      description: Too many anonymous quote or booking-request attempts were made.
+      headers:
+        Retry-After:
+          description: Seconds until another attempt can be made.
+          schema:
+            type: integer
+            minimum: 1
       content:
         application/json:
           schema:
