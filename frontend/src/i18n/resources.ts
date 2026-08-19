@@ -20,7 +20,8 @@ export const resources = {
         error: {
           eyebrow: 'Váratlan hiba',
           title: 'Egy pillanatra megakadtunk.',
-          description: 'Az oldal most nem tölthető be megfelelően. Próbálja újra, vagy térjen vissza a főoldalra.',
+          description:
+            'Az oldal most nem tölthető be megfelelően. Próbálja újra, vagy térjen vissza a főoldalra.',
           retry: 'Újrapróbálom',
           homeReturn: 'Vissza a főoldalra',
           adminReturn: 'Vissza a belépéshez',
@@ -444,7 +445,8 @@ export const resources = {
         error: {
           eyebrow: 'Eroare neașteptată',
           title: 'Am întâmpinat o mică problemă.',
-          description: 'Pagina nu se poate încărca în acest moment. Încearcă din nou sau revino la pagina principală.',
+          description:
+            'Pagina nu se poate încărca în acest moment. Încearcă din nou sau revino la pagina principală.',
           retry: 'Încearcă din nou',
           homeReturn: 'Înapoi la pagina principală',
           adminReturn: 'Înapoi la autentificare',
@@ -863,7 +865,8 @@ export const resources = {
         error: {
           eyebrow: 'Unexpected error',
           title: 'We hit a small snag.',
-          description: 'This page cannot be loaded right now. Please try again or return to the home page.',
+          description:
+            'This page cannot be loaded right now. Please try again or return to the home page.',
           retry: 'Try again',
           homeReturn: 'Back to home',
           adminReturn: 'Back to sign in',

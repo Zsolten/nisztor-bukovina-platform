@@ -134,22 +134,13 @@ export default function LanguageLayout() {
                     <ChevronDown aria-hidden="true" size={15} strokeWidth={2} />
                   </button>
                   <div className="guesthouse-navigation-menu" id="guesthouse-navigation-menu">
-                    <Link
-                      to={`/${lang}/guesthouses/nisztor-panzio`}
-                      onClick={closeNavigation}
-                    >
+                    <Link to={`/${lang}/guesthouses/nisztor-panzio`} onClick={closeNavigation}>
                       {t('app.navigation.nisztorGuesthouse')}
                     </Link>
-                    <Link
-                      to={`/${lang}/guesthouses/bukovina-panzio`}
-                      onClick={closeNavigation}
-                    >
+                    <Link to={`/${lang}/guesthouses/bukovina-panzio`} onClick={closeNavigation}>
                       {t('app.navigation.bukovinaGuesthouse')}
                     </Link>
-                    <Link
-                      to={`/${lang}/booking`}
-                      onClick={closeNavigation}
-                    >
+                    <Link to={`/${lang}/booking`} onClick={closeNavigation}>
                       {t('app.navigation.booking')}
                     </Link>
                   </div>

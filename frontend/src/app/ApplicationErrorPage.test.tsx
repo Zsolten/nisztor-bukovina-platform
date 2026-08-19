@@ -30,7 +30,9 @@ describe('ApplicationErrorPage', () => {
       </AppProviders>,
     )
 
-    expect(await screen.findByRole('heading', { name: 'Egy pillanatra megakadtunk.' })).toBeVisible()
+    expect(
+      await screen.findByRole('heading', { name: 'Egy pillanatra megakadtunk.' }),
+    ).toBeVisible()
     expect(screen.getByRole('link', { name: 'Vissza a főoldalra' })).toHaveAttribute('href', '/hu')
     expect(screen.queryByText('Internal implementation detail')).not.toBeInTheDocument()
   })
