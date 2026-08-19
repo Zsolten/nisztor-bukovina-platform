@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AppProviders } from '../../app/providers'
@@ -113,15 +113,18 @@ describe('GuesthouseDetailPage', () => {
     expect(screen.getByText('130 RON')).toBeVisible()
     expect(screen.getByText('1%')).toBeVisible()
     expect(screen.queryByText('Szállás áfája')).not.toBeInTheDocument()
+    expect(document.querySelector('.guesthouse-detail .section-index')).not.toBeInTheDocument()
     const storyImages = document.querySelectorAll('.story-sheet .editorial-images img')
     expect(storyImages).toHaveLength(2)
     expect(storyImages[0]).toHaveAttribute('src', '/story-1.jpg')
     expect(storyImages[1]).toHaveAttribute('src', '/story-2.jpg')
 
-    const bookingButtons = screen.getAllByRole('link', { name: 'Foglalás' })
+    const detailContent = document.querySelector('.guesthouse-detail')
+    expect(detailContent).not.toBeNull()
+    const bookingButtons = within(detailContent as HTMLElement).getAllByRole('link', {
+      name: 'Foglalás',
+    })
     expect(bookingButtons).toHaveLength(2)
-    bookingButtons.forEach((button) =>
-      expect(button).toHaveAttribute('href', '/hu/guesthouses/nisztor-panzio/booking'),
-    )
+    bookingButtons.forEach((button) => expect(button).toHaveAttribute('href', '/hu/booking'))
   })
 })

@@ -18,7 +18,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useOutletContext } from 'react-router-dom'
+import { useOutletContext, useSearchParams } from 'react-router-dom'
 import { useSwipeable } from 'react-swipeable'
 import type { LanguageOutletContext } from '../../app/LanguageLayout'
 import {
@@ -124,7 +124,8 @@ function normalizeSearchText(value: string, language: string) {
 export default function TourismMapPage() {
   const { language } = useOutletContext<LanguageOutletContext>()
   const { t } = useTranslation()
-  const [view, setView] = useState<TourismView>('tours')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const view: TourismView = searchParams.get('view') === 'attractions' ? 'attractions' : 'tours'
   const [layout, setLayout] = useState<TourismLayout>('map')
   const [query, setQuery] = useState('')
   const [mobileCardAnimation, setMobileCardAnimation] = useState<'next' | 'previous' | null>(null)
@@ -217,6 +218,16 @@ export default function TourismMapPage() {
       left: direction * Math.max(filters.clientWidth * 0.75, 180),
       behavior: 'smooth',
     })
+  }
+
+  function changeView(nextView: TourismView) {
+    const nextSearchParams = new URLSearchParams(searchParams)
+    if (nextView === 'attractions') {
+      nextSearchParams.set('view', 'attractions')
+    } else {
+      nextSearchParams.delete('view')
+    }
+    setSearchParams(nextSearchParams, { replace: true })
   }
 
   useEffect(() => {
@@ -436,7 +447,7 @@ export default function TourismMapPage() {
               className={view === 'tours' ? 'active' : ''}
               onClick={() => {
                 setHoveredListAttraction(null)
-                setView('tours')
+                changeView('tours')
               }}
             >
               {t('tourism.tours')}
@@ -448,7 +459,7 @@ export default function TourismMapPage() {
               className={view === 'attractions' ? 'active' : ''}
               onClick={() => {
                 setHoveredListAttraction(null)
-                setView('attractions')
+                changeView('attractions')
               }}
             >
               {t('tourism.attractions')}

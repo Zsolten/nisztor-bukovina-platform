@@ -61,6 +61,7 @@ export default function GuesthouseDetailContent({
             description={data.description}
             eyebrow={data.pageText.storyEyebrow}
             images={storyImages}
+            language={language}
             title={data.pageText.storyTitle}
           />,
         )}
@@ -86,7 +87,11 @@ export default function GuesthouseDetailContent({
         )}
         {wrapSection(
           'pricing',
-          <GuesthousePricing pricing={data.pricing} title={data.pageText.pricingTitle} />,
+          <GuesthousePricing
+            language={language}
+            pricing={data.pricing}
+            title={data.pageText.pricingTitle}
+          />,
         )}
         {wrapSection(
           'history',
@@ -98,7 +103,6 @@ export default function GuesthouseDetailContent({
         'gallery',
         <section className="gallery-section" aria-labelledby="gallery-heading">
           <header className="section-heading compact">
-            <p className="section-index">07</p>
             <div>
               <h2 id="gallery-heading">{data.pageText.galleryTitle}</h2>
               <p>{data.pageText.galleryHint}</p>

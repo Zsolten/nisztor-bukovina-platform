@@ -12,7 +12,7 @@ const guesthouse = {
   slug: 'bukovina-panzio',
   name: 'Bukovina Panzió',
   shortDescription: 'Családias szállás.',
-  roomCount: 19,
+  roomCount: 20,
   coverImage: { path: '/cover.jpg', altText: 'Bukovina Panzió', cover: true },
   description: '',
   roomDescription: '',
