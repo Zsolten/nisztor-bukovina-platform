@@ -39,7 +39,8 @@ class ProductionAdminBootstrapTests {
             mock(AdminAccountRepository.class),
             mock(PasswordEncoder.class));
 
-    assertThatThrownBy(() -> bootstrap.run(mock(org.springframework.boot.ApplicationArguments.class)))
+    assertThatThrownBy(
+            () -> bootstrap.run(mock(org.springframework.boot.ApplicationArguments.class)))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("ADMIN_BOOTSTRAP_EMAIL");
   }
