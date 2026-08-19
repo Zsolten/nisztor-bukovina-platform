@@ -13,6 +13,7 @@ import BookingManagementPage from '../features/booking/BookingManagementPage'
 import BookingRequestSuccessPage from '../features/booking/BookingRequestSuccessPage'
 import TourismMapPage from '../features/tourism/TourismMapPage'
 import { DEFAULT_LANGUAGE, readPreferredLanguage } from '../i18n/languages'
+import ApplicationErrorPage from './ApplicationErrorPage'
 import LanguageLayout from './LanguageLayout'
 
 export const appRoutes: RouteObject[] = [
@@ -23,10 +24,12 @@ export const appRoutes: RouteObject[] = [
   {
     path: '/admin/login',
     element: <AdminLoginPage />,
+    errorElement: <ApplicationErrorPage />,
   },
   {
     path: '/admin',
     element: <ProtectedAdminRoute />,
+    errorElement: <ApplicationErrorPage />,
     children: [
       {
         element: <AdminShell />,
@@ -59,10 +62,12 @@ export const appRoutes: RouteObject[] = [
     path: '/',
     element: <></>,
     loader: () => redirect(`/${readPreferredLanguage()}`),
+    errorElement: <ApplicationErrorPage />,
   },
   {
     path: '/:lang',
     element: <LanguageLayout />,
+    errorElement: <ApplicationErrorPage />,
     children: [
       {
         index: true,

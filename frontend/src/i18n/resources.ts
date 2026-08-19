@@ -6,12 +6,25 @@ export const resources = {
         location: 'Csernakeresztúr · Dél-Erdély',
         navigation: {
           guesthouses: 'Panzióink',
+          openGuesthouseMenu: 'Panziók listájának megnyitása',
+          nisztorGuesthouse: 'Nisztor Panzió',
+          bukovinaGuesthouse: 'Bukovina Panzió',
+          booking: 'Foglalás',
           starTours: 'Csillagtúrák',
           favorites: 'Kedvenceim',
           home: 'Főoldal',
           languages: 'Nyelvválasztás',
           menu: 'Menü megnyitása',
           closeMenu: 'Menü bezárása',
+        },
+        error: {
+          eyebrow: 'Váratlan hiba',
+          title: 'Egy pillanatra megakadtunk.',
+          description:
+            'Az oldal most nem tölthető be megfelelően. Próbálja újra, vagy térjen vissza a főoldalra.',
+          retry: 'Újrapróbálom',
+          homeReturn: 'Vissza a főoldalra',
+          adminReturn: 'Vissza a belépéshez',
         },
         footer: {
           message: 'Családias vendéglátás Csernakeresztúron.',
@@ -368,6 +381,7 @@ export const resources = {
           title: 'Javasolt kirándulási irányok',
           introduction:
             'Csernakeresztúrról történelmi városok, ipartörténeti emlékek és hegyvidéki tájak is kényelmesen elérhetők.',
+          exploreAttractions: 'Látnivalók felfedezése',
           items: {
             heritage: {
               title: 'Déva, Vajdahunyad, Gyulafehérvár',
@@ -417,12 +431,25 @@ export const resources = {
         location: 'Cristur · Transilvania de Sud',
         navigation: {
           guesthouses: 'Pensiunile noastre',
+          openGuesthouseMenu: 'Deschide lista pensiunilor',
+          nisztorGuesthouse: 'Pensiunea Nisztor',
+          bukovinaGuesthouse: 'Pensiunea Bukovina',
+          booking: 'Rezervare',
           starTours: 'Tururi în circuit',
           favorites: 'Favorite',
           home: 'Acasă',
           languages: 'Selectarea limbii',
           menu: 'Deschide meniul',
           closeMenu: 'Închide meniul',
+        },
+        error: {
+          eyebrow: 'Eroare neașteptată',
+          title: 'Am întâmpinat o mică problemă.',
+          description:
+            'Pagina nu se poate încărca în acest moment. Încearcă din nou sau revino la pagina principală.',
+          retry: 'Încearcă din nou',
+          homeReturn: 'Înapoi la pagina principală',
+          adminReturn: 'Înapoi la autentificare',
         },
         footer: {
           message: 'Ospitalitate familială în Cristur.',
@@ -773,6 +800,7 @@ export const resources = {
           title: 'Direcții recomandate pentru excursii',
           introduction:
             'Din Cristur se ajunge ușor la orașe istorice, locuri ale patrimoniului industrial și peisaje montane.',
+          exploreAttractions: 'Descoperă atracțiile',
           items: {
             heritage: {
               title: 'Deva, Hunedoara, Alba Iulia',
@@ -823,12 +851,25 @@ export const resources = {
         location: 'Cristur · Southern Transylvania',
         navigation: {
           guesthouses: 'Our guesthouses',
+          openGuesthouseMenu: 'Open guesthouse list',
+          nisztorGuesthouse: 'Nisztor Guesthouse',
+          bukovinaGuesthouse: 'Bukovina Guesthouse',
+          booking: 'Booking',
           starTours: 'Star tours',
           favorites: 'Favorites',
           home: 'Home',
           languages: 'Language selection',
           menu: 'Open menu',
           closeMenu: 'Close menu',
+        },
+        error: {
+          eyebrow: 'Unexpected error',
+          title: 'We hit a small snag.',
+          description:
+            'This page cannot be loaded right now. Please try again or return to the home page.',
+          retry: 'Try again',
+          homeReturn: 'Back to home',
+          adminReturn: 'Back to sign in',
         },
         footer: {
           message: 'Family hospitality in Cristur.',
@@ -1183,6 +1224,7 @@ export const resources = {
           title: 'Suggested day-trip directions',
           introduction:
             'Historic towns, industrial heritage and mountain landscapes are all within easy reach of Cristur.',
+          exploreAttractions: 'Explore attractions',
           items: {
             heritage: {
               title: 'Deva, Hunedoara, Alba Iulia',

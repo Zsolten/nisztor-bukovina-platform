@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import type { Language } from '../../i18n/languages'
 import type { GuesthouseImage } from '../../shared/api/guesthouses'
 import BookingPlaceholderButton from './BookingPlaceholderButton'
 
@@ -6,6 +7,7 @@ interface GuesthouseStoryProps {
   description: string
   images: GuesthouseImage[]
   eyebrow: string
+  language: Language
   title: string
 }
 
@@ -13,6 +15,7 @@ export default function GuesthouseStory({
   description,
   images,
   eyebrow,
+  language,
   title,
 }: GuesthouseStoryProps) {
   const { t } = useTranslation()
@@ -27,11 +30,10 @@ export default function GuesthouseStory({
         ))}
       </div>
       <div className="editorial-copy">
-        <p className="section-index">01</p>
         <p className="eyebrow">{eyebrow}</p>
         <h2 id="story-heading">{title}</h2>
         <p>{description}</p>
-        <BookingPlaceholderButton />
+        <BookingPlaceholderButton language={language} />
       </div>
     </section>
   )

@@ -35,7 +35,7 @@ class PublicGuesthouseControllerTests {
         .andExpect(jsonPath("$[0].roomCount").value(5))
         .andExpect(jsonPath("$[1].slug").value("bukovina-panzio"))
         .andExpect(jsonPath("$[1].name").value("Bukovina Panzió"))
-        .andExpect(jsonPath("$[1].roomCount").value(12));
+        .andExpect(jsonPath("$[1].roomCount").value(20));
   }
 
   @Test
@@ -52,6 +52,11 @@ class PublicGuesthouseControllerTests {
         .perform(get("/api/guesthouses/bukovina-panzio").queryParam("lang", "hu"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.slug").value("bukovina-panzio"))
+        .andExpect(jsonPath("$.roomCount").value(20))
+        .andExpect(
+            jsonPath("$.roomDescription")
+                .value(
+                    "20 szoba egy-, két-, három- és négyágyas elrendezésben, az igényekhez igazodva."))
         .andExpect(jsonPath("$.images.length()").value(16))
         .andExpect(jsonPath("$.coverImage.cover").value(true));
   }

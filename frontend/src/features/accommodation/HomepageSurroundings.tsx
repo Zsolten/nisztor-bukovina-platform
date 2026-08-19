@@ -1,4 +1,7 @@
+import { ArrowRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { Link, useOutletContext } from 'react-router-dom'
+import type { LanguageOutletContext } from '../../app/LanguageLayout'
 
 const DESTINATIONS = [
   {
@@ -32,7 +35,9 @@ const DESTINATIONS = [
 ] as const
 
 export default function HomepageSurroundings() {
+  const { language } = useOutletContext<LanguageOutletContext>()
   const { t } = useTranslation()
+  const attractionsPath = `/${language}/star-tours?view=attractions`
 
   return (
     <section className="homepage-band surroundings-section" aria-labelledby="surroundings-heading">
@@ -41,16 +46,24 @@ export default function HomepageSurroundings() {
           <div>
             <p className="eyebrow">{t('homepage.surroundings.eyebrow')}</p>
             <h2 id="surroundings-heading">{t('homepage.surroundings.title')}</h2>
-            <p>{t('homepage.surroundings.introduction')}</p>
+            <p className="surroundings-introduction">{t('homepage.surroundings.introduction')}</p>
+            <Link className="surroundings-cta" to={attractionsPath}>
+              {t('homepage.surroundings.exploreAttractions')}
+              <ArrowRight aria-hidden="true" size={17} strokeWidth={1.8} />
+            </Link>
           </div>
         </header>
 
         <div className="surroundings-grid">
           {DESTINATIONS.map((destination) => (
             <article className="destination-item" key={destination.id}>
-              <div className="destination-image-wrap">
+              <Link
+                className="destination-image-wrap"
+                to={attractionsPath}
+                aria-label={`${t(destination.titleKey)} – ${t('homepage.surroundings.exploreAttractions')}`}
+              >
                 <img src={destination.image} alt={t(destination.altKey)} loading="lazy" />
-              </div>
+              </Link>
               <div className="destination-copy">
                 <h3>{t(destination.titleKey)}</h3>
                 <p>{t(destination.descriptionKey)}</p>

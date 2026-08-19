@@ -1,6 +1,7 @@
 import { Col, Container, Row } from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Link, useOutletContext } from 'react-router-dom'
+import { CalendarDays } from 'lucide-react'
 import type { LanguageOutletContext } from '../../app/LanguageLayout'
 import AsyncStatus from '../../shared/components/AsyncStatus'
 import HomepageLegacy from './HomepageLegacy'
@@ -53,9 +54,22 @@ export default function GuesthouseListPage() {
                       {t('guesthouses.roomCount', { count: guesthouse.roomCount })}
                     </p>
                     <h3>{guesthouse.name}</h3>
-                    <Link className="text-link" to={`/${language}/guesthouses/${guesthouse.slug}`}>
-                      {t('guesthouses.openDetails')}
-                      <span aria-hidden="true">↗</span>
+                    <div className="guesthouse-card-actions">
+                      <Link
+                        className="text-link guesthouse-details-link"
+                        to={`/${language}/guesthouses/${guesthouse.slug}`}
+                      >
+                        <span className="guesthouse-details-label">
+                          {t('guesthouses.openDetails')}
+                        </span>
+                        <span className="guesthouse-details-icon" aria-hidden="true">
+                          ↗
+                        </span>
+                      </Link>
+                    </div>
+                    <Link className="guesthouse-booking-link" to={`/${language}/booking`}>
+                      <CalendarDays aria-hidden="true" size={16} />
+                      {t('guesthouses.booking')}
                     </Link>
                   </div>
                 </article>

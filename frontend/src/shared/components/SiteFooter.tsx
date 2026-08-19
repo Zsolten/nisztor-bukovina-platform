@@ -27,8 +27,9 @@ export default function SiteFooter({ language }: SiteFooterProps) {
           <address>{t('app.footer.address')}</address>
           <Link
             className="footer-booking-link"
-            to={`/${language}/booking?guesthouse=bukovina-panzio`}
+            to={`/${language}/booking`}
             title={t('app.footer.bookingRequest')}
+            onClick={() => window.scrollTo(0, 0)}
           >
             {t('app.footer.bookingRequest')}
           </Link>
