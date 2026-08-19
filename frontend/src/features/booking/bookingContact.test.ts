@@ -34,6 +34,7 @@ describe('booking contact validation', () => {
       'ACCEPTED_TOTAL_REQUIRED',
       'ADULT_REQUIRED',
       'BOOKING_PRICE_CHANGED',
+      'BOOKING_RATE_LIMITED',
       'BOOKING_SERVICE_NOT_AVAILABLE',
       'BOOKING_VALIDATION_FAILED',
       'CHECK_IN_IN_PAST',

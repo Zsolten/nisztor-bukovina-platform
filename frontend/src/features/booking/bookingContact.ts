@@ -60,6 +60,7 @@ export const BOOKING_ERROR_MESSAGE_KEYS: Record<string, string> = {
   ACCEPTED_TOTAL_REQUIRED: 'acceptedTotalRequired',
   ADULT_REQUIRED: 'adultRequired',
   BOOKING_PRICE_CHANGED: 'priceChanged',
+  BOOKING_RATE_LIMITED: 'rateLimited',
   BOOKING_VALIDATION_FAILED: 'invalidRequest',
   BOOKING_SERVICE_NOT_AVAILABLE: 'serviceNotAvailable',
   CHECK_IN_IN_PAST: 'checkInInPast',

@@ -4,7 +4,9 @@ import com.bukovina.platform.accommodation.booking.dto.BookingErrorResponse;
 import com.bukovina.platform.accommodation.booking.dto.BookingFieldErrorResponse;
 import com.bukovina.platform.accommodation.booking.service.BookingConflictException;
 import com.bukovina.platform.accommodation.booking.service.BookingValidationException;
+import com.bukovina.platform.accommodation.booking.service.PublicBookingRateLimitException;
 import java.util.List;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -31,6 +33,13 @@ public class BookingExceptionHandler {
     return ResponseEntity.status(HttpStatus.CONFLICT)
         .body(
             new BookingErrorResponse(exception.getCode(), List.of(), exception.getCurrentQuote()));
+  }
+
+  @ExceptionHandler(PublicBookingRateLimitException.class)
+  ResponseEntity<BookingErrorResponse> rateLimited(PublicBookingRateLimitException exception) {
+    return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+        .header(HttpHeaders.RETRY_AFTER, Long.toString(exception.getRetryAfterSeconds()))
+        .body(new BookingErrorResponse("BOOKING_RATE_LIMITED", List.of(), null));
   }
 
   @ExceptionHandler(HttpMessageNotReadableException.class)

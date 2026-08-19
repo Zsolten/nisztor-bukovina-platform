@@ -221,6 +221,7 @@ export const resources = {
           adultRequired: 'Legalább egy felnőtt vendéget meg kell adni.',
           priceChanged:
             'Az ár időközben megváltozott. Kérjük, ellenőrizze és fogadja el az új összeget.',
+          rateLimited: 'Túl sok próbálkozás történt. Kérjük, várjon, majd próbálja újra.',
           serviceNotAvailable: 'A kiválasztott étkezési szolgáltatás jelenleg nem elérhető.',
           checkInInPast: 'Az érkezés dátuma nem lehet múltbeli.',
           checkInRequired: 'Adja meg az érkezés dátumát.',
@@ -629,6 +630,7 @@ export const resources = {
           acceptedTotalRequired: 'Este necesară confirmarea prețului actual.',
           adultRequired: 'Este necesar cel puțin un adult.',
           priceChanged: 'Prețul s-a modificat între timp. Verificați și acceptați noua sumă.',
+          rateLimited: 'Au fost prea multe încercări. Așteptați puțin și încercați din nou.',
           serviceNotAvailable: 'Serviciul de masă selectat nu este disponibil acum.',
           checkInInPast: 'Data sosirii nu poate fi în trecut.',
           checkInRequired: 'Introduceți data sosirii.',
@@ -1037,6 +1039,7 @@ export const resources = {
           adultRequired: 'At least one adult guest is required.',
           priceChanged:
             'The price changed in the meantime. Please review and accept the updated total.',
+          rateLimited: 'There were too many attempts. Please wait and try again.',
           serviceNotAvailable: 'The selected meal service is not available right now.',
           checkInInPast: 'The arrival date cannot be in the past.',
           checkInRequired: 'Enter the arrival date.',
