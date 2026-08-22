@@ -226,6 +226,14 @@ describe('guesthouse and language routing', () => {
     await waitFor(() => expect(router.state.location.pathname).toBe('/hu'))
   })
 
+  it('keeps an unknown localized URL and shows the not-found page', async () => {
+    const router = renderRoute('/en/does-not-exist')
+
+    expect(await screen.findByRole('heading', { name: 'Page not found.' })).toBeVisible()
+    expect(router.state.location.pathname).toBe('/en/does-not-exist')
+    expect(screen.getByRole('link', { name: 'Back to home' })).toHaveAttribute('href', '/en')
+  })
+
   it('scrolls to the top after navigating to a different public page', async () => {
     const scrollTo = vi.fn()
     vi.stubGlobal('scrollTo', scrollTo)

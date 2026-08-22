@@ -26,6 +26,14 @@ export const resources = {
           homeReturn: 'Vissza a főoldalra',
           adminReturn: 'Vissza a belépéshez',
         },
+        notFound: {
+          eyebrow: '404 · Nem található',
+          title: 'Az oldal nem található.',
+          description: 'A megadott cím nem létezik, vagy az oldal időközben más helyre került.',
+          back: 'Vissza',
+          homeReturn: 'Vissza a főoldalra',
+          adminReturn: 'Vissza a belépéshez',
+        },
         footer: {
           message: 'Családias vendéglátás Csernakeresztúron.',
           copyright: 'Nisztor–Bukovina Panziók',
@@ -451,6 +459,14 @@ export const resources = {
           homeReturn: 'Înapoi la pagina principală',
           adminReturn: 'Înapoi la autentificare',
         },
+        notFound: {
+          eyebrow: '404 · Pagina nu există',
+          title: 'Pagina nu a fost găsită.',
+          description: 'Adresa introdusă nu există sau pagina a fost mutată într-o altă locație.',
+          back: 'Înapoi',
+          homeReturn: 'Înapoi la pagina principală',
+          adminReturn: 'Înapoi la autentificare',
+        },
         footer: {
           message: 'Ospitalitate familială în Cristur.',
           copyright: 'Pensiunile Nisztor–Bukovina',
@@ -868,6 +884,14 @@ export const resources = {
           description:
             'This page cannot be loaded right now. Please try again or return to the home page.',
           retry: 'Try again',
+          homeReturn: 'Back to home',
+          adminReturn: 'Back to sign in',
+        },
+        notFound: {
+          eyebrow: '404 · Not found',
+          title: 'Page not found.',
+          description: 'The address does not exist, or the page has moved to another location.',
+          back: 'Go back',
           homeReturn: 'Back to home',
           adminReturn: 'Back to sign in',
         },

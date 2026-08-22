@@ -12,9 +12,10 @@ import BookingPage from '../features/booking/BookingPage'
 import BookingManagementPage from '../features/booking/BookingManagementPage'
 import BookingRequestSuccessPage from '../features/booking/BookingRequestSuccessPage'
 import TourismMapPage from '../features/tourism/TourismMapPage'
-import { DEFAULT_LANGUAGE, readPreferredLanguage } from '../i18n/languages'
+import { readPreferredLanguage } from '../i18n/languages'
 import ApplicationErrorPage from './ApplicationErrorPage'
 import LanguageLayout from './LanguageLayout'
+import NotFoundPage from './NotFoundPage'
 
 export const appRoutes: RouteObject[] = [
   {
@@ -105,6 +106,6 @@ export const appRoutes: RouteObject[] = [
   },
   {
     path: '*',
-    element: <Navigate to={`/${DEFAULT_LANGUAGE}`} replace />,
+    element: <NotFoundPage />,
   },
 ]
