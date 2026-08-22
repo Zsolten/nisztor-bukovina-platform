@@ -50,6 +50,34 @@ class ModuleArchitectureTests {
           .resideInAPackage("com.bukovina.platform..dao..");
 
   @ArchTest
+  static final ArchRule TOURISM_SERVICES_MUST_NOT_ACCESS_PERSISTENCE_OR_WEB_TYPES =
+      noClasses()
+          .that()
+          .resideInAnyPackage("..tourism.activity.service..", "..tourism.startour.service..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.springframework.jdbc..", "java.sql..", "org.springframework.web..");
+
+  @ArchTest
+  static final ArchRule TOURISM_DAOS_MUST_NOT_DEPEND_ON_DTOS =
+      noClasses()
+          .that()
+          .resideInAnyPackage("..tourism.activity.dao..", "..tourism.startour.dao..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage("..tourism.activity.dto..", "..tourism.startour.dto..");
+
+  @ArchTest
+  static final ArchRule TOURISM_MODELS_MUST_NOT_DEPEND_ON_DTOS =
+      noClasses()
+          .that()
+          .resideInAnyPackage("..tourism.activity.model..", "..tourism.startour.model..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage("..tourism.activity.dto..", "..tourism.startour.dto..");
+
+  @ArchTest
   static final ArchRule GUESTHOUSE_DAO_MUST_REMAIN_INSIDE_GUESTHOUSE_MODULE =
       noClasses()
           .that()

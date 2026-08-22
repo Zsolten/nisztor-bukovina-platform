@@ -1,14 +1,14 @@
 package com.bukovina.platform.tourism.startour.controller;
 
+import com.bukovina.platform.tourism.startour.dto.StarTourPublicResponse;
+import com.bukovina.platform.tourism.startour.dto.StarTourResponse;
+import com.bukovina.platform.tourism.startour.dto.StarTourRouteResponse;
+import com.bukovina.platform.tourism.startour.dto.StarTourUpsertRequest;
+import com.bukovina.platform.tourism.startour.dto.StopPlanResponse;
+import com.bukovina.platform.tourism.startour.dto.StopPlanUpdate;
 import com.bukovina.platform.tourism.startour.service.StarTourRouteService;
-import com.bukovina.platform.tourism.startour.service.StarTourRouteService.StarTourRouteResponse;
 import com.bukovina.platform.tourism.startour.service.StarTourService;
-import com.bukovina.platform.tourism.startour.service.StarTourService.StarTourPublicResponse;
-import com.bukovina.platform.tourism.startour.service.StarTourService.StarTourResponse;
-import com.bukovina.platform.tourism.startour.service.StarTourService.StarTourUpsertRequest;
 import com.bukovina.platform.tourism.startour.service.StarTourStopService;
-import com.bukovina.platform.tourism.startour.service.StarTourStopService.StopPlanResponse;
-import com.bukovina.platform.tourism.startour.service.StarTourStopService.StopPlanUpdate;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Pattern;
 import java.util.List;

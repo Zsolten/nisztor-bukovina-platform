@@ -8,9 +8,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bukovina.platform.testsupport.PostgreSqlTestContainerConfiguration;
+import com.bukovina.platform.tourism.startour.dto.StarTourTranslation;
+import com.bukovina.platform.tourism.startour.dto.StarTourUpsertRequest;
+import com.bukovina.platform.tourism.startour.exception.StarTourException;
 import com.bukovina.platform.tourism.startour.service.StarTourService;
-import com.bukovina.platform.tourism.startour.service.StarTourService.StarTourUpsertRequest;
-import com.bukovina.platform.tourism.startour.service.StarTourService.Translation;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -23,7 +24,6 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 @SpringBootTest(properties = "DB_PASSWORD=test-password")
 @AutoConfigureMockMvc
@@ -57,10 +57,10 @@ class StarTourStopControllerTests {
         .andExpect(jsonPath("$.stops[1].effectiveVisitDurationMinutes").value(45))
         .andExpect(jsonPath("$.totals.routeDataComplete").value(false));
 
-    ResponseStatusException rejected =
+    StarTourException rejected =
         assertThrows(
-            ResponseStatusException.class, () -> starTourService.update(tourId, publishedTour()));
-    assertEquals("STAR_TOUR_ROUTE_DATA_INCOMPLETE", rejected.getReason());
+            StarTourException.class, () -> starTourService.update(tourId, publishedTour()));
+    assertEquals("STAR_TOUR_ROUTE_DATA_INCOMPLETE", rejected.code());
 
     insertSuccessfulPair(veka, boli, 1_000, 120);
     insertSuccessfulPair(boli, paring, 2_000, 240);
@@ -174,7 +174,8 @@ class StarTourStopControllerTests {
         "#336699",
         true,
         true,
-        List.of(new Translation("hu", "Mátrix tesztút", "Rövid leírás", "Részletes leírás.")),
+        List.of(
+            new StarTourTranslation("hu", "Mátrix tesztút", "Rövid leírás", "Részletes leírás.")),
         List.of(),
         List.of());
   }

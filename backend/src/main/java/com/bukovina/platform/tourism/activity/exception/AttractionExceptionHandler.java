@@ -1,20 +1,18 @@
-package com.bukovina.platform.tourism.activity.controller;
+package com.bukovina.platform.tourism.activity.exception;
 
+import com.bukovina.platform.tourism.activity.controller.AttractionController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice(assignableTypes = AttractionController.class)
 class AttractionExceptionHandler {
-
-  @ExceptionHandler(ResponseStatusException.class)
-  ResponseEntity<AttractionErrorResponse> requestError(ResponseStatusException exception) {
-    String code =
-        exception.getReason() == null ? "ATTRACTION_REQUEST_FAILED" : exception.getReason();
-    return ResponseEntity.status(exception.getStatusCode()).body(new AttractionErrorResponse(code));
+  @ExceptionHandler(AttractionException.class)
+  ResponseEntity<AttractionErrorResponse> requestError(AttractionException exception) {
+    return ResponseEntity.status(exception.status())
+        .body(new AttractionErrorResponse(exception.code()));
   }
 
   @ExceptionHandler(HttpMessageNotReadableException.class)

@@ -1,10 +1,10 @@
 package com.bukovina.platform.tourism.activity.controller;
 
+import com.bukovina.platform.tourism.activity.dto.AttractionPublicResponse;
+import com.bukovina.platform.tourism.activity.dto.AttractionResponse;
+import com.bukovina.platform.tourism.activity.dto.AttractionUpsertRequest;
+import com.bukovina.platform.tourism.activity.dto.CollectionResponse;
 import com.bukovina.platform.tourism.activity.service.AttractionService;
-import com.bukovina.platform.tourism.activity.service.AttractionService.AttractionPublicResponse;
-import com.bukovina.platform.tourism.activity.service.AttractionService.AttractionResponse;
-import com.bukovina.platform.tourism.activity.service.AttractionService.AttractionUpsertRequest;
-import com.bukovina.platform.tourism.activity.service.AttractionService.CollectionResponse;
 import jakarta.validation.constraints.Pattern;
 import java.util.List;
 import java.util.UUID;

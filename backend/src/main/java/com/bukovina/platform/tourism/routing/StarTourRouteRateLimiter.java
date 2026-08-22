@@ -1,13 +1,12 @@
 package com.bukovina.platform.tourism.routing;
 
+import com.bukovina.platform.tourism.startour.exception.StarTourException;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
 import java.time.Duration;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class StarTourRouteRateLimiter {
@@ -57,12 +56,11 @@ public class StarTourRouteRateLimiter {
     return clientIp == null || clientIp.isBlank() ? UNKNOWN_CLIENT : clientIp;
   }
 
-  private static ResponseStatusException limited(long nanosToWait) {
+  private static StarTourException limited(long nanosToWait) {
     long seconds =
         Math.max(
             1,
             (nanosToWait + Duration.ofSeconds(1).toNanos() - 1) / Duration.ofSeconds(1).toNanos());
-    return new ResponseStatusException(
-        HttpStatus.TOO_MANY_REQUESTS, "STAR_TOUR_ROUTE_RATE_LIMITED_" + seconds);
+    return StarTourException.rateLimited("STAR_TOUR_ROUTE_RATE_LIMITED_" + seconds);
   }
 }
